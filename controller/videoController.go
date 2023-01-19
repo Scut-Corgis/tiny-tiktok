@@ -2,14 +2,31 @@ package controller
 
 import (
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"path/filepath"
+	"time"
+
+	"github.com/gin-gonic/gin"
 )
+
+type FeedResponse struct {
+	Response
+	VideoList []Video `json:"video_list,omitempty"`
+	NextTime  int64   `json:"next_time,omitempty"`
+}
 
 type VideoListResponse struct {
 	Response
 	VideoList []Video `json:"video_list"`
+}
+
+// Feed same demo video list for every request
+func Feed(c *gin.Context) {
+	c.JSON(http.StatusOK, FeedResponse{
+		Response:  Response{StatusCode: 0},
+		VideoList: DemoVideos,
+		NextTime:  time.Now().Unix(),
+	})
 }
 
 // Publish check token then save upload file to public directory

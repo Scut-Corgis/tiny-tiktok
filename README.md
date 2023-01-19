@@ -28,11 +28,27 @@ service层 ：业务核心逻辑
 
 CRUD接口说明 : https://gorm.cn/zh_CN/docs/connecting_to_the_database.html
 
-# token:
+## jwt-auth:
 
-token目前简单实现约定为用户名本身，若携带的token等于用户名本身便通过
+> 位于`middleware/jwt`路径下
 
+token生成和确认， 目前token中只放置了username
 
-为了后期方便更改，在service目录下写了token.go，产生token和验证token请调用里面的函数
+鉴权已注射于gin路由中，会最先执行，若通过鉴权，则会将解析出的username放于 gin.context的键值对中，可通过调用`username := context.GetString("username")`提取；若没通过鉴权，则不会运行controller代码
 
+未测试，需等待用户注册接口完成，用户注册产生token清调用`token.go - GenerateToken(name string)` 
+
+**其他** 
+
+* 没有采用 `jti`, 因此有重放攻击危险，不打算考虑此问题
+
+* jwt可选字段中，只使用了过期时间为24h，其他如发行方、接收方字段均未使用 
+
+## videoController
+
+### pubish - 发布视频
+
+目前实现`ffmpeg`服务与视频均在本地
+
+用户调动`publish` -> service服务器读取data数据 -> 将视频文件存于本地 -> 调用ffmpeg服务得到视频起始帧图片 -> 图片存于本地
 
