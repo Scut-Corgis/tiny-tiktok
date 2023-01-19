@@ -28,6 +28,7 @@ func AuthGet() gin.HandlerFunc {
 				fmt.Println("token right!")
 				c.Set("username", claims.Name)
 				c.Next()
+				return
 			}
 		}
 
@@ -59,6 +60,7 @@ func AuthPost() gin.HandlerFunc {
 				fmt.Println("token right!")
 				c.Set("username", claims.Name)
 				c.Next()
+				return
 			}
 		}
 
