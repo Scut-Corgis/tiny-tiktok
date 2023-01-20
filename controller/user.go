@@ -1,10 +1,10 @@
 package controller
 
 import (
-	"net/http"
-	"sync/atomic"
-
+	"github.com/Scut-Corgis/tiny-tiktok/dao"
 	"github.com/gin-gonic/gin"
+	"log"
+	"net/http"
 )
 
 // usersLoginInfo use map to store user info, and key is username+password for demo
@@ -37,25 +37,47 @@ func Register(c *gin.Context) {
 	username := c.Query("username")
 	password := c.Query("password")
 
-	token := username + password
-
-	if _, exist := usersLoginInfo[token]; exist {
+	// token := username + password
+	user, _ := dao.QueryUserByUsername(username)
+	if username == user.Username {
 		c.JSON(http.StatusOK, UserLoginResponse{
 			Response: Response{StatusCode: 1, StatusMsg: "User already exist"},
 		})
 	} else {
-		atomic.AddInt64(&userIdSequence, 1)
-		newUser := User{
-			Id:   userIdSequence,
-			Name: username,
+		newUser := dao.User{
+			Username: username,
+			Password: password,
+			Token:    username + password,
 		}
-		usersLoginInfo[token] = newUser
+		if dao.InsertUser(&newUser) == false {
+			log.Println("Insert Data Failed")
+		}
+		u, _ := dao.QueryUserByUsername(username)
+		log.Println("注册返回的 id", u.Id)
 		c.JSON(http.StatusOK, UserLoginResponse{
-			Response: Response{StatusCode: 0},
+			Response: Response{StatusCode: 0, StatusMsg: "Success"},
 			UserId:   userIdSequence,
 			Token:    username + password,
 		})
 	}
+
+	//if _, exist := usersLoginInfo[token]; exist {
+	//	c.JSON(http.StatusOK, UserLoginResponse{
+	//		Response: Response{StatusCode: 1, StatusMsg: "User already exist"},
+	//	})
+	//} else {
+	//	atomic.AddInt64(&userIdSequence, 1)
+	//	newUser := User{
+	//		Id:   userIdSequence,
+	//		Name: username,
+	//	}
+	//	usersLoginInfo[token] = newUser
+	//	c.JSON(http.StatusOK, UserLoginResponse{
+	//		Response: Response{StatusCode: 0, StatusMsg: "Success"},
+	//		UserId:   userIdSequence,
+	//		Token:    username + password,
+	//	})
+	//}
 }
 
 func Login(c *gin.Context) {

@@ -1,0 +1,43 @@
+package dao
+
+import "log"
+
+// User 定义用户表结构
+type User struct {
+	Id            int64
+	Username      string
+	Password      string
+	Token         string
+	FollowCount   int64
+	FollowerCount int64
+	IsFollow      bool
+}
+
+// GetUserList 获取所有User对象
+func GetUserList() ([]User, error) {
+	users := []User{}
+	if err := Db.Find(users).Error; err != nil {
+		log.Println(err.Error())
+		return users, err
+	}
+	return users, nil
+}
+
+// QueryUserByUsername 根据用户名查询用户
+func QueryUserByUsername(name string) (User, error) {
+	user := User{}
+	if err := Db.Where("username = ?", name).First(&user).Error; err != nil {
+		log.Println(err.Error())
+		return user, err
+	}
+	return user, nil
+}
+
+// InsertUser 将user插入表内
+func InsertUser(user *User) bool {
+	if err := Db.Create(&user).Error; err != nil {
+		log.Println(err.Error())
+		return false
+	}
+	return true
+}
