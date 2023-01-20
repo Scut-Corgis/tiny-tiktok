@@ -48,7 +48,35 @@ token生成和确认， 目前token中只放置了username
 
 ### pubish - 发布视频
 
-目前实现`ffmpeg`服务与视频均在本地
+文件服务器 ： 
+1. 配置ftp服务器，用于service服务器发送视频文件
+2. 安装ffmpeg命令 并通过 ssh 连接
+3. Nginx对外提供获取视频和封面的服务 (均为静态资源)
 
-用户调动`publish` -> service服务器读取data数据 -> 将视频文件存于本地 -> 调用ffmpeg服务得到视频起始帧图片 -> 图片存于本地
+远端服务器视频文件路径/home/ftpdata/video/，图片文件路径/home/ftpdata/images/
+
+
+> ffmpeg命令于文件服务器中执行，因此nginx ftp ffmpeg均在一台服务器上
+
+**ssh服务器**
+
+搭建：
+https://www.bilibili.com/video/BV1rz4y1R7DA/?spm_id_from=333.337.search-card.all.click&vd_source=1e3090bc7a88f02cda5247bc11cd548d
+
+ffmpeg : `sudo snap install ffmpeg`
+
+openssl采用口令方式登陆，服务器提供公钥给客户端，客户端用公钥加密自己的密码后发回，服务器用私钥解密验证
+
+当前实现客户端方未验证服务器公钥是否正确，若实际生产环境需得到服务器公钥到配置文件中，防止中间人截获并伪装服务器
+
+
+**linux搭建ftp服务器**
+
+**linux配置Nginx - http服务**
+
+
+
+目前各服务器地址均为127.0.0.1
+
+用户调动`publish` -> service服务器读取data数据 -> 将视频文件发往nginx -> 通过ssh调用ffmpeg服务得到视频起始帧图片并存于nginx服务器 -> 图片存于本地
 

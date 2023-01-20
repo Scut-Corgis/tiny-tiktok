@@ -1,7 +1,7 @@
 package jwt
 
 import (
-	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/Scut-Corgis/tiny-tiktok/controller"
@@ -25,13 +25,13 @@ func AuthGet() gin.HandlerFunc {
 
 		if err == nil {
 			if claims, ok := token.Claims.(*MyCustomClaims); ok && token.Valid {
-				fmt.Println("token right!")
+				log.Println("Token right : ", claims.Name)
 				c.Set("username", claims.Name)
 				c.Next()
 				return
 			}
 		}
-
+		log.Println("token error!")
 		c.Abort()
 		c.JSON(http.StatusUnauthorized, controller.Response{
 			StatusCode: -1,
@@ -57,13 +57,13 @@ func AuthPost() gin.HandlerFunc {
 
 		if err == nil {
 			if claims, ok := token.Claims.(*MyCustomClaims); ok && token.Valid {
-				fmt.Println("token right!")
+				log.Println("Token right : ", claims.Name)
 				c.Set("username", claims.Name)
 				c.Next()
 				return
 			}
 		}
-
+		log.Println("token error!")
 		c.Abort()
 		c.JSON(http.StatusUnauthorized, controller.Response{
 			StatusCode: -1,

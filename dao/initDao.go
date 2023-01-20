@@ -32,4 +32,5 @@ func Init() {
 	if err != nil {
 		log.Panicln("err:", err.Error())
 	}
+	log.Println("mysql has connected!")
 }
