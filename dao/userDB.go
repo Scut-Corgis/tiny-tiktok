@@ -13,16 +13,6 @@ type User struct {
 	IsFollow      bool
 }
 
-// GetUserList 获取所有User对象
-func GetUserList() ([]User, error) {
-	users := []User{}
-	if err := Db.Find(users).Error; err != nil {
-		log.Println(err.Error())
-		return users, err
-	}
-	return users, nil
-}
-
 // QueryUserByUsername 根据用户名查询用户
 func QueryUserByUsername(name string) (User, error) {
 	user := User{}
