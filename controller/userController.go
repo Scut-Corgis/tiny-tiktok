@@ -2,14 +2,15 @@ package controller
 
 import (
 	"github.com/Scut-Corgis/tiny-tiktok/dao"
+	"github.com/Scut-Corgis/tiny-tiktok/middleware/jwt"
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 // usersLoginInfo use map to store user info, and key is username+password for demo
 // user data will be cleared every time the server starts
-// test data: username=zhanglei, password=douyin
 var usersLoginInfo = map[string]User{
 	"zhangleidouyin": {
 		Id:            1,
@@ -20,7 +21,7 @@ var usersLoginInfo = map[string]User{
 	},
 }
 
-var userIdSequence = int64(1)
+// var userIdSequence = int64(1)
 
 type UserLoginResponse struct {
 	Response
@@ -36,18 +37,20 @@ type UserResponse struct {
 func Register(c *gin.Context) {
 	username := c.Query("username")
 	password := c.Query("password")
-
+	token := jwt.GenerateToken(username)
 	// token := username + password
 	user, _ := dao.QueryUserByUsername(username)
 	if username == user.Username {
 		c.JSON(http.StatusOK, UserLoginResponse{
 			Response: Response{StatusCode: 1, StatusMsg: "User already exist"},
+			UserId:   user.Id,
+			Token:    user.Token,
 		})
 	} else {
 		newUser := dao.User{
 			Username: username,
 			Password: password,
-			Token:    username + password,
+			Token:    token,
 		}
 		if dao.InsertUser(&newUser) == false {
 			log.Println("Insert Data Failed")
@@ -55,61 +58,56 @@ func Register(c *gin.Context) {
 		u, _ := dao.QueryUserByUsername(username)
 		log.Println("注册返回的 id", u.Id)
 		c.JSON(http.StatusOK, UserLoginResponse{
-			Response: Response{StatusCode: 0, StatusMsg: "Success"},
-			UserId:   userIdSequence,
-			Token:    username + password,
+			Response: Response{StatusCode: 0, StatusMsg: "Register success"},
+			UserId:   u.Id,
+			Token:    token,
 		})
 	}
-
-	//if _, exist := usersLoginInfo[token]; exist {
-	//	c.JSON(http.StatusOK, UserLoginResponse{
-	//		Response: Response{StatusCode: 1, StatusMsg: "User already exist"},
-	//	})
-	//} else {
-	//	atomic.AddInt64(&userIdSequence, 1)
-	//	newUser := User{
-	//		Id:   userIdSequence,
-	//		Name: username,
-	//	}
-	//	usersLoginInfo[token] = newUser
-	//	c.JSON(http.StatusOK, UserLoginResponse{
-	//		Response: Response{StatusCode: 0, StatusMsg: "Success"},
-	//		UserId:   userIdSequence,
-	//		Token:    username + password,
-	//	})
-	//}
 }
 
+// Login 登录功能，需要补充密码编码解码
 func Login(c *gin.Context) {
 	username := c.Query("username")
 	password := c.Query("password")
 
-	token := username + password
+	user, err := dao.QueryUserByUsername(username)
 
-	if user, exist := usersLoginInfo[token]; exist {
-		c.JSON(http.StatusOK, UserLoginResponse{
-			Response: Response{StatusCode: 0},
-			UserId:   user.Id,
-			Token:    token,
-		})
-	} else {
+	if err != nil {
 		c.JSON(http.StatusOK, UserLoginResponse{
 			Response: Response{StatusCode: 1, StatusMsg: "User doesn't exist"},
 		})
+	} else {
+		if user.Password == password {
+			c.JSON(http.StatusOK, UserLoginResponse{
+				Response: Response{StatusCode: 0, StatusMsg: "Login success"},
+				UserId:   user.Id,
+				Token:    user.Token,
+			})
+		} else {
+			c.JSON(http.StatusOK, UserLoginResponse{
+				Response: Response{StatusCode: 1, StatusMsg: "Username or Password error"},
+			})
+		}
 	}
 }
 
 func UserInfo(c *gin.Context) {
-	token := c.Query("token")
-
-	if user, exist := usersLoginInfo[token]; exist {
+	user_id := c.Query("user_id")
+	id, _ := strconv.ParseInt(user_id, 10, 64)
+	if user, err := dao.QueryUserById(id); err != nil {
 		c.JSON(http.StatusOK, UserResponse{
-			Response: Response{StatusCode: 0},
-			User:     user,
+			Response: Response{StatusCode: 1, StatusMsg: "User doesn't exist"},
 		})
 	} else {
 		c.JSON(http.StatusOK, UserResponse{
-			Response: Response{StatusCode: 1, StatusMsg: "User doesn't exist"},
+			Response: Response{StatusCode: 0},
+			User: User{
+				user.Id,
+				user.Username,
+				user.FollowCount,
+				user.FollowerCount,
+				user.IsFollow,
+			},
 		})
 	}
 }
