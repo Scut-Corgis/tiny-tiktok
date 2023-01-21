@@ -4,17 +4,21 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/Scut-Corgis/tiny-tiktok/controller"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
 )
+
+type Response struct {
+	StatusCode int32  `json:"status_code"`
+	StatusMsg  string `json:"status_msg,omitempty"`
+}
 
 func AuthGet() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		tokenString := c.Query("token")
 		if len(tokenString) == 0 {
 			c.Abort()
-			c.JSON(http.StatusUnauthorized, controller.Response{
+			c.JSON(http.StatusUnauthorized, Response{
 				StatusCode: -1,
 				StatusMsg:  "Unauthorized",
 			})
@@ -33,7 +37,7 @@ func AuthGet() gin.HandlerFunc {
 		}
 		log.Println("token error!")
 		c.Abort()
-		c.JSON(http.StatusUnauthorized, controller.Response{
+		c.JSON(http.StatusUnauthorized, Response{
 			StatusCode: -1,
 			StatusMsg:  "Token Error",
 		})
@@ -46,7 +50,7 @@ func AuthPost() gin.HandlerFunc {
 		tokenString := c.PostForm("token")
 		if len(tokenString) == 0 {
 			c.Abort()
-			c.JSON(http.StatusUnauthorized, controller.Response{
+			c.JSON(http.StatusUnauthorized, Response{
 				StatusCode: -1,
 				StatusMsg:  "Unauthorized",
 			})
@@ -65,7 +69,7 @@ func AuthPost() gin.HandlerFunc {
 		}
 		log.Println("token error!")
 		c.Abort()
-		c.JSON(http.StatusUnauthorized, controller.Response{
+		c.JSON(http.StatusUnauthorized, Response{
 			StatusCode: -1,
 			StatusMsg:  "Token Error",
 		})

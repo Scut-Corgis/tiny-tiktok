@@ -53,30 +53,64 @@ token生成和确认， 目前token中只放置了username
 2. 安装ffmpeg命令 并通过 ssh 连接
 3. Nginx对外提供获取视频和封面的服务 (均为静态资源)
 
-远端服务器视频文件路径/home/ftpdata/video/，图片文件路径/home/ftpdata/images/
+**核心逻辑：**
+
+
+用户调动`publish` -> service服务器读取data数据 -> 将视频文件发往nginx -> 通过ssh调用ffmpeg服务得到视频起始帧图片并存于nginx服务器 -> 图片存于本地
 
 
 > ffmpeg命令于文件服务器中执行，因此nginx ftp ffmpeg均在一台服务器上
 
-**ssh服务器**
+### ssh服务器
 
 搭建：
 https://www.bilibili.com/video/BV1rz4y1R7DA/?spm_id_from=333.337.search-card.all.click&vd_source=1e3090bc7a88f02cda5247bc11cd548d
 
 ffmpeg : `sudo snap install ffmpeg`
 
+> 搭建环境是否成功测试 : cd到ffmpeg文件夹下 `go test`
+
 openssl采用口令方式登陆，服务器提供公钥给客户端，客户端用公钥加密自己的密码后发回，服务器用私钥解密验证
 
 当前实现客户端方未验证服务器公钥是否正确，若实际生产环境需得到服务器公钥到配置文件中，防止中间人截获并伪装服务器
 
 
-**linux搭建ftp服务器**
+### ftp服务器
 
-**linux配置Nginx - http服务**
+搭建：
+``` sh
+sudo apt install vsftpd
+
+systemctl enable vsftpd.service 
+
+systemctl start vsftpd.service
+
+systemctl status vsftpd.service
+
+vim /etc/vsftpd/vsftpd.conf
+```
+
+增加或修改以下配置项
+``` sh
+# Example config file /etc/vsftpd.conf
+
+listen=YES
+listen_port=21
+#
+listen_ipv6=NO
+# ftp登陆目录  -    改成自己的，取config.Ftp_video_path中去掉/video的路径
+local_root=/home/hjg/ftpdata 
+# 必须打开写权限
+write_enable=YES
+```
+
+重启服务
+
+`systemctl restart vsftpd.services`
+
+> 搭建环境是否成功测试 : cd到ftp文件夹下 `go test`
+
+### Nginx - http服务
 
 
-
-目前各服务器地址均为127.0.0.1
-
-用户调动`publish` -> service服务器读取data数据 -> 将视频文件发往nginx -> 通过ssh调用ffmpeg服务得到视频起始帧图片并存于nginx服务器 -> 图片存于本地
 
