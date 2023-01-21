@@ -9,28 +9,42 @@ import (
 	"github.com/jlaffaye/ftp"
 )
 
-var ClientFtp *ftp.ServerConn
+// 原ftp开源库无法单连接实现并发安全，因此本项目实现了并发ftp传输
+var FtpChan chan *ftp.ServerConn
+var FtpConnList [config.Ftp_max_concurrent_cnt]*ftp.ServerConn
 
 func Init() {
+	FtpChan = make(chan *ftp.ServerConn, 20)
 	var err error
-	ClientFtp, err = ftp.Dial(config.Ftp_addr_port, ftp.DialWithTimeout(5*time.Second))
-	if err != nil {
-		log.Fatal(err)
+	for _, conn := range FtpConnList {
+		conn, err = ftp.Dial(config.Ftp_addr_port, ftp.DialWithTimeout(5*time.Second))
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		err = conn.Login(config.Ftp_username, config.Ftp_password)
+		if err != nil {
+			log.Fatal(err)
+		}
+		FtpChan <- conn
 	}
 
-	err = ClientFtp.Login(config.Ftp_username, config.Ftp_password)
-	if err != nil {
-		log.Fatal(err)
-	}
-
+	go keepalive()
 }
 
 func SendVideoFile(filename string, file io.Reader) error {
-	err := ClientFtp.Stor("./videos/"+filename+".mp4", file)
+	conn := <-FtpChan
+	err := conn.Stor("./videos/"+filename+".mp4", file)
 	if err != nil {
-		log.Fatalln("视频发送失败 : ", filename)
+		log.Fatalln("视频发送失败 : ", filename, "Error : ", err)
 	} else {
 		log.Println("视频发送成功！")
 	}
+	FtpChan <- conn
 	return err
+}
+
+// vsftpd 配置为永不断开空闲连接， 因此keepalive未实现
+func keepalive() {
+
 }
