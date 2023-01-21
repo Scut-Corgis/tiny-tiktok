@@ -34,7 +34,7 @@ func Init() {
 
 	Ffchan = make(chan Ffmsg, config.Ssh_max_taskCnt)
 	go dispatcher()
-
+	go keepalive()
 	log.Println("ssh初始化成功")
 }
 
@@ -64,19 +64,22 @@ func Ffmpeg(videoName, imageName string) error {
 	// the remote side using the Run method.
 	var b bytes.Buffer
 	session.Stdout = &b
-	// 调试代码
-	if err := session.Run("ls"); err != nil {
+
+	if err := session.Run("ffmpeg -ss 00:00:01 -i " + config.Ftp_video_path + videoName + ".mp4 -vframes 1 " + config.Ftp_image_path + imageName + ".jpg"); err != nil {
 		log.Println("SSH failed to run: " + err.Error())
 		log.Println("远端输出错误信息 : ", b.String())
 		return err
 	}
-	log.Println("远端输出list信息 : ", b.String())
-
-	// if err := session.Run("/usr/local/ffmpeg/bin/ffmpeg -ss 00:00:01 -i " + config.Ftp_video_path + videoName + ".mp4 -vframes 1 " + config.Ftp_image_path + imageName + ".jpg"); err != nil {
-	// 	log.Println("SSH failed to run: " + err.Error())
-	// 	log.Println("远端输出错误信息 : ", b.String())
-	// 	return err
-	// }
 	log.Println("ffmpeg 执行成功")
 	return nil
+}
+
+// openssl 默认为60s断开连接， 因此设置10s一次心跳
+func keepalive() {
+	var err error
+	for err == nil {
+		_, err = ClientSSH.NewSession()
+		time.Sleep(10 * time.Second)
+	}
+	log.Fatalln("ssh已经断开！")
 }

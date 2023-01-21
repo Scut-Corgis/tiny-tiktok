@@ -12,3 +12,5 @@ var Ftp_video_path = "/home/hjg/ftpdata/videos/" //ftp服务器上的视频文�
 var Ftp_image_path = "/home/hjg/ftpdata/images/" //图片路径
 var Ftp_username = "hjg"
 var Ftp_password = "990921"
+
+const Ftp_max_concurrent_cnt = 20 //Ftp并发处理的文件上限

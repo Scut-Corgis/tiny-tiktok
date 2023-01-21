@@ -72,6 +72,8 @@ ffmpeg : `sudo snap install ffmpeg`
 
 openssl采用口令方式登陆，服务器提供公钥给客户端，客户端用公钥加密自己的密码后发回，服务器用私钥解密验证
 
+openssl默认60s断开连接，因此需要加入应用层客户端心跳。
+
 当前实现客户端方未验证服务器公钥是否正确，若实际生产环境需得到服务器公钥到配置文件中，防止中间人截获并伪装服务器
 
 
@@ -102,6 +104,8 @@ listen_ipv6=NO
 local_root=/home/hjg/ftpdata 
 # 必须打开写权限
 write_enable=YES
+# 永不杀死空闲连接
+idle_session_timeout=0
 ```
 
 重启服务
