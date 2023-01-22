@@ -12,7 +12,7 @@ import (
 
 type UserListResponse struct {
 	Response
-	UserList []User `json:"user_list"`
+	UserList []dao.UserTable `json:"user_list"`
 }
 
 /*
@@ -86,41 +86,78 @@ func RelationAction(c *gin.Context) {
 处理获取当前用户的关注列表
 */
 func FollowList(c *gin.Context) {
-	username := c.GetString("username")
-	user, _ := dao.QueryUserByUsername(username)
-	if username != user.Username {
-		c.JSON(http.StatusOK, Response{
-			StatusCode: -1,
-			StatusMsg:  "token错误",
+	userId, err := strconv.ParseInt(c.Query("user_id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusOK, UserListResponse{
+			Response: Response{
+				StatusCode: -1,
+				StatusMsg:  "用户id有误",
+			},
+			UserList: nil,
 		})
 		return
 	}
-	//userId := user.Id
+	followList, err := service.FollowList(userId)
+	if err != nil {
+		c.JSON(http.StatusOK, UserListResponse{
+			Response: Response{
+				StatusCode: -1,
+				StatusMsg:  "获取关注列表失败",
+			},
+			UserList: nil,
+		})
+		return
+	}
 
 	c.JSON(http.StatusOK, UserListResponse{
 		Response: Response{
 			StatusCode: 0,
 		},
-		UserList: []User{DemoUser},
+		UserList: followList,
 	})
 }
 
-// FollowerList all users have same follower list
+/*
+处理获取当前用户的粉丝列表
+*/
 func FollowerList(c *gin.Context) {
-	c.JSON(http.StatusOK, UserListResponse{
-		Response: Response{
-			StatusCode: 0,
-		},
-		UserList: []User{DemoUser},
-	})
+	// userId, err := strconv.ParseInt(c.Query("user_id"), 10, 64)
+	// if err != nil {
+	// 	c.JSON(http.StatusOK, UserListResponse{
+	// 		Response: Response{
+	// 			StatusCode: -1,
+	// 			StatusMsg:  "用户id有误",
+	// 		},
+	// 		UserList: nil,
+	// 	})
+	// 	return
+	// }
+	// followList, err := service.FollowList(userId)
+	// if err != nil {
+	// 	c.JSON(http.StatusOK, UserListResponse{
+	// 		Response: Response{
+	// 			StatusCode: -1,
+	// 			StatusMsg:  "获取关注列表失败",
+	// 		},
+	// 		UserList: nil,
+	// 	})
+	// 	return
+	// }
+
+	// c.JSON(http.StatusOK, UserListResponse{
+	// 	Response: Response{
+	// 		StatusCode: 0,
+	// 	},
+	// 	UserList: followList,
+	// })
 }
 
 // FriendList all users have same friend list
 func FriendList(c *gin.Context) {
-	c.JSON(http.StatusOK, UserListResponse{
-		Response: Response{
-			StatusCode: 0,
-		},
-		UserList: []User{DemoUser},
-	})
+	// c.JSON(http.StatusOK, UserListResponse{
+	// 	Response: Response{
+	// 		StatusCode: 0,
+	// 	},
+	// 	UserList: []User{DemoUser},
+	// })
 }
