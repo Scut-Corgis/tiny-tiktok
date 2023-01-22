@@ -1,0 +1,22 @@
+package dao
+
+import (
+	"log"
+	"time"
+)
+
+type Video struct {
+	AuthorId   int64
+	PlayUrl    string
+	CoverUrl   string
+	PulishTime time.Time
+	Title      string
+}
+
+func InsertVideosTable(video *Video) error {
+	if err := Db.Create(&video).Error; err != nil {
+		log.Println(err.Error())
+		return err
+	}
+	return nil
+}

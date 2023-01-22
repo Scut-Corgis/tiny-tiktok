@@ -11,12 +11,12 @@ import (
 
 // 原ftp开源库无法单连接实现并发安全，因此本项目实现了并发ftp传输
 var FtpChan chan *ftp.ServerConn
-var FtpConnList [config.Ftp_max_concurrent_cnt]*ftp.ServerConn
+var ftpConnList [config.Ftp_max_concurrent_cnt]*ftp.ServerConn
 
 func Init() {
 	FtpChan = make(chan *ftp.ServerConn, 20)
 	var err error
-	for _, conn := range FtpConnList {
+	for _, conn := range ftpConnList {
 		conn, err = ftp.Dial(config.Ftp_addr_port, ftp.DialWithTimeout(5*time.Second))
 		if err != nil {
 			log.Fatal(err)
@@ -28,7 +28,7 @@ func Init() {
 		}
 		FtpChan <- conn
 	}
-
+	log.Println("ftp初始化成功！")
 	go keepalive()
 }
 

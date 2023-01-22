@@ -116,5 +116,26 @@ idle_session_timeout=0
 
 ### Nginx - http服务
 
+Nginx安装 : ` https://b23.tv/vbrNbjn`
 
+修改配置
+``` sh
+sudo vim /usr/local/nginx/conf/nginx.conf
 
+// 增加如下字段后保存
+        // 表示访问 localhost:80/videos/ 则从 /home/hjg/ftpdata/videos/ 下面找
+        location ^~ /videos/ {
+            root /home/hjg/ftpdata;
+        }
+
+        location ^~ /images/ {
+            root /home/hjg/ftpdata;
+        }
+
+// 切换到nginx可执行文件目录
+/usr/local/nginx/sbin
+
+// 重新加载配置
+./nginx -s reload
+
+```

@@ -2,6 +2,8 @@ package main
 
 import (
 	"github.com/Scut-Corgis/tiny-tiktok/dao"
+	"github.com/Scut-Corgis/tiny-tiktok/middleware/ffmpeg"
+	"github.com/Scut-Corgis/tiny-tiktok/middleware/ftp"
 	"github.com/gin-gonic/gin"
 )
 
@@ -18,4 +20,6 @@ func main() {
 // 加载项目依赖
 func initDependencies() {
 	dao.Init()
+	ffmpeg.Init()
+	ftp.Init()
 }

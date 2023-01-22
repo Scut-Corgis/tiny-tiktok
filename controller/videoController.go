@@ -1,11 +1,15 @@
 package controller
 
 import (
-	"fmt"
+	"log"
 	"net/http"
-	"path/filepath"
+	"strconv"
 	"time"
 
+	"github.com/Scut-Corgis/tiny-tiktok/config"
+	"github.com/Scut-Corgis/tiny-tiktok/dao"
+	"github.com/Scut-Corgis/tiny-tiktok/middleware/ffmpeg"
+	"github.com/Scut-Corgis/tiny-tiktok/middleware/ftp"
 	"github.com/gin-gonic/gin"
 )
 
@@ -31,9 +35,11 @@ func Feed(c *gin.Context) {
 
 // Publish check token then save upload file to public directory
 func Publish(c *gin.Context) {
-	token := c.PostForm("token")
+	username := c.GetString("username")
+	title := c.PostForm("title")
 
-	if _, exist := usersLoginInfo[token]; !exist {
+	user, err := dao.QueryUserByUsername(username)
+	if err != nil {
 		c.JSON(http.StatusOK, Response{StatusCode: 1, StatusMsg: "User doesn't exist"})
 		return
 	}
@@ -46,22 +52,58 @@ func Publish(c *gin.Context) {
 		})
 		return
 	}
+	timeToDB := time.Now()
+	pubilishTImeIntNano := timeToDB.UnixNano()
+	publishTimeStr := strconv.FormatInt(pubilishTImeIntNano, 10)
+	//	timeStr := time.Now().Format("2006-01-02 15:04:05")
+	videoName := username + "_" + publishTimeStr + ".mp4"
+	imageName := username + "_" + publishTimeStr + ".jpg"
 
-	filename := filepath.Base(data.Filename)
-	user := usersLoginInfo[token]
-	finalName := fmt.Sprintf("%d_%s", user.Id, filename)
-	saveFile := filepath.Join("./public/", finalName)
-	if err := c.SaveUploadedFile(data, saveFile); err != nil {
-		c.JSON(http.StatusOK, Response{
-			StatusCode: 1,
-			StatusMsg:  err.Error(),
-		})
+	videoFile, err := data.Open()
+	if err == nil {
+		log.Fatalln("pulish意料之外的错误， data.Open()失败")
+	}
+	//ftp发送视频文件
+	err = ftp.SendVideoFile(videoName, videoFile)
+	if err != nil {
+		log.Println(username, "的视频ftp失败")
+		c.JSON(http.StatusOK, Response{StatusCode: 1, StatusMsg: "视频ftp失败！"})
 		return
 	}
+	//插入数据库
+	video := &dao.Video{
+		AuthorId:   user.Id,
+		PlayUrl:    config.Url_addr_port + config.Url_Play_prefix + videoName,
+		CoverUrl:   config.Url_addr_port + config.Url_Play_prefix + imageName,
+		PulishTime: timeToDB,
+		Title:      title,
+	}
+	err = dao.InsertVideosTable(video)
+	if err == nil {
+		log.Println(username, "的视频，数据库插入失败")
+		c.JSON(http.StatusOK, Response{StatusCode: 1, StatusMsg: "视频数据库插入失败！"})
+	} else {
+		log.Println("视频数据库插入成功")
+	}
+	// ssh调用ffmpeg
+	ffmpeg.Ffchan <- ffmpeg.Ffmsg{
+		VideoName: videoName,
+		ImageName: imageName,
+	}
+	// user := usersLoginInfo[token]
+	// finalName := fmt.Sprintf("%d_%s", user.Id, filename)
+	// saveFile := filepath.Join("./public/", finalName)
+	// if err := c.SaveUploadedFile(data, saveFile); err != nil {
+	// 	c.JSON(http.StatusOK, Response{
+	// 		StatusCode: 1,
+	// 		StatusMsg:  err.Error(),
+	// 	})
+	// 	return
+	// }
 
 	c.JSON(http.StatusOK, Response{
 		StatusCode: 0,
-		StatusMsg:  finalName + " uploaded successfully",
+		StatusMsg:  "uploaded successfully",
 	})
 }
 

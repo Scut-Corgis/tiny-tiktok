@@ -76,10 +76,12 @@ func Ffmpeg(videoName, imageName string) error {
 
 // openssl 默认为60s断开连接， 因此设置10s一次心跳
 func keepalive() {
-	var err error
-	for err == nil {
-		_, err = ClientSSH.NewSession()
+	for {
+		s, err := ClientSSH.NewSession()
+		if err != nil {
+			log.Println("ssh连接断开！ err : ", err)
+		}
 		time.Sleep(10 * time.Second)
+		s.Close()
 	}
-	log.Fatalln("ssh已经断开！")
 }

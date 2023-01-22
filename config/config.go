@@ -14,3 +14,8 @@ var Ftp_username = "hjg"
 var Ftp_password = "990921"
 
 const Ftp_max_concurrent_cnt = 20 //Ftp并发处理的文件上限
+
+// Url
+var Url_addr_port = "127.0.0.1:80"
+var Url_Play_prefix = "/videos/"
+var Url_Image_prefix = "/images/"
