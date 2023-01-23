@@ -51,7 +51,7 @@ func Register(c *gin.Context) {
 			Name:     username,
 			Password: password,
 		}
-		if dao.InsertUser(&newUser) == false {
+		if !dao.InsertUser(&newUser) {
 			log.Println("Insert Data Failed")
 		}
 		u, _ := dao.QueryUserByUsername(username)

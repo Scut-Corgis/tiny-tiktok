@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"mime/multipart"
 	"net/http"
@@ -45,9 +44,9 @@ func TestPublish(t *testing.T) {
 	fmt.Println(string(body))
 
 	token := jwt.GenerateToken("Corgis")
-	return
+
 	//投稿测试
-	url = "http://127.0.0.1:8080//douyin/publish/action/"
+	url = "http://127.0.0.1:8080/douyin/publish/action/"
 	method = "POST"
 
 	payload := &bytes.Buffer{}
@@ -59,8 +58,10 @@ func TestPublish(t *testing.T) {
 		log.Println("测试无法打开视频文件")
 	}
 	defer file.Close()
-	part1,
-		errFile1 := writer.CreateFormFile("data", filepath.Base(videoPath))
+	part1, errFile1 := writer.CreateFormFile("data", filepath.Base(videoPath))
+	if errFile1 != nil {
+		log.Fatalln("test文件名插入错误 : ", errFile1)
+	}
 	_, errFile1 = io.Copy(part1, file)
 	if errFile1 != nil {
 		fmt.Println(errFile1)
@@ -91,7 +92,7 @@ func TestPublish(t *testing.T) {
 	}
 	defer res.Body.Close()
 
-	body, err = ioutil.ReadAll(res.Body)
+	body, err = io.ReadAll(res.Body)
 	if err != nil {
 		fmt.Println(err)
 		return

@@ -33,7 +33,7 @@ func Feed(c *gin.Context) {
 	})
 }
 
-// Publish check token then save upload file to public directory
+// Publish save upload file to ftp server
 func Publish(c *gin.Context) {
 	username := c.GetString("username")
 	title := c.PostForm("title")
@@ -56,11 +56,11 @@ func Publish(c *gin.Context) {
 	pubilishTImeIntNano := timeToDB.UnixNano()
 	publishTimeStr := strconv.FormatInt(pubilishTImeIntNano, 10)
 	//	timeStr := time.Now().Format("2006-01-02 15:04:05")
-	videoName := username + "_" + publishTimeStr + ".mp4"
-	imageName := username + "_" + publishTimeStr + ".jpg"
+	videoName := username + "_" + publishTimeStr
+	imageName := username + "_" + publishTimeStr
 
 	videoFile, err := data.Open()
-	if err == nil {
+	if err != nil {
 		log.Fatalln("pulish意料之外的错误， data.Open()失败")
 	}
 	//ftp发送视频文件
@@ -72,16 +72,17 @@ func Publish(c *gin.Context) {
 	}
 	//插入数据库
 	video := &dao.Video{
-		AuthorId:   user.Id,
-		PlayUrl:    config.Url_addr_port + config.Url_Play_prefix + videoName,
-		CoverUrl:   config.Url_addr_port + config.Url_Play_prefix + imageName,
-		PulishTime: timeToDB,
-		Title:      title,
+		AuthorId:    user.Id,
+		PlayUrl:     config.Url_addr_port + config.Url_Play_prefix + videoName + ".mp4",
+		CoverUrl:    config.Url_addr_port + config.Url_Image_prefix + imageName + ".jpg",
+		PublishTime: timeToDB,
+		Title:       title,
 	}
 	err = dao.InsertVideosTable(video)
-	if err == nil {
+	if err != nil {
 		log.Println(username, "的视频，数据库插入失败")
 		c.JSON(http.StatusOK, Response{StatusCode: 1, StatusMsg: "视频数据库插入失败！"})
+		return
 	} else {
 		log.Println("视频数据库插入成功")
 	}
@@ -90,16 +91,6 @@ func Publish(c *gin.Context) {
 		VideoName: videoName,
 		ImageName: imageName,
 	}
-	// user := usersLoginInfo[token]
-	// finalName := fmt.Sprintf("%d_%s", user.Id, filename)
-	// saveFile := filepath.Join("./public/", finalName)
-	// if err := c.SaveUploadedFile(data, saveFile); err != nil {
-	// 	c.JSON(http.StatusOK, Response{
-	// 		StatusCode: 1,
-	// 		StatusMsg:  err.Error(),
-	// 	})
-	// 	return
-	// }
 
 	c.JSON(http.StatusOK, Response{
 		StatusCode: 0,

@@ -18,7 +18,7 @@ func GenerateToken(name string) string {
 	fmt.Printf("generate token: %v\n", name)
 	// Create the claims
 	claims := MyCustomClaims{
-		"name",
+		name,
 		jwt.RegisteredClaims{
 			// A usual scenario is to set the expiration time relative to the current time
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)),

@@ -6,11 +6,11 @@ import (
 )
 
 type Video struct {
-	AuthorId   int64
-	PlayUrl    string
-	CoverUrl   string
-	PulishTime time.Time
-	Title      string
+	AuthorId    int64
+	PlayUrl     string
+	CoverUrl    string
+	PublishTime time.Time
+	Title       string
 }
 
 func InsertVideosTable(video *Video) error {
