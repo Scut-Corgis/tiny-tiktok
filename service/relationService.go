@@ -20,9 +20,16 @@ func UnFollow(userId int64, followId int64) bool {
 
 /*
 获取用户关注列表
-#优化：这里遍历了整个user
 */
 func FollowList(userId int64) ([]dao.UserTable, error) {
 	return dao.QueryFollowsByUserId(userId)
+
+}
+
+/*
+获取用户粉丝列表
+*/
+func FollowerList(userId int64) ([]dao.UserTable, error) {
+	return dao.QueryFollowersByUserId(userId)
 
 }

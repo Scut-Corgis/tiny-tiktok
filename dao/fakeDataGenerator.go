@@ -1,10 +1,11 @@
 package dao
 
 import (
-	"github.com/brianvoe/gofakeit/v6"
 	"log"
 	"math/rand"
 	"time"
+
+	"github.com/brianvoe/gofakeit/v6"
 )
 
 func FakeUsers(num int) {

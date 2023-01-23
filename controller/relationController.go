@@ -5,7 +5,6 @@ import (
 	"strconv"
 
 	"github.com/Scut-Corgis/tiny-tiktok/dao"
-	"github.com/Scut-Corgis/tiny-tiktok/middleware/jwt"
 	"github.com/Scut-Corgis/tiny-tiktok/service"
 	"github.com/gin-gonic/gin"
 )
@@ -19,8 +18,7 @@ type UserListResponse struct {
 处理关注和取关接口
 */
 func RelationAction(c *gin.Context) {
-	// 若token含userid，获取用户可以省去查数据库操作，或使用redis减少对数据库的访问
-	jwt.AuthPost()
+	//#优化：若token含userid，获取用户可以省去查数据库操作，或使用redis减少对数据库的访问
 	username := c.GetString("username")
 	user, _ := dao.QueryUserByName(username)
 	if username != user.Name {
@@ -121,43 +119,41 @@ func FollowList(c *gin.Context) {
 处理获取当前用户的粉丝列表
 */
 func FollowerList(c *gin.Context) {
-	// userId, err := strconv.ParseInt(c.Query("user_id"), 10, 64)
-	// if err != nil {
-	// 	c.JSON(http.StatusOK, UserListResponse{
-	// 		Response: Response{
-	// 			StatusCode: -1,
-	// 			StatusMsg:  "用户id有误",
-	// 		},
-	// 		UserList: nil,
-	// 	})
-	// 	return
-	// }
-	// followList, err := service.FollowList(userId)
-	// if err != nil {
-	// 	c.JSON(http.StatusOK, UserListResponse{
-	// 		Response: Response{
-	// 			StatusCode: -1,
-	// 			StatusMsg:  "获取关注列表失败",
-	// 		},
-	// 		UserList: nil,
-	// 	})
-	// 	return
-	// }
+	userId, err := strconv.ParseInt(c.Query("user_id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusOK, UserListResponse{
+			Response: Response{
+				StatusCode: -1,
+				StatusMsg:  "用户id有误",
+			},
+			UserList: nil,
+		})
+		return
+	}
+	followerList, err := service.FollowerList(userId)
+	if err != nil {
+		c.JSON(http.StatusOK, UserListResponse{
+			Response: Response{
+				StatusCode: -1,
+				StatusMsg:  "获取关注列表失败",
+			},
+			UserList: nil,
+		})
+		return
+	}
 
-	// c.JSON(http.StatusOK, UserListResponse{
-	// 	Response: Response{
-	// 		StatusCode: 0,
-	// 	},
-	// 	UserList: followList,
-	// })
+	c.JSON(http.StatusOK, UserListResponse{
+		Response: Response{
+			StatusCode: 0,
+		},
+		UserList: followerList,
+	})
 }
 
-// FriendList all users have same friend list
+/*
+处理获取好友列表接口
+*/
 func FriendList(c *gin.Context) {
-	// c.JSON(http.StatusOK, UserListResponse{
-	// 	Response: Response{
-	// 		StatusCode: 0,
-	// 	},
-	// 	UserList: []User{DemoUser},
-	// })
+
+	FollowerList(c)
 }
