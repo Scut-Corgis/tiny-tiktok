@@ -4,7 +4,7 @@ import (
 	"log"
 )
 
-type FollowTable struct {
+type Follow struct {
 	UserId     int64 `gorm:"column:user_id"`
 	FollowerId int64 `gorm:"column:follower_id"`
 }
@@ -18,7 +18,7 @@ type UserTable struct {
 }
 
 func InsertFollow(userId int64, followId int64) bool {
-	follow := FollowTable{
+	follow := Follow{
 		UserId:     userId,
 		FollowerId: followId,
 	}
@@ -30,7 +30,7 @@ func InsertFollow(userId int64, followId int64) bool {
 }
 
 func DeleteFollow(userId int64, followId int64) bool {
-	follow := FollowTable{}
+	follow := Follow{}
 	if err := Db.Table("follows").Where("user_id = ? and follower_id = ?", userId, followId).Delete(&follow).Error; err != nil {
 		log.Println(err.Error())
 		return false

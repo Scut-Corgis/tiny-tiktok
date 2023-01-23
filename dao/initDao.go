@@ -33,7 +33,10 @@ func Init() {
 		log.Panicln("err:", err.Error())
 	}
 	log.Println("mysql has connected!")
-	// 生成虚拟数据
-	fakeUsers(10)
-	log.Println("fake users generate successfully!")
+	//生成虚拟数据
+	//FakeUsers(10)
+	//log.Println("fake users generate successfully!")
+	//
+	//FakeFollows(10)
+	//log.Println("fake follows generate successfully!")
 }

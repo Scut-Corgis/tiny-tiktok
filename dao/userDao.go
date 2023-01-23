@@ -39,7 +39,7 @@ func JudgeIsFollow(id int64, name string) bool { // 判断name用户是否关注
 	}
 	user2, _ := QueryUserByName(name)
 	var count int64
-	Db.Model(&FollowTable{}).Where("user_id = ? and follower_id = ?", user1.Id, user2.Id).Count(&count)
+	Db.Model(&Follow{}).Where("user_id = ? and follower_id = ?", user1.Id, user2.Id).Count(&count)
 	return count > 0
 }
 
@@ -50,8 +50,8 @@ func QueryUserTableById(id int64) (UserTable, error) {
 		log.Println(err.Error())
 		return userInfo, err
 	} else {
-		Db.Model(&FollowTable{}).Where("user_id = ?", id).Count(&userInfo.FollowerCount)   // 统计粉丝数量
-		Db.Model(&FollowTable{}).Where("follower_id = ?", id).Count(&userInfo.FollowCount) // 统计关注博主的数量
+		Db.Model(&Follow{}).Where("user_id = ?", id).Count(&userInfo.FollowerCount)   // 统计粉丝数量
+		Db.Model(&Follow{}).Where("follower_id = ?", id).Count(&userInfo.FollowCount) // 统计关注博主的数量
 		userInfo.Id = user.Id
 		userInfo.Name = user.Name
 		return userInfo, err
