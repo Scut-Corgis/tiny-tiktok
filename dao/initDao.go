@@ -22,7 +22,7 @@ func Init() {
 		},
 	)
 	var err error
-	dsn := "root:123456@tcp(127.0.0.1:3306)/tiktok?charset=utf8mb4&parseTime=True&loc=Local"
+	dsn := "root:12345678@tcp(127.0.0.1:3306)/tiktok?charset=utf8mb4&parseTime=True&loc=Local"
 	//想要正确的处理time.Time,需要带上 parseTime 参数，
 	//要支持完整的UTF-8编码，需要将 charset=utf8 更改为 charset=utf8mb4
 	Db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{
@@ -33,4 +33,7 @@ func Init() {
 		log.Panicln("err:", err.Error())
 	}
 	log.Println("mysql has connected!")
+	// 生成虚拟数据
+	fakeUsers(10)
+	log.Println("fake users generate successfully!")
 }
