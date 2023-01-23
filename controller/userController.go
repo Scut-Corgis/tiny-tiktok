@@ -45,13 +45,11 @@ func Register(c *gin.Context) {
 		c.JSON(http.StatusOK, UserLoginResponse{
 			Response: Response{StatusCode: 1, StatusMsg: "User already exist"},
 			UserId:   user.Id,
-			Token:    user.Token,
 		})
 	} else {
 		newUser := dao.User{
 			Username: username,
 			Password: password,
-			Token:    token,
 		}
 		if dao.InsertUser(&newUser) == false {
 			log.Println("Insert Data Failed")
@@ -82,7 +80,7 @@ func Login(c *gin.Context) {
 			c.JSON(http.StatusOK, UserLoginResponse{
 				Response: Response{StatusCode: 0, StatusMsg: "Login success"},
 				UserId:   user.Id,
-				Token:    user.Token,
+				Token:    jwt.GenerateToken(user.Username),
 			})
 		} else {
 			c.JSON(http.StatusOK, UserLoginResponse{
@@ -105,9 +103,9 @@ func UserInfo(c *gin.Context) {
 			User: User{
 				user.Id,
 				user.Username,
-				user.FollowCount,
-				user.FollowerCount,
-				user.IsFollow,
+				0,
+				0,
+				false,
 			},
 		})
 	}

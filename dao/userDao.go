@@ -4,13 +4,9 @@ import "log"
 
 // User 定义用户表结构
 type User struct {
-	Id            int64
-	Username      string
-	Password      string
-	Token         string
-	FollowCount   int64
-	FollowerCount int64
-	IsFollow      bool
+	Id       int64
+	Username string
+	Password string
 }
 
 // QueryUserByUsername 根据用户名查询用户
