@@ -28,8 +28,7 @@ func Init() {
 	Db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{
 		Logger: newLogger,
 	})
-	Db.Migrator().DropTable(&User{})
-	Db.Migrator().CreateTable(&User{})
+
 	if err != nil {
 		log.Panicln("err:", err.Error())
 	}

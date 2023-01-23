@@ -8,6 +8,7 @@ import (
 )
 
 func main() {
+	gin.SetMode("release") //关闭gin debug日志信息，没什么用
 	r := gin.Default()
 
 	//	go service.RunMessageServer() 消息聊天处理协程
