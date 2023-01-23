@@ -40,7 +40,7 @@ func Register(c *gin.Context) {
 	password := c.Query("password")
 	token := jwt.GenerateToken(username)
 	// token := username + password
-	user, _ := dao.QueryUserByUsername(username)
+	user, _ := dao.QueryUserByName(username)
 	if username == user.Name {
 		c.JSON(http.StatusOK, UserLoginResponse{
 			Response: Response{StatusCode: 1, StatusMsg: "User already exist"},
@@ -54,7 +54,7 @@ func Register(c *gin.Context) {
 		if !dao.InsertUser(&newUser) {
 			log.Println("Insert Data Failed")
 		}
-		u, _ := dao.QueryUserByUsername(username)
+		u, _ := dao.QueryUserByName(username)
 		log.Println("注册返回的 id", u.Id)
 		c.JSON(http.StatusOK, UserLoginResponse{
 			Response: Response{StatusCode: 0, StatusMsg: "Register success"},
@@ -69,7 +69,7 @@ func Login(c *gin.Context) {
 	username := c.Query("username")
 	password := c.Query("password")
 
-	user, err := dao.QueryUserByUsername(username)
+	user, err := dao.QueryUserByName(username)
 
 	if err != nil {
 		c.JSON(http.StatusOK, UserLoginResponse{
@@ -92,8 +92,9 @@ func Login(c *gin.Context) {
 
 func UserInfo(c *gin.Context) {
 	user_id := c.Query("user_id")
+	currentName := c.GetString("username")
 	id, _ := strconv.ParseInt(user_id, 10, 64)
-	if user, err := dao.QueryUserById(id); err != nil {
+	if user, err := dao.QueryUserTableById(id); err != nil {
 		c.JSON(http.StatusOK, UserResponse{
 			Response: Response{StatusCode: 1, StatusMsg: "User doesn't exist"},
 		})
@@ -103,9 +104,9 @@ func UserInfo(c *gin.Context) {
 			User: User{
 				user.Id,
 				user.Name,
-				0,
-				0,
-				false,
+				user.FollowCount,
+				user.FollowerCount,
+				dao.JudgeIsFollow(id, currentName),
 			},
 		})
 	}

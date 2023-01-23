@@ -22,7 +22,7 @@ func RelationAction(c *gin.Context) {
 	// 若token含userid，获取用户可以省去查数据库操作，或使用redis减少对数据库的访问
 	jwt.AuthPost()
 	username := c.GetString("username")
-	user, _ := dao.QueryUserByUsername(username)
+	user, _ := dao.QueryUserByName(username)
 	if username != user.Name {
 		c.JSON(http.StatusOK, Response{
 			StatusCode: -1,

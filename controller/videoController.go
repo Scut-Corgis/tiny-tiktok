@@ -38,7 +38,7 @@ func Publish(c *gin.Context) {
 	username := c.GetString("username")
 	title := c.PostForm("title")
 
-	user, err := dao.QueryUserByUsername(username)
+	user, err := dao.QueryUserByName(username)
 	if err != nil {
 		c.JSON(http.StatusOK, Response{StatusCode: 1, StatusMsg: "User doesn't exist"})
 		return
