@@ -22,17 +22,14 @@ func Init() {
 		},
 	)
 	var err error
-<<<<<<< Updated upstream
-	dsn := "root:1234@tcp(127.0.0.1:3306)/tiktok?charset=utf8mb4&parseTime=True&loc=Local"
-=======
 	dsn := "root:123456@tcp(127.0.0.1:3306)/tiktok?charset=utf8mb4&parseTime=True&loc=Local"
->>>>>>> Stashed changes
 	//想要正确的处理time.Time,需要带上 parseTime 参数，
 	//要支持完整的UTF-8编码，需要将 charset=utf8 更改为 charset=utf8mb4
 	Db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{
 		Logger: newLogger,
 	})
-	Db.AutoMigrate(&User{})
+	Db.Migrator().DropTable(&User{})
+	Db.Migrator().CreateTable(&User{})
 	if err != nil {
 		log.Panicln("err:", err.Error())
 	}
