@@ -5,14 +5,14 @@ import "log"
 // User 定义用户表结构
 type User struct {
 	Id       int64
-	Username string
+	Name     string
 	Password string
 }
 
 // QueryUserByUsername 根据用户名查询用户
 func QueryUserByUsername(name string) (User, error) {
 	user := User{}
-	if err := Db.Where("username = ?", name).First(&user).Error; err != nil {
+	if err := Db.Where("name = ?", name).First(&user).Error; err != nil {
 		log.Println(err.Error())
 		return user, err
 	}

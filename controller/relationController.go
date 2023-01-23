@@ -23,7 +23,7 @@ func RelationAction(c *gin.Context) {
 	jwt.AuthPost()
 	username := c.GetString("username")
 	user, _ := dao.QueryUserByUsername(username)
-	if username != user.Username {
+	if username != user.Name {
 		c.JSON(http.StatusOK, Response{
 			StatusCode: -1,
 			StatusMsg:  "token错误",

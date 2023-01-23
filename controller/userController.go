@@ -1,13 +1,12 @@
 package controller
 
 import (
-	"log"
-	"net/http"
-	"strconv"
-
 	"github.com/Scut-Corgis/tiny-tiktok/dao"
 	"github.com/Scut-Corgis/tiny-tiktok/middleware/jwt"
 	"github.com/gin-gonic/gin"
+	"log"
+	"net/http"
+	"strconv"
 )
 
 // usersLoginInfo use map to store user info, and key is username+password for demo
@@ -41,14 +40,14 @@ func Register(c *gin.Context) {
 	token := jwt.GenerateToken(username)
 	// token := username + password
 	user, _ := dao.QueryUserByUsername(username)
-	if username == user.Username {
+	if username == user.Name {
 		c.JSON(http.StatusOK, UserLoginResponse{
 			Response: Response{StatusCode: 1, StatusMsg: "User already exist"},
 			UserId:   user.Id,
 		})
 	} else {
 		newUser := dao.User{
-			Username: username,
+			Name:     username,
 			Password: password,
 		}
 		if dao.InsertUser(&newUser) == false {
@@ -80,7 +79,7 @@ func Login(c *gin.Context) {
 			c.JSON(http.StatusOK, UserLoginResponse{
 				Response: Response{StatusCode: 0, StatusMsg: "Login success"},
 				UserId:   user.Id,
-				Token:    jwt.GenerateToken(user.Username),
+				Token:    jwt.GenerateToken(user.Name),
 			})
 		} else {
 			c.JSON(http.StatusOK, UserLoginResponse{
@@ -102,7 +101,7 @@ func UserInfo(c *gin.Context) {
 			Response: Response{StatusCode: 0},
 			User: User{
 				user.Id,
-				user.Username,
+				user.Name,
 				0,
 				0,
 				false,
