@@ -102,3 +102,10 @@ func JudgeIsFavorite(userid int64, videoId int64) bool { // 判断userid是否�
 	Db.Model(&Like{}).Where("user_id = ? and video_id = ?", userid, videoId).Count(&count)
 	return count > 0
 }
+
+// 判断videoId的视频是否存在
+func JudgeVideoIsExist(videoId int64) bool {
+	var count int64
+	Db.Model(&Video{}).Where(map[string]interface{}{"id": videoId}).Count(&count)
+	return count > 0
+}
