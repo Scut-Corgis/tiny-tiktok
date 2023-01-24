@@ -6,6 +6,7 @@ import (
 )
 
 type Video struct {
+	Id          int64
 	AuthorId    int64
 	PlayUrl     string
 	CoverUrl    string
