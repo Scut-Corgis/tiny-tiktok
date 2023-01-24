@@ -1,17 +1,29 @@
 package dao
 
 import (
+	"bytes"
 	"log"
 	"math/rand"
+	"os/exec"
 	"time"
 
 	"github.com/brianvoe/gofakeit/v6"
 )
 
+func RebuildTable() bool {
+	cmd := exec.Command("sh", "/Users/zaizai/Projects/GolandProjects/tiny-tiktok/config/rebuildTable.sh")
+	var stderr bytes.Buffer
+	cmd.Stderr = &stderr
+	err := cmd.Run()
+	if err != nil {
+		log.Println(err, stderr.String())
+		return false
+	}
+	return true
+}
+
 func FakeUsers(num int) {
 	gofakeit.Seed(0)
-	Db.Migrator().DropTable(&User{})
-	Db.Migrator().CreateTable(&User{})
 	for i := 0; i < num; i++ {
 		user := User{}
 		user.Name = gofakeit.Username()
@@ -23,22 +35,15 @@ func FakeUsers(num int) {
 
 func FakeFollows(num int) {
 	rand.Seed(time.Now().Unix())
-	Db.Migrator().DropTable(&Follow{})
-	err := Db.Migrator().CreateTable(&Follow{})
-	if err != nil {
-		log.Println(err.Error())
-	}
 	for i := 0; i < num; i++ {
-		//follow := FollowTable{}
 		var count int64
 		Db.Model(&User{}).Count(&count)
-		// fmt.Println(count)
 		var a, b int64
 		a = rand.Int63n(count)
 		b = rand.Int63n(count)
 		for a == b {
 			b = rand.Int63n(count)
 		}
-		InsertFollow(a+1, b+1)
+		InsertFollow(a+1001, b+1001)
 	}
 }
