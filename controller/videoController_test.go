@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/Scut-Corgis/tiny-tiktok/dao"
 	"github.com/Scut-Corgis/tiny-tiktok/middleware/jwt"
 )
 
@@ -45,6 +46,15 @@ func TestPublish(t *testing.T) {
 
 	token := jwt.GenerateToken("Corgis")
 
+	//UserTable测试
+	dao.Init()
+	user, err := dao.QueryUserByName("Corgis")
+	userTable, err := dao.QueryUserTableById(user.Id)
+	if err != nil {
+		t.Error("UserTable失败")
+	}
+	fmt.Printf("%v", userTable)
+	return
 	//投稿测试
 	url = "http://127.0.0.1:8080/douyin/publish/action/"
 	method = "POST"

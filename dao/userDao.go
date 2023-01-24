@@ -66,3 +66,9 @@ func InsertUser(user *User) bool {
 	}
 	return true
 }
+
+func JudgeIsFollowById(id1 int64, id2 int64) bool { // 判断用户id1是否关注id2用户
+	var count int64
+	Db.Model(&Follow{}).Where("user_id = ? and follower_id = ?", id2, id1).Count(&count)
+	return count > 0
+}

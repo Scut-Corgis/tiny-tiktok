@@ -3,6 +3,7 @@ module github.com/Scut-Corgis/tiny-tiktok
 go 1.19
 
 require (
+	github.com/brianvoe/gofakeit/v6 v6.20.1
 	github.com/gin-gonic/gin v1.8.2
 	github.com/golang-jwt/jwt/v4 v4.4.3
 	github.com/jlaffaye/ftp v0.1.0
@@ -12,7 +13,6 @@ require (
 )
 
 require (
-	github.com/brianvoe/gofakeit/v6 v6.20.1 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/go-playground/locales v0.14.0 // indirect
 	github.com/go-playground/universal-translator v0.18.0 // indirect

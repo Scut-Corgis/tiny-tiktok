@@ -5,13 +5,6 @@ import (
 	"log"
 )
 
-// 点赞表结构
-type Like struct {
-	Id      int64
-	UserId  int64
-	VideoId int64
-}
-
 // 获取点赞表名
 func (Like) TableName() string {
 	return "likes"
