@@ -68,7 +68,21 @@ https://www.bilibili.com/video/BV1rz4y1R7DA/?spm_id_from=333.337.search-card.all
 
 ffmpeg : `sudo snap install ffmpeg`
 
-> 搭建环境是否成功测试 : cd到ffmpeg文件夹下 `go test`
+wpy云服务器上：`sudo apt-get install ffmpeg`
+
+> ssh和ffmpeg 配置好之后检查是否成功
+>
+> 搭建环境是否成功测试 : 
+>
+> 1.修改config.go文件下变量Ssh_addr_port、Ssh_username、Ssh_password为自己服务器对应的参数
+>
+> 2.创建config.go文件下变量Ftp_video_path、Ftp_image_path对应的路径（可自己定义）
+>
+> 3.将data目录下的bear.mp4文件存放在config.go文件的Ftp_video_path变量记录的路径下
+>
+> 4.cd到ffmpeg文件夹下 `go test`
+>
+> 5.Ftp_image_path路径下出现bear.jpg和bear2.jpg文件 则配置成功
 
 openssl采用口令方式登陆，服务器提供公钥给客户端，客户端用公钥加密自己的密码后发回，服务器用私钥解密验证
 
@@ -80,6 +94,7 @@ openssl默认60s断开连接，因此需要加入应用层客户端心跳。
 ### ftp服务器
 
 搭建：
+
 ``` sh
 sudo apt install vsftpd
 
@@ -93,6 +108,7 @@ vim /etc/vsftpd/vsftpd.conf
 ```
 
 增加或修改以下配置项
+
 ``` sh
 # Example config file /etc/vsftpd.conf
 
@@ -112,13 +128,31 @@ idle_session_timeout=0
 
 `systemctl restart vsftpd.services`
 
+用户添加[Ubuntu 16.04下vsftpd 安装配置实例（ftp服务器搭建）](https://blog.csdn.net/hanyuyang19940104/article/details/80421632?spm=1001.2101.3001.6650.1&utm_medium=distribute.pc_relevant.none-task-blog-2~default~CTRLIST~Rate-1-80421632-blog-79304076.pc_relevant_multi_platform_whitelistv3&depth_1-utm_source=distribute.pc_relevant.none-task-blog-2~default~CTRLIST~Rate-1-80421632-blog-79304076.pc_relevant_multi_platform_whitelistv3&utm_relevant_index=2)
+
+```sh
+//添加用户
+sudo useradd -d /home/admin/ftpdata -s /bin/bash wpy
+//配置密码
+sudo passwd wpy
+
+//记得给ftpdata下的所有文件夹都符权限 不然会出现553 Could not create file.错误
+
+```
+
 > 搭建环境是否成功测试 : cd到ftp文件夹下 `go test`
 
 ### Nginx - http服务
 
 Nginx安装 : ` https://b23.tv/vbrNbjn`
 
+```sh
+//云服务器需要打开80端口
+sudo ufw allow 80
+```
+
 修改配置
+
 ``` sh
 sudo vim /usr/local/nginx/conf/nginx.conf
 
@@ -139,3 +173,7 @@ sudo vim /usr/local/nginx/conf/nginx.conf
 ./nginx -s reload
 
 ```
+
+./config 出错的时候：[Ubuntu16下PCRE库的安装与验证](https://blog.csdn.net/qq_40965507/article/details/117620466)
+
+命令行安装查找nginx可执行文件看这个：[ubuntu安装nginx](https://blog.csdn.net/qq_41985134/article/details/117991218)
