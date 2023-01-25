@@ -23,7 +23,7 @@ func RebuildTable() bool {
 }
 
 func FakeUsers(num int) {
-	gofakeit.Seed(0)
+	gofakeit.Seed(time.Now().Unix())
 	for i := 0; i < num; i++ {
 		user := User{}
 		user.Name = gofakeit.Username()
@@ -45,5 +45,36 @@ func FakeFollows(num int) {
 			b = rand.Int63n(count)
 		}
 		InsertFollow(a+1001, b+1001)
+	}
+}
+
+func FakeVideos(num int) {
+	gofakeit.Seed(time.Now().Unix())
+	rand.Seed(time.Now().Unix())
+	for i := 0; i < num; i++ {
+		var count int64
+		Db.Model(&User{}).Count(&count)
+		video := Video{}
+		video.AuthorId = rand.Int63n(count) + 1000
+		video.PlayUrl = gofakeit.URL()
+		video.CoverUrl = gofakeit.URL()
+		video.PublishTime = gofakeit.Date()
+		InsertVideosTable(&video)
+	}
+}
+
+func FakeComments(num int) {
+	gofakeit.Seed(time.Now().Unix())
+	rand.Seed(time.Now().Unix())
+	for i := 0; i < num; i++ {
+		var userCount, videoCount int64
+		Db.Model(&User{}).Count(&userCount)
+		Db.Model(&Video{}).Count(&videoCount)
+		comment := Comment{}
+		comment.UserId = rand.Int63n(userCount) + 1000
+		comment.VideoId = rand.Int63n(videoCount) + 1000
+		comment.CommentText = gofakeit.Sentence(20)
+		comment.CreateDate = gofakeit.Date()
+		InsertComment(&comment)
 	}
 }
