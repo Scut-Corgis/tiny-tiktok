@@ -21,10 +21,11 @@ type Video struct {
 }
 
 type Comment struct {
-	Id         int64  `json:"id,omitempty"`
-	User       User   `json:"user"`
-	Content    string `json:"content,omitempty"`
-	CreateDate string `json:"create_date,omitempty"`
+	Id          int64     `gorm:"column:id"`
+	UserId      int64     `gorm:"column:user_id"`
+	VideoId     int64     `gorm:"column:video_id"`
+	CommentText string    `gorm:"column:comment_text"`
+	CreateDate  time.Time `gorm:"column:create_date"`
 }
 
 type User struct {
