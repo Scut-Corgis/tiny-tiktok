@@ -4,7 +4,7 @@
 
 无任何优化
 
-# 目录：
+### 项目架构：
 config为配置文件目录, 表结构在里面
 
 controller ：控制器层，只写客户端调用接口回调函数的基本逻辑，核心逻辑实现都在service实现
@@ -12,7 +12,10 @@ controller ：控制器层，只写客户端调用接口回调函数的基本逻
 dao： 为数据库操作的封装，与数据库的底层操作的封装都在里面实现
 
 service层 ：业务核心逻辑
-# 数据库：
+### 数据库：
+
+#### 数据库简介
+
 * 目前表结构只有一级索引，无字段索引
 * 自增初始值都为1000，随便取的
 
@@ -28,7 +31,26 @@ service层 ：业务核心逻辑
 
 CRUD接口说明 : https://gorm.cn/zh_CN/docs/connecting_to_the_database.html
 
-## jwt-auth:
+#### 虚拟数据生成
+
+```txt
+└─ fakeDataGenerator.go
+    ├─ RebuildTable  // 重建数据库
+    ├─ FakeUsers  // 生成 user 数据
+    ├─ FakeFollows  // 生成 follow 数据
+    ├─ FakeVideos  // 生成 video 数据
+    ├─ FakeComments  // 生成 comment 数据
+————————————————
+```
+
+可以在 initDao 里调用 `RebuildTable` 函数重建数据库
+
+```go
+// 需要修改一下代码里的 tableStruct.sql 路径
+cmd := exec.Command("sh", "绝对路径")
+```
+
+### jwt-auth:
 
 > 位于`middleware/jwt`路径下
 
@@ -44,9 +66,9 @@ token生成和确认， 目前token中只放置了username
 
 * jwt可选字段中，只使用了过期时间为24h，其他如发行方、接收方字段均未使用 
 
-## videoController
+### videoController
 
-### pubish - 发布视频
+#### pubish - 发布视频
 
 文件服务器 ： 
 1. 配置ftp服务器，用于service服务器发送视频文件
@@ -61,7 +83,7 @@ token生成和确认， 目前token中只放置了username
 
 > ffmpeg命令于文件服务器中执行，因此nginx ftp ffmpeg均在一台服务器上
 
-### ssh服务器
+#### ssh服务器
 
 搭建：
 https://www.bilibili.com/video/BV1rz4y1R7DA/?spm_id_from=333.337.search-card.all.click&vd_source=1e3090bc7a88f02cda5247bc11cd548d
@@ -91,7 +113,7 @@ openssl默认60s断开连接，因此需要加入应用层客户端心跳。
 当前实现客户端方未验证服务器公钥是否正确，若实际生产环境需得到服务器公钥到配置文件中，防止中间人截获并伪装服务器
 
 
-### ftp服务器
+#### ftp服务器
 
 搭建：
 
@@ -142,7 +164,7 @@ sudo passwd wpy
 
 > 搭建环境是否成功测试 : cd到ftp文件夹下 `go test`
 
-### Nginx - http服务
+#### Nginx - http服务
 
 Nginx安装 : ` https://b23.tv/vbrNbjn`
 

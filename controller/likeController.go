@@ -14,9 +14,9 @@ type likeResponse struct {
 	StatusMsg  string `json:"status_msg,omitempty"`
 }
 type GetLikeListResponse struct {
-	StatusCode string          `json:"status_code"` // 状态码，0-成功，其他值-失败
-	StatusMsg  *string         `json:"status_msg"`  // 返回状态描述
-	VideoList  []service.Video `json:"video_list"`  // 用户点赞视频列表
+	StatusCode string            `json:"status_code"` // 状态码，0-成功，其他值-失败
+	StatusMsg  *string           `json:"status_msg"`  // 返回状态描述
+	VideoList  []dao.VideoDetail `json:"video_list"`  // 用户点赞视频列表
 }
 
 // 点赞和取消点赞功能
@@ -24,7 +24,7 @@ func FavoriteAction(c *gin.Context) {
 	username := c.GetString("username")
 	user, err := dao.QueryUserByName(username)
 	if err != nil {
-		c.JSON(http.StatusOK, Response{StatusCode: 1, StatusMsg: "请登录后点赞！"})
+		c.JSON(http.StatusOK, Response{StatusCode: 1, StatusMsg: "查询用户出错"})
 		return
 	}
 
@@ -33,6 +33,11 @@ func FavoriteAction(c *gin.Context) {
 	videoId, _ := strconv.ParseInt(strVideoId, 10, 64)
 	strActionType := c.Query("action_type")
 	actionType, _ := strconv.ParseInt(strActionType, 10, 8)
+
+	if !dao.JudgeVideoIsExist(videoId) {
+		c.JSON(http.StatusOK, likeResponse{StatusCode: 1, StatusMsg: "视频不存在！"})
+		return
+	}
 
 	if actionType == 1 {
 		err := service.Like(userId, videoId)
@@ -65,7 +70,7 @@ func FavoriteList(c *gin.Context) {
 	ReturnVideos, err := service.GetLikeLists(UserId)
 	if err != nil {
 		c.JSON(http.StatusOK, GetLikeListResponse{
-			StatusCode: "0",
+			StatusCode: "1",
 			StatusMsg:  &strfail,
 			VideoList:  nil,
 		})
