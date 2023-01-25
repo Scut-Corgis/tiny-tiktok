@@ -45,6 +45,36 @@ func AuthGet() gin.HandlerFunc {
 	}
 }
 
+func AuthGetWithoutLogin() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		tokenString := c.Query("token")
+		if len(tokenString) == 0 {
+			c.Set("username", "")
+			c.Next()
+			return
+		}
+		token, err := jwt.ParseWithClaims(tokenString, &MyCustomClaims{}, func(token *jwt.Token) (interface{}, error) {
+			return []byte(mySigningKey), nil
+		})
+
+		if err == nil {
+			if claims, ok := token.Claims.(*MyCustomClaims); ok && token.Valid {
+				log.Println("Token right : ", claims.Name)
+				c.Set("username", claims.Name)
+				c.Next()
+				return
+			}
+		}
+		log.Println("token error!")
+		c.Abort()
+		c.JSON(http.StatusUnauthorized, Response{
+			StatusCode: -1,
+			StatusMsg:  "Token Error",
+		})
+
+	}
+}
+
 func AuthPost() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		tokenString := c.PostForm("token")

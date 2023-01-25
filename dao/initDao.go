@@ -39,10 +39,10 @@ func Init() {
 
 	//生成虚拟数据
 	//FakeUsers(10)
-	log.Println("fake users generate successfully!")
+	// log.Println("fake users generate successfully!")
 	//
 	//FakeFollows(10)
-	log.Println("fake follows generate successfully!")
+	// log.Println("fake follows generate successfully!")
 
 	////生成虚拟数据
 	//FakeUsers(10)

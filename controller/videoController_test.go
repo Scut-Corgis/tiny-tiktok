@@ -11,7 +11,6 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/Scut-Corgis/tiny-tiktok/dao"
 	"github.com/Scut-Corgis/tiny-tiktok/middleware/jwt"
 )
 
@@ -28,7 +27,6 @@ func TestPublish(t *testing.T) {
 		fmt.Println(err)
 		return
 	}
-	req.Header.Add("User-Agent", "Apifox/1.0.0 (https://www.apifox.cn)")
 
 	res, err := client.Do(req)
 	if err != nil {
@@ -46,15 +44,6 @@ func TestPublish(t *testing.T) {
 
 	token := jwt.GenerateToken("Corgis")
 
-	//UserTable测试
-	dao.Init()
-	user, err := dao.QueryUserByName("Corgis")
-	userTable, err := dao.QueryUserTableById(user.Id)
-	if err != nil {
-		t.Error("UserTable失败")
-	}
-	fmt.Printf("%v", userTable)
-	return
 	//投稿测试
 	url = "http://127.0.0.1:8080/douyin/publish/action/"
 	method = "POST"
@@ -109,4 +98,29 @@ func TestPublish(t *testing.T) {
 	}
 	fmt.Println(string(body))
 
+	//feed流测试
+	url = "http://127.0.0.1:8080/douyin/feed/"
+	method = "GET"
+
+	client = &http.Client{}
+	req, err = http.NewRequest(method, url, nil)
+
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	res, err = client.Do(req)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	defer res.Body.Close()
+
+	body, err = io.ReadAll(res.Body)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Println(string(body))
 }

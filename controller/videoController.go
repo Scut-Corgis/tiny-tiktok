@@ -2,6 +2,7 @@ package controller
 
 import (
 	"log"
+	"math"
 	"net/http"
 	"strconv"
 	"time"
@@ -26,10 +27,52 @@ type VideoListResponse struct {
 
 // Feed same demo video list for every request
 func Feed(c *gin.Context) {
+	username := c.GetString("username")
+	var queryUserId int64
+	if username == "" {
+		queryUserId = -1
+	} else {
+		queryUser, _ := dao.QueryUserByName(username)
+		queryUserId = queryUser.Id
+	}
+
+	latestTimeStr := c.Query("latest_time")
+	if latestTimeStr == "" {
+		latestTimeStr = strconv.FormatInt(time.Now().Unix(), 10)
+	}
+	latestTimeInt, err := strconv.ParseInt(latestTimeStr, 10, 64)
+	if err != nil {
+		log.Fatalln("timeStr 转 timeInt 出现了意料之外的错误")
+	}
+	latestTime := time.Unix(latestTimeInt, 0)
+	videoIdList := dao.GetMost30videosIdList(latestTime)
+
+	var videoList []Video = make([]Video, 0, len(videoIdList))
+	var nextTimeInt int64 = math.MaxInt64
+
+	for _, videoId := range videoIdList {
+		videoDetail, publishTime := dao.QueryVideoDetailByVideoId(videoId, queryUserId)
+		publishTimeInt := publishTime.Unix()
+		if publishTimeInt < nextTimeInt {
+			nextTimeInt = publishTimeInt
+		}
+		video := Video{
+			Id:            videoDetail.Id,
+			Author:        User(videoDetail.Author),
+			PlayUrl:       videoDetail.PlayUrl,
+			CoverUrl:      videoDetail.CoverUrl,
+			FavoriteCount: videoDetail.FavoriteCount,
+			CommentCount:  videoDetail.CommentCount,
+			IsFavorite:    videoDetail.IsFavorite,
+			Title:         videoDetail.Title,
+		}
+		videoList = append(videoList, video)
+	}
+
 	c.JSON(http.StatusOK, FeedResponse{
 		Response:  Response{StatusCode: 0},
-		VideoList: DemoVideos,
-		NextTime:  time.Now().Unix(),
+		VideoList: videoList,
+		NextTime:  nextTimeInt,
 	})
 }
 
@@ -100,10 +143,36 @@ func Publish(c *gin.Context) {
 
 // PublishList all users have same publish video list
 func PublishList(c *gin.Context) {
+	username := c.GetString("username")
+	queryUser, _ := dao.QueryUserByName(username)
+	queryUserId := queryUser.Id
+	userIdStr := c.Query("user_id")
+	authorId, err := strconv.ParseInt(userIdStr, 10, 64)
+	if err != nil {
+		log.Fatalln("strconv.ParseInt(userIdStr, 10, 64) 失败")
+	}
+	var videoList []Video = make([]Video, 0)
+	videoIdList := dao.GetVideoIdListByUserId(authorId, queryUserId)
+
+	for _, videoId := range videoIdList {
+		videoDetail, _ := dao.QueryVideoDetailByVideoId(videoId, queryUserId)
+		video := Video{
+			Id:            videoDetail.Id,
+			Author:        User(videoDetail.Author),
+			PlayUrl:       videoDetail.PlayUrl,
+			CoverUrl:      videoDetail.CoverUrl,
+			FavoriteCount: videoDetail.FavoriteCount,
+			CommentCount:  videoDetail.CommentCount,
+			IsFavorite:    videoDetail.IsFavorite,
+			Title:         videoDetail.Title,
+		}
+		videoList = append(videoList, video)
+	}
+
 	c.JSON(http.StatusOK, VideoListResponse{
 		Response: Response{
 			StatusCode: 0,
 		},
-		VideoList: DemoVideos,
+		VideoList: videoList,
 	})
 }
