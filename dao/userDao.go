@@ -43,8 +43,8 @@ func JudgeIsFollow(id int64, name string) bool { // 判断name用户是否关注
 	return count > 0
 }
 
-func QueryUserTableById(id int64) (UserTable, error) {
-	userInfo := UserTable{}
+func QueryUserRespById(id int64) (UserResp, error) {
+	userInfo := UserResp{}
 	user, err := QueryUserById(id)
 	if err != nil {
 		log.Println(err.Error())

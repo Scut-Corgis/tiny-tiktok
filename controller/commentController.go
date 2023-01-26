@@ -1,11 +1,12 @@
 package controller
 
 import (
-	"github.com/Scut-Corgis/tiny-tiktok/dao"
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/Scut-Corgis/tiny-tiktok/dao"
+	"github.com/gin-gonic/gin"
 )
 
 type CommentListResponse struct {
@@ -35,7 +36,7 @@ func CommentAction(c *gin.Context) {
 	}
 	if actionType == "1" {
 		text := c.Query("comment_text")
-		user_info, _ := dao.QueryUserTableById(user.Id)
+		user_info, _ := dao.QueryUserRespById(user.Id)
 		t := time.Now()
 		comment := dao.Comment{
 			UserId:      user.Id,
@@ -82,7 +83,7 @@ func CommentList(c *gin.Context) {
 	} else {
 		var commonList []CommentInfo
 		for _, comment := range comments {
-			user, _ := dao.QueryUserTableById(comment.UserId)
+			user, _ := dao.QueryUserRespById(comment.UserId)
 			commonList = append(commonList, CommentInfo{
 				comment.Id,
 				User{
