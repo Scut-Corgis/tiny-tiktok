@@ -62,5 +62,16 @@ CREATE TABLE `videos` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1000 DEFAULT CHARSET=utf8 COMMENT='\r\n视频表';
 
+-- ----------------------------
+-- Table structure for messages
+-- ----------------------------
+DROP TABLE IF EXISTS `messages`;
+CREATE TABLE `messages` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '消息id，自增主键',
+	`message_key` varchar(255) NOT NULL COMMENT '消息key',
+  `content` varchar(255) NOT NULL COMMENT '消息内容',
+  `create_time` datetime NOT NULL COMMENT '消息发送时间',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1000 DEFAULT CHARSET=utf8 COMMENT='消息表';
 
 SET FOREIGN_KEY_CHECKS = 1;
