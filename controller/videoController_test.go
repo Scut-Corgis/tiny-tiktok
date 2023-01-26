@@ -14,7 +14,6 @@ import (
 	"github.com/Scut-Corgis/tiny-tiktok/middleware/jwt"
 )
 
-// 该测试函数没用，gin端口为8080，而http包只能往80发
 func TestPublish(t *testing.T) {
 	//注册用户Corgis
 	url := "http://127.0.0.1:8080/douyin/user/register/?username=Corgis&password=123456"
@@ -51,7 +50,7 @@ func TestPublish(t *testing.T) {
 	payload := &bytes.Buffer{}
 	writer := multipart.NewWriter(payload)
 
-	videoPath := "/home/hjg/go/src/tiny-tiktok/data/heibao.mp4"
+	videoPath := "/home/admin/tiny-tiktok/data/heibao.mp4"
 	file, errFile1 := os.Open(videoPath)
 	if errFile1 != nil {
 		log.Println("测试无法打开视频文件")

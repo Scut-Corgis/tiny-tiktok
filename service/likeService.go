@@ -19,7 +19,7 @@ func Like(userId int64, videoId int64) error {
 		return nil
 	}
 	likeData := dao.Like{UserId: userId, VideoId: videoId}
-	return dao.InsertLike(likeData)
+	return dao.InsertLike(&likeData)
 }
 
 // 功能：取消点赞--在likes表中删除数据
@@ -41,6 +41,7 @@ func GetLikeLists(userId int64) ([]dao.VideoDetail, error) {
 	if err != nil {
 		fmt.Println("获取用户点赞视频Id出错！")
 	}
+	//fmt.Println(videoIdList)
 	for _, videoId := range videoIdList {
 		video := GetVideo(videoId, userId)
 		result = append(result, video)

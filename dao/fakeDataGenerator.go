@@ -11,7 +11,7 @@ import (
 )
 
 func RebuildTable() bool {
-	cmd := exec.Command("sh", "/Users/zaizai/Projects/GolandProjects/tiny-tiktok/config/rebuildTable.sh")
+	cmd := exec.Command("sh", "/home/admin/tiny-tiktok/config/rebuildTable.sh")
 	var stderr bytes.Buffer
 	cmd.Stderr = &stderr
 	err := cmd.Run()
@@ -63,6 +63,23 @@ func FakeVideos(num int) {
 	}
 }
 
+func FakeLikes(num int) {
+	rand.Seed(time.Now().Unix())
+	for i := 0; i < num; i++ {
+		var countUser int64
+		var countVideo int64
+		Db.Model(&User{}).Count(&countUser)
+		Db.Model(&Video{}).Count(&countVideo)
+		var a, b int64
+		a = rand.Int63n(countUser)
+		b = rand.Int63n(countVideo)
+		// for a == b {
+		// 	b = rand.Int63n(countVideo)
+		// }
+		like := Like{UserId: a + 1001, VideoId: b + 1001}
+		InsertLike(&like)
+	}
+}
 func FakeComments(num int) {
 	gofakeit.Seed(time.Now().Unix())
 	rand.Seed(time.Now().Unix())

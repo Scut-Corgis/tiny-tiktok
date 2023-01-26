@@ -7,19 +7,20 @@ import (
 
 func TestInsertLike(t *testing.T) {
 	Init()
-	err := InsertLike(Like{
-		UserId:  1,
-		VideoId: 123,
-	})
-	fmt.Printf("%v", err)
+	for i := 0; i < 1; i++ {
+		err := InsertLike(&Like{
+			UserId:  int64(1002),
+			VideoId: int64(1205 + i),
+		})
+		fmt.Printf("%v", err)
+	}
+
 }
 
 func TestDeleteLike(t *testing.T) {
 	Init()
-	InsertLike(Like{
-		UserId:  1,
-		VideoId: 123,
-	})
-	err := DeleteLike(1, 123)
-	fmt.Printf("%v", err)
+	for i := 4; i < 5; i++ {
+		err := DeleteLike(int64(1001), int64(1200+i))
+		fmt.Printf("%v", err)
+	}
 }

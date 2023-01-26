@@ -33,24 +33,27 @@ func Init() {
 		log.Panicln("err:", err.Error())
 	}
 	log.Println("mysql has connected!")
-	////重建数据库
-	//RebuildTable()
-	//log.Println("Rebuld database successfully!")
+
+	// //重建数据库
+	// RebuildTable()
+	// log.Println("Rebuld database successfully!")
 
 	//生成虚拟数据
-	//FakeUsers(10)
-	// log.Println("fake users generate successfully!")
-	//
-	//FakeFollows(10)
-	// log.Println("fake follows generate successfully!")
+	FakeUsers(10)
+	log.Println("fake users generate successfully!")
 
-	////生成虚拟数据
-	//FakeUsers(10)
-	//log.Println("fake users generate successfully!")
-	//FakeFollows(10)
-	//log.Println("fake follows generate successfully!")
-	//FakeVideos(10)
-	//log.Println("fake videos generate successfully!")
-	//FakeComments(10)
-	//log.Println("fake comments generate successfully!")
+	FakeFollows(10)
+	log.Println("fake follows generate successfully!")
+
+	//生成虚拟数据
+	FakeUsers(10)
+	log.Println("fake users generate successfully!")
+	FakeFollows(10)
+	log.Println("fake follows generate successfully!")
+	FakeVideos(10)
+	log.Println("fake videos generate successfully!")
+	FakeComments(10)
+	log.Println("fake comments generate successfully!")
+	// FakeLikes(10)
+	// log.Println("fake likes generate successfully!")
 }
