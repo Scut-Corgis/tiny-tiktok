@@ -97,6 +97,18 @@ func QueryVideoDetailByVideoId(videoId int64, queryUserId int64) (VideoDetail, t
 	return detailVideo, publishTIme
 }
 
+func GetMost30videosIdList(latestTime time.Time) []int64 {
+	var videoIdList []int64 = make([]int64, 0, 30)
+	Db.Raw("SELECT id FROM videos WHERE publish_time < ? ORDER BY publish_time desc LIMIT 30", latestTime).Scan(&videoIdList)
+	return videoIdList
+}
+
+func GetVideoIdListByUserId(authorId, queryUserId int64) []int64 {
+	var videoIdList []int64 = make([]int64, 0)
+	Db.Raw("SELECT id FROM videos WHERE author_id = ?", authorId).Scan(&videoIdList)
+	return videoIdList
+}
+
 func JudgeIsFavorite(userid int64, videoId int64) bool { // 判断userid是否点赞了VideoId
 	var count int64
 	Db.Model(&Like{}).Where("user_id = ? and video_id = ?", userid, videoId).Count(&count)
