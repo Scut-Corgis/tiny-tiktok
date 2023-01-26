@@ -7,7 +7,7 @@ var Ssh_password = "Wpy01104517"
 var Ssh_max_taskCnt = 100
 
 // ftp
-var Ftp_addr_port = "172.19.32.144:21"
+var Ftp_addr_port = "47.108.112.214:21"
 var Ftp_video_path = "/home/admin/ftpdata/videos/" //ftp服务器上的视频文件路径
 var Ftp_image_path = "/home/admin/ftpdata/images/" //图片路径
 var Ftp_username = "wpy"

@@ -161,7 +161,7 @@ sudo passwd wpy
 //记得给ftpdata下的所有文件夹都符权限 不然会出现553 Could not create file.错误
 
 ```
-
+ftp使用外网：[阿里云服务器使用FTP传输文件](https://blog.csdn.net/qq_38113006/article/details/105520125?spm=1001.2101.3001.6650.2&utm_medium=distribute.pc_relevant.none-task-blog-2~default~CTRLIST~Rate-2-105520125-blog-105364079.pc_relevant_3mothn_strategy_and_data_recovery&depth_1-utm_source=distribute.pc_relevant.none-task-blog-2~default~CTRLIST~Rate-2-105520125-blog-105364079.pc_relevant_3mothn_strategy_and_data_recovery&utm_relevant_index=3)
 > 搭建环境是否成功测试 : cd到ftp文件夹下 `go test`
 
 #### Nginx - http服务

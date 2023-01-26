@@ -1,6 +1,7 @@
 package ftp
 
 import (
+	"fmt"
 	"io"
 	"log"
 	"time"
@@ -19,11 +20,13 @@ func Init() {
 	for _, conn := range ftpConnList {
 		conn, err = ftp.Dial(config.Ftp_addr_port, ftp.DialWithTimeout(5*time.Second))
 		if err != nil {
+			fmt.Println("1")
 			log.Fatal(err)
 		}
 
 		err = conn.Login(config.Ftp_username, config.Ftp_password)
 		if err != nil {
+			fmt.Println("2")
 			log.Fatal(err)
 		}
 		FtpChan <- conn
