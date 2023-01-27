@@ -2,7 +2,6 @@ package controller
 
 import (
 	"log"
-	"math"
 	"net/http"
 	"strconv"
 	"time"
@@ -46,10 +45,9 @@ func Feed(c *gin.Context) {
 	}
 	latestTime := time.Unix(latestTimeInt, 0)
 	videoIdList := dao.GetMost30videosIdList(latestTime)
-
+	log.Println(videoIdList)
 	var videoList []Video = make([]Video, 0, len(videoIdList))
-	var nextTimeInt int64 = math.MaxInt64
-
+	var nextTimeInt int64 = time.Now().Unix()
 	for _, videoId := range videoIdList {
 		videoDetail, publishTime := dao.QueryVideoDetailByVideoId(videoId, queryUserId)
 		publishTimeInt := publishTime.Unix()
@@ -66,9 +64,10 @@ func Feed(c *gin.Context) {
 			IsFavorite:    videoDetail.IsFavorite,
 			Title:         videoDetail.Title,
 		}
+		log.Println(video)
 		videoList = append(videoList, video)
 	}
-
+	log.Println(videoList)
 	c.JSON(http.StatusOK, FeedResponse{
 		Response:  Response{StatusCode: 0},
 		VideoList: videoList,

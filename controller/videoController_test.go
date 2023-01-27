@@ -51,7 +51,7 @@ func TestPublish(t *testing.T) {
 	payload := &bytes.Buffer{}
 	writer := multipart.NewWriter(payload)
 
-	videoPath := "/home/hjg/go/src/tiny-tiktok/data/bear.mp4"
+	videoPath := "/home/admin/tiny-tiktok/data/bear.mp4"
 	file, errFile1 := os.Open(videoPath)
 	if errFile1 != nil {
 		log.Println("测试无法打开视频文件")

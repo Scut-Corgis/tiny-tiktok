@@ -195,7 +195,15 @@ sudo vim /usr/local/nginx/conf/nginx.conf
 ./nginx -s reload
 
 ```
+权限问题：需要给根目录读写和可执行文件的命令
+解法一：在nginx的nginx.conf 文件的顶部加上user root;指定操作的用户是root。
+解法二： chmod -R 777 html/test给路径设置权限
 
 ./config 出错的时候：[Ubuntu16下PCRE库的安装与验证](https://blog.csdn.net/qq_40965507/article/details/117620466)
 
 命令行安装查找nginx可执行文件看这个：[ubuntu安装nginx](https://blog.csdn.net/qq_41985134/article/details/117991218)
+
+### APP连接云服务器
+
+1. APP端口
+2. 打开8080端口 sudo ufw allow 8080
