@@ -22,7 +22,7 @@ func main() {
 
 // 加载项目依赖
 func initDependencies() {
-	log.SetFlags(log.Llongfile)
+	log.SetFlags(log.Lshortfile)
 	dao.Init()
 	ffmpeg.Init()
 	ftp.Init()

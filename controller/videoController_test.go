@@ -42,6 +42,7 @@ func TestPublish(t *testing.T) {
 	fmt.Println(string(body))
 
 	token := jwt.GenerateToken("Corgis")
+	fmt.Println("--------")
 
 	//投稿测试
 	url = "http://127.0.0.1:8080/douyin/publish/action/"
@@ -50,7 +51,7 @@ func TestPublish(t *testing.T) {
 	payload := &bytes.Buffer{}
 	writer := multipart.NewWriter(payload)
 
-	videoPath := "/home/admin/tiny-tiktok/data/heibao.mp4"
+	videoPath := "/home/hjg/go/src/tiny-tiktok/data/bear.mp4"
 	file, errFile1 := os.Open(videoPath)
 	if errFile1 != nil {
 		log.Println("测试无法打开视频文件")
@@ -80,7 +81,6 @@ func TestPublish(t *testing.T) {
 		fmt.Println(err)
 		return
 	}
-	req.Header.Add("User-Agent", "Apifox/1.0.0 (https://www.apifox.cn)")
 
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 	res, err = client.Do(req)
@@ -96,6 +96,7 @@ func TestPublish(t *testing.T) {
 		return
 	}
 	fmt.Println(string(body))
+	fmt.Println("--------")
 
 	//feed流测试
 	url = "http://127.0.0.1:8080/douyin/feed/"

@@ -17,7 +17,7 @@ type Video struct {
 // 和 controller/common.go的Video结构保持一致
 type VideoDetail struct {
 	Id            int64
-	Author        UserTable
+	Author        UserResp
 	PlayUrl       string
 	CoverUrl      string
 	FavoriteCount int64
@@ -73,9 +73,9 @@ func QueryVideoDetailByVideoId(videoId int64, queryUserId int64) (VideoDetail, t
 	if err != nil {
 		log.Fatalln("QueryVideoDetailByVideoId : 参数id可能有误")
 	}
-	userTable, err := QueryUserTableById(videoshort.AuthorId)
+	userTable, err := QueryUserRespById(videoshort.AuthorId)
 	if err != nil {
-		log.Fatalln("QueryUserTableById : 视频作者id可能有误")
+		log.Fatalln("QueryUserRespById : 视频作者id可能有误")
 	}
 	// 若queryUserId不为-1，则多一步查询是否关注了视频发布的作者
 	if queryUserId != -1 && JudgeIsFollowById(queryUserId, userTable.Id) {

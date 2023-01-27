@@ -94,7 +94,7 @@ func UserInfo(c *gin.Context) {
 	user_id := c.Query("user_id")
 	currentName := c.GetString("username")
 	id, _ := strconv.ParseInt(user_id, 10, 64)
-	if user, err := dao.QueryUserTableById(id); err != nil {
+	if user, err := dao.QueryUserRespById(id); err != nil {
 		c.JSON(http.StatusOK, UserResponse{
 			Response: Response{StatusCode: 1, StatusMsg: "User doesn't exist"},
 		})
