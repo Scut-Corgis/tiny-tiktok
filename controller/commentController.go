@@ -21,15 +21,15 @@ type CommentActionResponse struct {
 
 // CommentAction no practical effect, just check if token is valid
 func CommentAction(c *gin.Context) {
-	username := c.GetString("username")
-	currentName := c.GetString("username")
-	user, err := dao.QueryUserByName(username)
+	currentUsername := c.GetString("username")
+	user, err := dao.QueryUserByName(currentUsername)
 	if err != nil {
 		c.JSON(http.StatusOK, Response{StatusCode: 1, StatusMsg: "User doesn't exist"})
 		return
 	}
 	video_id := c.Query("video_id")
 	id, _ := strconv.ParseInt(video_id, 10, 64)
+	video, _ := dao.QueryVideoById(id)
 	actionType := c.Query("action_type")
 	if !dao.JudgeVideoIsExist(id) {
 		c.JSON(http.StatusOK, likeResponse{StatusCode: 1, StatusMsg: "Video doesn't exist"})
@@ -54,7 +54,7 @@ func CommentAction(c *gin.Context) {
 					user_info.Name,
 					user_info.FollowCount,
 					user_info.FollowerCount,
-					dao.JudgeIsFollow(id, currentName),
+					dao.JudgeIsFollowById(user.Id, video.AuthorId),
 				},
 				text,
 				time.Now(),
