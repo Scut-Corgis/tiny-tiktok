@@ -36,6 +36,7 @@ func Feed(c *gin.Context) {
 	}
 
 	latestTimeStr := c.Query("latest_time")
+
 	if latestTimeStr == "" {
 		latestTimeStr = strconv.FormatInt(time.Now().Unix(), 10)
 	}
@@ -43,9 +44,14 @@ func Feed(c *gin.Context) {
 	if err != nil {
 		log.Fatalln("timeStr 转 timeInt 出现了意料之外的错误")
 	}
+	//客户端可能会传一个超长的时间戳.
+	if latestTimeInt > time.Now().Unix() {
+		latestTimeInt = time.Now().Unix()
+	}
+
 	latestTime := time.Unix(latestTimeInt, 0)
 	videoIdList := dao.GetMost30videosIdList(latestTime)
-	log.Println(videoIdList)
+
 	var videoList []Video = make([]Video, 0, len(videoIdList))
 	var nextTimeInt int64 = time.Now().Unix()
 	for _, videoId := range videoIdList {
@@ -64,7 +70,6 @@ func Feed(c *gin.Context) {
 			IsFavorite:    videoDetail.IsFavorite,
 			Title:         videoDetail.Title,
 		}
-		log.Println(video)
 		videoList = append(videoList, video)
 	}
 	log.Println(videoList)
