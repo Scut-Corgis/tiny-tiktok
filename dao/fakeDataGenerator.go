@@ -11,7 +11,8 @@ import (
 )
 
 func RebuildTable() bool {
-	cmd := exec.Command("sh", "/home/admin/tiny-tiktok/config/rebuildTable.sh")
+	cmd := exec.Command("sh", "/Users/zaizai/Projects/GolandProjects/tiny-tiktok/config/rebuildTable.sh")
+	//cmd := exec.Command("sh", "/home/admin/tiny-tiktok/config/rebuildTable.sh")
 	var stderr bytes.Buffer
 	cmd.Stderr = &stderr
 	err := cmd.Run()
@@ -44,7 +45,7 @@ func FakeFollows(num int) {
 		for a == b {
 			b = rand.Int63n(count)
 		}
-		InsertFollow(a+1001, b+1001)
+		InsertFollow(a+1000, b+1000)
 	}
 }
 
@@ -59,6 +60,7 @@ func FakeVideos(num int) {
 		video.PlayUrl = gofakeit.URL()
 		video.CoverUrl = gofakeit.URL()
 		video.PublishTime = gofakeit.Date()
+		video.Title = gofakeit.Noun()
 		InsertVideosTable(&video)
 	}
 }
