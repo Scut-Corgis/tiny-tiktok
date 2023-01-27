@@ -115,8 +115,8 @@ func Publish(c *gin.Context) {
 	//插入数据库
 	video := &dao.Video{
 		AuthorId:    user.Id,
-		PlayUrl:     config.Url_addr_port + config.Url_Play_prefix + videoName + ".mp4",
-		CoverUrl:    config.Url_addr_port + config.Url_Image_prefix + imageName + ".jpg",
+		PlayUrl:     "http://" + config.Url_addr + config.Url_Play_prefix + videoName + ".mp4",
+		CoverUrl:    "http://" + config.Url_addr + config.Url_Image_prefix + imageName + ".jpg",
 		PublishTime: timeToDB,
 		Title:       title,
 	}

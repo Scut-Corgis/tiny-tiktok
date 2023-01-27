@@ -17,7 +17,7 @@ var Ftp_password = "123456"
 const Ftp_max_concurrent_cnt = 20 //Ftp并发处理的文件上限
 
 // wpy云服务器Url
-var Url_addr_port = "47.108.112.214:80"
+var Url_addr = "47.108.112.214"
 var Url_Play_prefix = "/videos/"
 var Url_Image_prefix = "/images/"
 

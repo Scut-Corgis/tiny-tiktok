@@ -79,6 +79,9 @@ func AuthGetWithoutLogin() gin.HandlerFunc {
 func AuthPost() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		tokenString := c.PostForm("token")
+		if tokenString == "" {
+			tokenString = c.Query("token")
+		}
 		// log.Println(tokenString)
 		// log.Println(len(tokenString))
 		if len(tokenString) == 0 {
