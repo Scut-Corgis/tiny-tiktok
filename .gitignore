@@ -1,3 +1,3 @@
 .idea
 data
-./config/config.go
+/config/config.go
