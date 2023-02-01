@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"github.com/Scut-Corgis/tiny-tiktok/service"
 	"log"
 	"net/http"
 	"strconv"
@@ -12,15 +13,15 @@ import (
 
 // usersLoginInfo use map to store user info, and key is username+password for demo
 // user data will be cleared every time the server starts
-var usersLoginInfo = map[string]User{
-	"zhangleidouyin": {
-		Id:            1,
-		Name:          "zhanglei",
-		FollowCount:   10,
-		FollowerCount: 5,
-		IsFollow:      true,
-	},
-}
+//var usersLoginInfo = map[string]User{
+//	"zhangleidouyin": {
+//		Id:            1,
+//		Name:          "zhanglei",
+//		FollowCount:   10,
+//		FollowerCount: 5,
+//		IsFollow:      true,
+//	},
+//}
 
 // var userIdSequence = int64(1)
 
@@ -40,25 +41,32 @@ func Register(c *gin.Context) {
 	password := c.Query("password")
 	token := jwt.GenerateToken(username)
 	// token := username + password
-	user, _ := dao.QueryUserByName(username)
+	user := service.QueryUserByName(username)
 	if username == user.Name {
 		c.JSON(http.StatusOK, UserLoginResponse{
 			Response: Response{StatusCode: 1, StatusMsg: "User already exist"},
 			UserId:   user.Id,
 		})
 	} else {
+		encoderPassword, err := service.HashEncode(password)
+		if err != nil {
+			c.JSON(http.StatusOK, UserLoginResponse{
+				Response: Response{StatusCode: 1, StatusMsg: "Incorrect password format"},
+				UserId:   user.Id,
+			})
+		}
 		newUser := dao.User{
 			Name:     username,
-			Password: password,
+			Password: encoderPassword,
 		}
-		if !dao.InsertUser(&newUser) {
-			log.Println("Insert Data Failed")
+		if !service.InsertUser(&newUser) {
+			println("Insert user failed")
 		}
-		u, _ := dao.QueryUserByName(username)
-		log.Println("注册返回的 id", u.Id)
+		user := service.QueryUserByName(username)
+		log.Println("注册返回的 id", user.Id)
 		c.JSON(http.StatusOK, UserLoginResponse{
 			Response: Response{StatusCode: 0, StatusMsg: "Register success"},
-			UserId:   u.Id,
+			UserId:   user.Id,
 			Token:    token,
 		})
 	}
@@ -69,25 +77,20 @@ func Login(c *gin.Context) {
 	username := c.Query("username")
 	password := c.Query("password")
 
-	user, err := dao.QueryUserByName(username)
+	user := service.QueryUserByName(username)
 
-	if err != nil {
+	if service.ComparePasswords(user.Password, password) {
 		c.JSON(http.StatusOK, UserLoginResponse{
-			Response: Response{StatusCode: 1, StatusMsg: "User doesn't exist"},
+			Response: Response{StatusCode: 0, StatusMsg: "Login success"},
+			UserId:   user.Id,
+			Token:    jwt.GenerateToken(user.Name),
 		})
 	} else {
-		if user.Password == password {
-			c.JSON(http.StatusOK, UserLoginResponse{
-				Response: Response{StatusCode: 0, StatusMsg: "Login success"},
-				UserId:   user.Id,
-				Token:    jwt.GenerateToken(user.Name),
-			})
-		} else {
-			c.JSON(http.StatusOK, UserLoginResponse{
-				Response: Response{StatusCode: 1, StatusMsg: "Username or Password error"},
-			})
-		}
+		c.JSON(http.StatusOK, UserLoginResponse{
+			Response: Response{StatusCode: 1, StatusMsg: "Username or Password error"},
+		})
 	}
+
 }
 
 func UserInfo(c *gin.Context) {
