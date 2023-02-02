@@ -6,7 +6,9 @@ import (
 	"log"
 )
 
-type UserServiceImpl struct{}
+type UserServiceImpl struct {
+	FollowServiceImpl
+}
 
 func (UserServiceImpl) QueryUserByName(name string) dao.User {
 	user, err := dao.QueryUserByName(name)

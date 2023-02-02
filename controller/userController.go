@@ -75,7 +75,6 @@ func Login(c *gin.Context) {
 // UserInfo GET /douyin/user/ 用户信息
 func UserInfo(c *gin.Context) {
 	user_id := c.Query("user_id")
-	currentName := c.GetString("username")
 	id, _ := strconv.ParseInt(user_id, 10, 64)
 	usi := service.UserServiceImpl{}
 	if userResp, err := usi.QueryUserRespById(id); err != nil {
@@ -83,6 +82,8 @@ func UserInfo(c *gin.Context) {
 			Response: Response{StatusCode: 1, StatusMsg: "User doesn't exist"},
 		})
 	} else {
+		currentName := c.GetString("username")
+		user := usi.QueryUserByName(currentName)
 		c.JSON(http.StatusOK, UserResponse{
 			Response: Response{StatusCode: 0},
 			User: User{
@@ -90,7 +91,7 @@ func UserInfo(c *gin.Context) {
 				userResp.Name,
 				userResp.FollowCount,
 				userResp.FollowerCount,
-				dao.JudgeIsFollow(id, currentName),
+				usi.JudgeIsFollowById(id, user.Id),
 			},
 		})
 	}

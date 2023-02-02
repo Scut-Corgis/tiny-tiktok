@@ -31,17 +31,17 @@ func QueryUserById(id int64) (User, error) {
 	return user, nil
 }
 
-func JudgeIsFollow(id int64, name string) bool { // 判断name用户是否关注id用户
-	user1, err := QueryUserById(id)
-	if err != nil {
-		log.Println(err.Error())
-		return false
-	}
-	user2, _ := QueryUserByName(name)
-	var count int64
-	Db.Model(&Follow{}).Where("user_id = ? and follower_id = ?", user1.Id, user2.Id).Count(&count)
-	return count > 0
-}
+//func JudgeIsFollow(id int64, name string) bool { // 判断name用户是否关注id用户
+//	user1, err := QueryUserById(id)
+//	if err != nil {
+//		log.Println(err.Error())
+//		return false
+//	}
+//	user2, _ := QueryUserByName(name)
+//	var count int64
+//	Db.Model(&Follow{}).Where("user_id = ? and follower_id = ?", user1.Id, user2.Id).Count(&count)
+//	return count > 0
+//}
 
 func QueryUserRespById(id int64) (UserResp, error) {
 	userInfo := UserResp{}
@@ -50,8 +50,8 @@ func QueryUserRespById(id int64) (UserResp, error) {
 		log.Println(err.Error())
 		return userInfo, err
 	} else {
-		Db.Model(&Follow{}).Where("user_id = ?", id).Count(&userInfo.FollowerCount)   // 统计粉丝数量
-		Db.Model(&Follow{}).Where("follower_id = ?", id).Count(&userInfo.FollowCount) // 统计关注博主的数量
+		userInfo.FollowerCount = CountFollowers(id) // 统计粉丝数量
+		userInfo.FollowCount = CountFollowings(id)  // 统计关注博主的数量
 		userInfo.Id = user.Id
 		userInfo.Name = user.Name
 		return userInfo, err
@@ -65,10 +65,4 @@ func InsertUser(user *User) bool {
 		return false
 	}
 	return true
-}
-
-func JudgeIsFollowById(id1 int64, id2 int64) bool { // 判断用户id1是否关注id2用户
-	var count int64
-	Db.Model(&Follow{}).Where("user_id = ? and follower_id = ?", id2, id1).Count(&count)
-	return count > 0
 }

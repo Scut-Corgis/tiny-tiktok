@@ -74,7 +74,7 @@ func CommentAction(c *gin.Context) {
 // CommentList all videos have same demo comment list
 func CommentList(c *gin.Context) {
 	video_id := c.Query("video_id")
-	currentName := c.GetString("username")
+	//currentName := c.GetString("username")
 	id, _ := strconv.ParseInt(video_id, 10, 64)
 	if comments, err := dao.QueryCommentsByVideoId(id); err != nil {
 		c.JSON(http.StatusOK, CommentListResponse{
@@ -91,7 +91,7 @@ func CommentList(c *gin.Context) {
 					user.Name,
 					user.FollowCount,
 					user.FollowerCount,
-					dao.JudgeIsFollow(id, currentName),
+					false,
 				},
 				comment.CommentText,
 				comment.CreateDate,
