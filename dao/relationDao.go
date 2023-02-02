@@ -130,3 +130,21 @@ func QueryFriendsIdByUserId(userId int64) ([]int64, error) {
 	}
 	return friendIds, nil
 }
+
+func JudgeIsFollowById(id1 int64, id2 int64) bool { // 判断用户id1是否关注id2用户
+	var count int64
+	Db.Model(&Follow{}).Where("user_id = ? and follower_id = ?", id2, id1).Count(&count)
+	return count > 0
+}
+
+func CountFollowers(id int64) int64 {
+	var count int64
+	Db.Model(&Follow{}).Where("user_id = ?", id).Count(&count)
+	return count
+}
+
+func CountFollowings(id int64) int64 {
+	var count int64
+	Db.Model(&Follow{}).Where("follower_id = ?", id).Count(&count)
+	return count
+}
