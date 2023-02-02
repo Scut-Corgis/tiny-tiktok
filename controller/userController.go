@@ -1,29 +1,13 @@
 package controller
 
 import (
-	"github.com/Scut-Corgis/tiny-tiktok/service"
-	"log"
-	"net/http"
-	"strconv"
-
 	"github.com/Scut-Corgis/tiny-tiktok/dao"
 	"github.com/Scut-Corgis/tiny-tiktok/middleware/jwt"
+	"github.com/Scut-Corgis/tiny-tiktok/service"
 	"github.com/gin-gonic/gin"
+	"net/http"
+	"strconv"
 )
-
-// usersLoginInfo use map to store user info, and key is username+password for demo
-// user data will be cleared every time the server starts
-//var usersLoginInfo = map[string]User{
-//	"zhangleidouyin": {
-//		Id:            1,
-//		Name:          "zhanglei",
-//		FollowCount:   10,
-//		FollowerCount: 5,
-//		IsFollow:      true,
-//	},
-//}
-
-// var userIdSequence = int64(1)
 
 type UserLoginResponse struct {
 	Response
@@ -36,49 +20,45 @@ type UserResponse struct {
 	User User `json:"user"`
 }
 
+// Register POST /douyin/user/register/ 用户注册
 func Register(c *gin.Context) {
 	username := c.Query("username")
 	password := c.Query("password")
-	token := jwt.GenerateToken(username)
-	// token := username + password
-	user := service.QueryUserByName(username)
+	usi := service.UserServiceImpl{}
+	user := usi.QueryUserByName(username)
 	if username == user.Name {
 		c.JSON(http.StatusOK, UserLoginResponse{
-			Response: Response{StatusCode: 1, StatusMsg: "User already exist"},
-			UserId:   user.Id,
+			Response: Response{StatusCode: 1, StatusMsg: "User already exist!"},
 		})
 	} else {
 		encoderPassword, err := service.HashEncode(password)
 		if err != nil {
 			c.JSON(http.StatusOK, UserLoginResponse{
-				Response: Response{StatusCode: 1, StatusMsg: "Incorrect password format"},
-				UserId:   user.Id,
+				Response: Response{StatusCode: 1, StatusMsg: "Incorrect password format!"},
 			})
 		}
 		newUser := dao.User{
 			Name:     username,
 			Password: encoderPassword,
 		}
-		if !service.InsertUser(&newUser) {
-			println("Insert user failed")
+		if !usi.InsertUser(&newUser) {
+			println("Insert user failed！")
 		}
-		user := service.QueryUserByName(username)
-		log.Println("注册返回的 id", user.Id)
+		user := usi.QueryUserByName(username)
 		c.JSON(http.StatusOK, UserLoginResponse{
-			Response: Response{StatusCode: 0, StatusMsg: "Register success"},
+			Response: Response{StatusCode: 0, StatusMsg: "Register successfully!"},
 			UserId:   user.Id,
-			Token:    token,
+			Token:    jwt.GenerateToken(username),
 		})
 	}
 }
 
-// Login 登录功能，需要补充密码编码解码
+// Login POST /douyin/user/login/ 用户登录
 func Login(c *gin.Context) {
 	username := c.Query("username")
 	password := c.Query("password")
-
-	user := service.QueryUserByName(username)
-
+	usi := service.UserServiceImpl{}
+	user := usi.QueryUserByName(username)
 	if service.ComparePasswords(user.Password, password) {
 		c.JSON(http.StatusOK, UserLoginResponse{
 			Response: Response{StatusCode: 0, StatusMsg: "Login success"},
@@ -90,14 +70,15 @@ func Login(c *gin.Context) {
 			Response: Response{StatusCode: 1, StatusMsg: "Username or Password error"},
 		})
 	}
-
 }
 
+// UserInfo GET /douyin/user/ 用户信息
 func UserInfo(c *gin.Context) {
 	user_id := c.Query("user_id")
 	currentName := c.GetString("username")
 	id, _ := strconv.ParseInt(user_id, 10, 64)
-	if user, err := dao.QueryUserRespById(id); err != nil {
+	usi := service.UserServiceImpl{}
+	if userResp, err := usi.QueryUserRespById(id); err != nil {
 		c.JSON(http.StatusOK, UserResponse{
 			Response: Response{StatusCode: 1, StatusMsg: "User doesn't exist"},
 		})
@@ -105,10 +86,10 @@ func UserInfo(c *gin.Context) {
 		c.JSON(http.StatusOK, UserResponse{
 			Response: Response{StatusCode: 0},
 			User: User{
-				user.Id,
-				user.Name,
-				user.FollowCount,
-				user.FollowerCount,
+				userResp.Id,
+				userResp.Name,
+				userResp.FollowCount,
+				userResp.FollowerCount,
 				dao.JudgeIsFollow(id, currentName),
 			},
 		})

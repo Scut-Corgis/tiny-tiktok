@@ -1,45 +1,17 @@
 package service
 
-import (
-	"github.com/Scut-Corgis/tiny-tiktok/dao"
-	"golang.org/x/crypto/bcrypt"
-	"log"
-)
+import "github.com/Scut-Corgis/tiny-tiktok/dao"
 
-func QueryUserByName(name string) dao.User {
-	user, err := dao.QueryUserByName(name)
-	if err != nil {
-		log.Println("error:", err.Error())
-		log.Println("User not found!")
-		return user
-	}
-	log.Println("Query user successfully!")
-	return user
-}
+type UserService interface {
+	// QueryUserByName 根据name获取User对象
+	QueryUserByName(name string) dao.User
 
-func InsertUser(user *dao.User) bool {
-	flag := dao.InsertUser(user)
-	if flag == false {
-		log.Println("Insert user failed!")
-		return flag
-	}
-	log.Println("Insert user successfully!")
-	return flag
-}
+	// QueryUserById 根据id获取User对象
+	QueryUserById(id int64) dao.User
 
-// HashEncode hash加密密码
-func HashEncode(password string) (string, error) {
-	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-	if err != nil {
-		return "", err
-	}
-	return string(hash), nil
-}
+	// QueryUserRespById 根据id获取UserResp对象
+	QueryUserRespById(id int64) (dao.UserResp, error)
 
-func ComparePasswords(password1 string, password2 string) bool {
-	err := bcrypt.CompareHashAndPassword([]byte(password1), []byte(password2))
-	if err != nil {
-		return false
-	}
-	return true
+	// InsertUser 将User插到users表中
+	InsertUser(user *dao.User) bool
 }
