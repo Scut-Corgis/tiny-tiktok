@@ -23,11 +23,12 @@ type GetLikeListResponse struct {
 func FavoriteAction(c *gin.Context) {
 	favoriteService := new(service.LikeServiceImpl)
 	username := c.GetString("username")
-	user, err := dao.QueryUserByName(username)
-	if err != nil {
-		c.JSON(http.StatusOK, Response{StatusCode: 1, StatusMsg: "查询用户出错"})
-		return
-	}
+	user := favoriteService.QueryUserByName(username)
+	//user, err := dao.QueryUserByName(username)
+	// if err != nil {
+	// 	c.JSON(http.StatusOK, Response{StatusCode: 1, StatusMsg: "查询用户出错"})
+	// 	return
+	// }
 
 	userId := user.Id
 	strVideoId := c.Query("video_id")
