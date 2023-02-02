@@ -75,3 +75,19 @@ func GetLikeCountByVideoId(videoId int64) (int64, error) {
 	}
 	return result, nil
 }
+
+func GetLikInfo(userId int64, videoId int64) (Like, error) {
+	var likeInfo Like
+
+	err := Db.Model(Like{}).Where(map[string]interface{}{"user_id": userId, "video_id": videoId}).First(&likeInfo).Error
+	if err != nil {
+		if "record not found" == err.Error() {
+			log.Println("can't find data")
+			return Like{}, nil
+		} else {
+			log.Println(err.Error())
+			return likeInfo, errors.New("get likeInfo failed")
+		}
+	}
+	return likeInfo, nil
+}

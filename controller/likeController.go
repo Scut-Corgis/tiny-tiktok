@@ -21,6 +21,7 @@ type GetLikeListResponse struct {
 
 // 点赞和取消点赞功能
 func FavoriteAction(c *gin.Context) {
+	favoriteService := new(service.LikeServiceImpl)
 	username := c.GetString("username")
 	user, err := dao.QueryUserByName(username)
 	if err != nil {
@@ -40,13 +41,13 @@ func FavoriteAction(c *gin.Context) {
 	}
 
 	if actionType == 1 {
-		err := service.Like(userId, videoId)
+		err := favoriteService.Like(userId, videoId)
 		if err != nil {
 			c.JSON(http.StatusOK, likeResponse{StatusCode: 1, StatusMsg: "点赞失败！"})
 		}
 		c.JSON(http.StatusOK, likeResponse{StatusCode: 0, StatusMsg: "点赞成功！"})
 	} else if actionType == 2 {
-		err := service.Unlike(userId, videoId)
+		err := favoriteService.Unlike(userId, videoId)
 		if err != nil {
 			c.JSON(http.StatusOK, likeResponse{StatusCode: 1, StatusMsg: "取消点赞失败！"})
 		}
@@ -55,6 +56,7 @@ func FavoriteAction(c *gin.Context) {
 }
 
 func FavoriteList(c *gin.Context) {
+	favoriteService := new(service.LikeServiceImpl)
 	strsuccess := "获取点赞列表成功"
 	strfail := "获取点赞列表失败"
 	StrUserId := c.Query("user_id")
@@ -67,7 +69,7 @@ func FavoriteList(c *gin.Context) {
 		})
 	}
 
-	ReturnVideos, err := service.GetLikeLists(UserId)
+	ReturnVideos, err := favoriteService.GetLikeLists(UserId)
 	if err != nil {
 		c.JSON(http.StatusOK, GetLikeListResponse{
 			StatusCode: "1",
