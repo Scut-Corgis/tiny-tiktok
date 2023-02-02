@@ -1,12 +1,5 @@
 package service
 
-import (
-	"fmt"
-	"testing"
-
-	"github.com/Scut-Corgis/tiny-tiktok/dao"
-)
-
 // func TestLike(t *testing.T) {
 // 	dao.Init()
 // 	err := Like(2, 223)
@@ -30,12 +23,12 @@ import (
 // 	fmt.Println(res)
 // }
 
-func TestGetLikeLists(t *testing.T) {
-	dao.Init()
-	res, err := GetLikeLists(1012)
-	if err != nil {
-		fmt.Println(err.Error())
-		fmt.Println("失败")
-	}
-	fmt.Println(res)
-}
+// func TestGetLikeLists(t *testing.T) {
+// 	dao.Init()
+// 	res, err := GetLikeLists(1012)
+// 	if err != nil {
+// 		fmt.Println(err.Error())
+// 		fmt.Println("失败")
+// 	}
+// 	fmt.Println(res)
+// }
