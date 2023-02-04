@@ -8,6 +8,7 @@ import (
 
 type UserServiceImpl struct {
 	FollowServiceImpl
+	LikeServiceImpl
 }
 
 func (UserServiceImpl) QueryUserByName(name string) dao.User {
