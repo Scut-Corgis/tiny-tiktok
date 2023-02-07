@@ -21,7 +21,8 @@ func RelationAction(c *gin.Context) {
 	//#优化：若token含userid，获取用户可以省去查数据库操作，或使用redis减少对数据库的访问
 	// Step1. 判断token解析是否有误
 	username := c.GetString("username")
-	user, _ := dao.QueryUserByName(username)
+	usi := service.UserServiceImpl{}
+	user := usi.QueryUserByName(username)
 	if username != user.Name {
 		c.JSON(http.StatusOK, Response{StatusCode: -1, StatusMsg: "token错误"})
 		return
@@ -29,7 +30,7 @@ func RelationAction(c *gin.Context) {
 	userId := user.Id
 	// Step2. 判断to_user_id解析是否有误
 	followId, err := strconv.ParseInt(c.Query("to_user_id"), 10, 64)
-	followUser, _ := dao.QueryUserById(followId)
+	followUser := usi.QueryUserById(followId)
 	if nil != err {
 		c.JSON(http.StatusOK, Response{StatusCode: -1, StatusMsg: "关注用户id错误"})
 		return
@@ -49,7 +50,8 @@ func RelationAction(c *gin.Context) {
 		return
 	}
 	// Step4. 判断该关注关系是否已存在
-	isFollowed, err := service.IsFollowed(userId, followId)
+	rsi := service.RelationServiceImpl{}
+	isFollowed, err := rsi.IsFollowed(userId, followId)
 	if nil != err {
 		c.JSON(http.StatusOK, Response{StatusCode: -1, StatusMsg: "已关注查询失败"})
 		return
@@ -62,7 +64,7 @@ func RelationAction(c *gin.Context) {
 			return
 		}
 		// Step5.1.2. 判断是否关注成功
-		flag, err := service.Follow(userId, followId)
+		flag, err := rsi.Follow(userId, followId)
 		if !flag || nil != err {
 			c.JSON(http.StatusOK, Response{StatusCode: -1, StatusMsg: "关注失败"})
 			return
@@ -79,7 +81,7 @@ func RelationAction(c *gin.Context) {
 			return
 		}
 		// Step5.2.2: 判断是否取关成功
-		flag, err := service.UnFollow(userId, followId)
+		flag, err := rsi.UnFollow(userId, followId)
 		if !flag || nil != err {
 			c.JSON(http.StatusOK, Response{StatusCode: -1, StatusMsg: "取关失败"})
 			return
@@ -98,7 +100,8 @@ func RelationAction(c *gin.Context) {
 func FollowList(c *gin.Context) {
 	// Step1. 判断token、user_id解析是否有误
 	username := c.GetString("username")
-	user, _ := dao.QueryUserByName(username)
+	usi := service.UserServiceImpl{}
+	user := usi.QueryUserByName(username)
 	if username != user.Name {
 		c.JSON(http.StatusOK, Response{StatusCode: -1, StatusMsg: "token错误"})
 		return
@@ -116,7 +119,8 @@ func FollowList(c *gin.Context) {
 		return
 	}
 	// Step2. 判断获取关注列表是否有误
-	followList, err := service.GetFollowList(userId)
+	rsi := service.RelationServiceImpl{}
+	followList, err := rsi.GetFollowList(userId)
 	if err != nil {
 		c.JSON(http.StatusOK, UserListResponse{
 			Response: Response{
@@ -143,7 +147,8 @@ func FollowList(c *gin.Context) {
 func FollowerList(c *gin.Context) {
 	// Step1. 判断token、user_id解析是否有误
 	username := c.GetString("username")
-	user, _ := dao.QueryUserByName(username)
+	usi := service.UserServiceImpl{}
+	user := usi.QueryUserByName(username)
 	if username != user.Name {
 		c.JSON(http.StatusOK, Response{
 			StatusCode: -1,
@@ -164,7 +169,8 @@ func FollowerList(c *gin.Context) {
 		return
 	}
 	// Step2. 判断获取粉丝列表是否有误
-	followerList, err := service.GetFollowerList(userId)
+	rsi := service.RelationServiceImpl{}
+	followerList, err := rsi.GetFollowerList(userId)
 	if err != nil {
 		c.JSON(http.StatusOK, UserListResponse{
 			Response: Response{
@@ -196,7 +202,8 @@ func FriendList(c *gin.Context) {
 	// ------------------------------------------------------------
 	// Step1. 判断token、user_id解析是否有误
 	username := c.GetString("username")
-	user, _ := dao.QueryUserByName(username)
+	usi := service.UserServiceImpl{}
+	user := usi.QueryUserByName(username)
 	if username != user.Name {
 		c.JSON(http.StatusOK, Response{
 			StatusCode: -1,
@@ -217,7 +224,8 @@ func FriendList(c *gin.Context) {
 		return
 	}
 	// Step2. 判断获取好友列表是否有误
-	friendList, err := service.GetFriendList(userId)
+	rsi := service.RelationServiceImpl{}
+	friendList, err := rsi.GetFriendList(userId)
 	if err != nil {
 		c.JSON(http.StatusOK, UserListResponse{
 			Response: Response{
