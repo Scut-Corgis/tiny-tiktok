@@ -31,18 +31,6 @@ func QueryUserById(id int64) (User, error) {
 	return user, nil
 }
 
-//func JudgeIsFollow(id int64, name string) bool { // 判断name用户是否关注id用户
-//	user1, err := QueryUserById(id)
-//	if err != nil {
-//		log.Println(err.Error())
-//		return false
-//	}
-//	user2, _ := QueryUserByName(name)
-//	var count int64
-//	Db.Model(&Follow{}).Where("user_id = ? and follower_id = ?", user1.Id, user2.Id).Count(&count)
-//	return count > 0
-//}
-
 func QueryUserRespById(id int64) (UserResp, error) {
 	userInfo := UserResp{}
 	user, err := QueryUserById(id)

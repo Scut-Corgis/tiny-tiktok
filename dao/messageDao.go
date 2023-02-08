@@ -29,7 +29,10 @@ func InsertMessage(msgKey string, content string, createTime string) (bool, erro
 
 func QueryMessagesByMsgKey(msgKey string) ([]MessageResp, error) {
 	messageList := make([]MessageResp, 1)
-	if err := Db.Raw("select id, content, DATE_FORMAT(create_time, '%Y-%m-%d %H:%i:%s') create_time from messages where message_key = ?", msgKey).Scan(&messageList).Error; nil != err {
+	//if err := Db.Raw("select id, content, DATE_FORMAT(create_time, '%Y-%m-%d %H:%i:%s') create_time from messages where message_key = ?", msgKey).Scan(&messageList).Error; nil != err {
+	//	return nil, err
+	//}
+	if err := Db.Select([]string{"id", "content", "create_time"}).Where("message_key = ?", msgKey).Find(&messageList).Error; err != nil {
 		return nil, err
 	}
 	return messageList, nil

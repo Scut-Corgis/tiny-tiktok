@@ -14,7 +14,7 @@ type Video struct {
 	Title       string
 }
 
-// 和 controller/common.go的Video结构保持一致
+// VideoDetail 和 controller/common.go的Video结构保持一致
 type VideoDetail struct {
 	Id            int64
 	Author        UserResp
@@ -61,10 +61,13 @@ func InsertVideosTable(video *Video) error {
 	return nil
 }
 
-// 参数为VideoId， 以及调用该函数的查询作者的ID，若无查询作者，请定为-1。
-// 返回videoDetail,视频发布时间;
-// 该函数不会返回err，因为参数确保是有效的，若无效会直接os.exit()
-// 多了一个发布时间，主要是方便处理feed流回复返回的next_time,不需要可以丢弃
+/*
+QueryVideoDetailByVideoId
+参数为VideoId， 以及调用该函数的查询作者的ID，若无查询作者，请定为-1。
+返回videoDetail,视频发布时间;
+该函数不会返回err，因为参数确保是有效的，若无效会直接os.exit()
+多了一个发布时间，主要是方便处理feed流回复返回的next_time,不需要可以丢弃
+*/
 func QueryVideoDetailByVideoId(videoId int64, queryUserId int64) (VideoDetail, time.Time) {
 	var err error
 	var detailVideo VideoDetail
@@ -98,14 +101,22 @@ func QueryVideoDetailByVideoId(videoId int64, queryUserId int64) (VideoDetail, t
 }
 
 func GetMost30videosIdList(latestTime time.Time) []int64 {
-	var videoIdList []int64 = make([]int64, 0, 30)
-	Db.Raw("SELECT id FROM videos WHERE publish_time < ? ORDER BY publish_time desc LIMIT 30", latestTime).Scan(&videoIdList)
+	var videoIdList = make([]int64, 0, 30)
+	//Db.Raw("SELECT id FROM videos WHERE publish_time < ? ORDER BY publish_time desc LIMIT 30", latestTime).Scan(&videoIdList)
+	if err := Db.Select("id").Where("publish_time < ?", latestTime).Order("publish_time desc").Limit(30).Find(&videoIdList).Error; err != nil {
+		log.Println(err.Error())
+		return videoIdList
+	}
 	return videoIdList
 }
 
-func GetVideoIdListByUserId(authorId, queryUserId int64) []int64 {
-	var videoIdList []int64 = make([]int64, 0)
-	Db.Raw("SELECT id FROM videos WHERE author_id = ?", authorId).Scan(&videoIdList)
+func GetVideoIdListByUserId(authorId int64) []int64 {
+	var videoIdList = make([]int64, 0)
+	//Db.Raw("SELECT id FROM videos WHERE author_id = ?", authorId).Scan(&videoIdList)
+	if err := Db.Select("id").Where("author_id = ?", authorId).Find(&videoIdList).Error; err != nil {
+		log.Println(err.Error())
+		return videoIdList
+	}
 	return videoIdList
 }
 
@@ -115,7 +126,7 @@ func JudgeIsFavorite(userid int64, videoId int64) bool { // 判断userid是否�
 	return count > 0
 }
 
-// 判断videoId的视频是否存在
+// JudgeVideoIsExist 判断videoId的视频是否存在
 func JudgeVideoIsExist(videoId int64) bool {
 	var count int64
 	Db.Model(&Video{}).Where(map[string]interface{}{"id": videoId}).Count(&count)
