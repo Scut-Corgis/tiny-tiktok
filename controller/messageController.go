@@ -19,14 +19,15 @@ type ChatResponse struct {
 */
 func MessageAction(c *gin.Context) {
 	username := c.GetString("username")
-	user, _ := dao.QueryUserByName(username)
+	usi := service.UserServiceImpl{}
+	user := usi.QueryUserByName(username)
 	if username != user.Name {
 		c.JSON(http.StatusOK, Response{StatusCode: -1, StatusMsg: "token错误"})
 		return
 	}
 	userId := user.Id
 	toUserId, err := strconv.ParseInt(c.Query("to_user_id"), 10, 64)
-	toUser, _ := dao.QueryUserById(toUserId)
+	toUser := usi.QueryUserById(toUserId)
 	if nil != err {
 		c.JSON(http.StatusOK, Response{StatusCode: -1, StatusMsg: "接收消息用户id错误"})
 		return
@@ -46,8 +47,9 @@ func MessageAction(c *gin.Context) {
 	}
 	content := c.Query("content")
 
+	msi := service.MessageServiceImpl{}
 	if actionType == 3 {
-		flag, err := service.SendMessage(userId, toUserId, content)
+		flag, err := msi.SendMessage(userId, toUserId, content)
 		if nil != err || !flag {
 			c.JSON(http.StatusOK, Response{StatusCode: -1, StatusMsg: "发送消息失败"})
 			return
@@ -66,14 +68,15 @@ func MessageAction(c *gin.Context) {
 */
 func ChatRecord(c *gin.Context) {
 	username := c.GetString("username")
-	user, _ := dao.QueryUserByName(username)
+	usi := service.UserServiceImpl{}
+	user := usi.QueryUserByName(username)
 	if username != user.Name {
 		c.JSON(http.StatusOK, Response{StatusCode: -1, StatusMsg: "token错误"})
 		return
 	}
 	userId := user.Id
 	toUserId, err := strconv.ParseInt(c.Query("to_user_id"), 10, 64)
-	toUser, _ := dao.QueryUserById(toUserId)
+	toUser := usi.QueryUserById(toUserId)
 	if nil != err || toUserId == userId {
 		c.JSON(http.StatusOK, Response{StatusCode: -1, StatusMsg: "接收消息用户id错误"})
 		return
@@ -83,7 +86,8 @@ func ChatRecord(c *gin.Context) {
 		return
 	}
 
-	chatRecords, err := service.GetChatRecord(userId, toUserId)
+	msi := service.MessageServiceImpl{}
+	chatRecords, err := msi.GetChatRecord(userId, toUserId)
 	if nil != err {
 		c.JSON(http.StatusOK, Response{StatusCode: -1, StatusMsg: "聊天记录请求失败"})
 		return
