@@ -91,7 +91,7 @@ func (RelationServiceImpl) GetFriendList(userId int64) ([]dao.UserResp, error) {
 	for _, followId := range followIds {
 		tmpFriendInfo, err := dao.QueryUserRespById(followId)
 		// 判断是否回关，回关了即为好
-		isFollow := dao.JudgeIsFollowById(userId, followId)
+		isFollow := dao.JudgeIsFollowById(followId, userId)
 		if nil != err {
 			return friendList, err
 		}
