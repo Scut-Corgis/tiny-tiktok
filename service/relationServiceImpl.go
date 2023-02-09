@@ -26,20 +26,30 @@ func (RelationServiceImpl) UnFollow(userId int64, followId int64) (bool, error) 
 查询是否已关注
 userId 关注 followId
 */
-func (RelationServiceImpl) IsFollowed(userId int64, followId int64) (bool, error) {
-	isFollow, err := dao.QueryIsFollowByUserId(userId, followId)
-	// isFollow为0，表示未关注
-	if nil == err && isFollow == 0 {
-		return false, err
-	}
-	return true, err
+func (RelationServiceImpl) JudgeIsFollowById(userId int64, followId int64) bool {
+	return dao.JudgeIsFollowById(userId, followId)
 }
 
 /*
 获取用户关注列表
 */
 func (RelationServiceImpl) GetFollowList(userId int64) ([]dao.UserResp, error) {
-	return dao.QueryFollowsByUserId(userId)
+	followList := make([]dao.UserResp, 0)
+
+	followIds, err := dao.QueryFollowsIdByUserId(userId)
+	if nil != err {
+		return followList, err
+	}
+	for _, followId := range followIds {
+		followInfo, err := dao.QueryUserRespById(followId)
+		if nil != err {
+			return followList, err
+		}
+		//关注列表一定已关注
+		followInfo.IsFollow = true
+		followList = append(followList, followInfo)
+	}
+	return followList, nil
 }
 
 /*
@@ -47,22 +57,21 @@ func (RelationServiceImpl) GetFollowList(userId int64) ([]dao.UserResp, error) {
 */
 func (RelationServiceImpl) GetFollowerList(userId int64) ([]dao.UserResp, error) {
 	followerList := make([]dao.UserResp, 0)
-
 	followerIds, err := dao.QueryFollowersIdByUserId(userId)
 	if nil != err {
 		return followerList, err
 	}
 	// 注：range获取数组项不能修改数组中结构体的值
 	for _, followerId := range followerIds {
-		followerInfo, err1 := dao.QueryUserRespById(followerId)
-		isFollow, err2 := dao.QueryIsFollowByUserId(userId, followerId)
-		if nil != err1 || nil != err2 {
+		followerInfo, err := dao.QueryUserRespById(followerId)
+		isFollow := dao.JudgeIsFollowById(userId, followerId)
+		if nil != err {
 			return followerList, err
 		}
-		if isFollow == 0 {
-			followerInfo.IsFollow = false
-		} else {
+		if isFollow {
 			followerInfo.IsFollow = true
+		} else {
+			followerInfo.IsFollow = false
 		}
 		followerList = append(followerList, followerInfo)
 	}
@@ -74,24 +83,30 @@ func (RelationServiceImpl) GetFollowerList(userId int64) ([]dao.UserResp, error)
 */
 func (RelationServiceImpl) GetFriendList(userId int64) ([]dao.UserResp, error) {
 	friendList := make([]dao.UserResp, 0)
-	// 查出好友的id
-	friendIds, err := dao.QueryFriendsIdByUserId(userId)
+	// 查出关注列表
+	followIds, err := dao.QueryFollowsIdByUserId(userId)
 	if nil != err {
 		return friendList, err
 	}
-	// 查每个好友的信息
-	for _, friendId := range friendIds {
-		friendInfo, err1 := dao.QueryUserRespById(friendId)
-		isFollow, err2 := dao.QueryIsFollowByUserId(userId, friendId)
-		if nil != err1 || nil != err2 {
+	for _, followId := range followIds {
+		tmpFriendInfo, err := dao.QueryUserRespById(followId)
+		// 判断是否回关，回关了即为好
+		isFollow := dao.JudgeIsFollowById(userId, followId)
+		if nil != err {
 			return friendList, err
 		}
-		if isFollow == 0 {
-			friendInfo.IsFollow = false
-		} else {
-			friendInfo.IsFollow = true
+		if isFollow {
+			tmpFriendInfo.IsFollow = true
+			friendList = append(friendList, tmpFriendInfo)
 		}
-		friendList = append(friendList, friendInfo)
 	}
 	return friendList, nil
+}
+
+func (RelationServiceImpl) CountFollowers(id int64) int64 {
+	return dao.CountFollowers(id)
+}
+
+func (RelationServiceImpl) CountFollowings(id int64) int64 {
+	return dao.CountFollowings(id)
 }

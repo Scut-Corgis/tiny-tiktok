@@ -5,14 +5,20 @@ import (
 )
 
 type RelationService interface {
-	// Follow 关注用户followId
+	// Follow 关注followId用户
 	Follow(userId int64, followId int64) (bool, error)
 
-	// UnFollow 取关用户followId
+	// UnFollow 取关followId用户
 	UnFollow(userId int64, followId int64) (bool, error)
 
-	// IsFollowed 查询是否已关注followId
-	IsFollowed(userId int64, followId int64) (bool, error)
+	// IsFollowed 查询是否已关注followId用户
+	JudgeIsFollowById(userId int64, followId int64) bool
+
+	// CountFollowers 获取用户粉丝数
+	CountFollowers(id int64) int64
+
+	// CountFollowings 获取用户关注数
+	CountFollowings(id int64) int64
 
 	// GetFollowList 获取用户关注列表
 	GetFollowList(userId int64) ([]dao.UserResp, error)

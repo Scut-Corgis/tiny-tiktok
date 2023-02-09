@@ -51,11 +51,8 @@ func RelationAction(c *gin.Context) {
 	}
 	// Step4. 判断该关注关系是否已存在
 	rsi := service.RelationServiceImpl{}
-	isFollowed, err := rsi.IsFollowed(userId, followId)
-	if nil != err {
-		c.JSON(http.StatusOK, Response{StatusCode: -1, StatusMsg: "已关注查询失败"})
-		return
-	}
+	isFollowed := rsi.JudgeIsFollowById(userId, followId)
+
 	switch {
 	case actionType == 1:
 		// Step5.1.1. 判断是否已关注
@@ -181,7 +178,6 @@ func FollowerList(c *gin.Context) {
 		})
 		return
 	}
-	//log.Println("followerList:", followerList)
 	c.JSON(http.StatusOK, UserListResponse{
 		Response: Response{
 			StatusCode: 0,
