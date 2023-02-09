@@ -49,24 +49,18 @@ func RelationAction(c *gin.Context) {
 		c.JSON(http.StatusOK, Response{StatusCode: -1, StatusMsg: "关注/取关失败"})
 		return
 	}
-	// Step4. 判断该关注关系是否已存在
+	// Step4. 关注或取关
 	rsi := service.RelationServiceImpl{}
-	isFollowed, err := rsi.IsFollowed(userId, followId)
-	if nil != err {
-		c.JSON(http.StatusOK, Response{StatusCode: -1, StatusMsg: "已关注查询失败"})
-		return
-	}
 	switch {
 	case actionType == 1:
-		// Step5.1.1. 判断是否已关注
-		if isFollowed {
-			c.JSON(http.StatusOK, Response{StatusCode: -1, StatusMsg: "该用户已关注"})
+		// 关注
+		flag, err := rsi.Follow(userId, followId)
+		if nil != err {
+			c.JSON(http.StatusOK, Response{StatusCode: -1, StatusMsg: "关注失败"})
 			return
 		}
-		// Step5.1.2. 判断是否关注成功
-		flag, err := rsi.Follow(userId, followId)
-		if !flag || nil != err {
-			c.JSON(http.StatusOK, Response{StatusCode: -1, StatusMsg: "关注失败"})
+		if !flag {
+			c.JSON(http.StatusOK, Response{StatusCode: -1, StatusMsg: "该用户已关注"})
 			return
 		}
 		c.JSON(http.StatusOK, Response{
@@ -75,15 +69,14 @@ func RelationAction(c *gin.Context) {
 		})
 		return
 	case actionType == 2:
-		// Step5.2.1. 判断是否关注过
-		if !isFollowed {
-			c.JSON(http.StatusOK, Response{StatusCode: -1, StatusMsg: "该用户未关注,取关失败"})
+		// 取关
+		flag, err := rsi.UnFollow(userId, followId)
+		if nil != err {
+			c.JSON(http.StatusOK, Response{StatusCode: -1, StatusMsg: "取关失败"})
 			return
 		}
-		// Step5.2.2: 判断是否取关成功
-		flag, err := rsi.UnFollow(userId, followId)
-		if !flag || nil != err {
-			c.JSON(http.StatusOK, Response{StatusCode: -1, StatusMsg: "取关失败"})
+		if !flag {
+			c.JSON(http.StatusOK, Response{StatusCode: -1, StatusMsg: "该用户未关注,取关失败"})
 			return
 		}
 		c.JSON(http.StatusOK, Response{
@@ -181,7 +174,6 @@ func FollowerList(c *gin.Context) {
 		})
 		return
 	}
-	//log.Println("followerList:", followerList)
 	c.JSON(http.StatusOK, UserListResponse{
 		Response: Response{
 			StatusCode: 0,

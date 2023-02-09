@@ -1,13 +1,14 @@
 package service
 
 import (
+	"log"
+
 	"github.com/Scut-Corgis/tiny-tiktok/dao"
 	"golang.org/x/crypto/bcrypt"
-	"log"
 )
 
 type UserServiceImpl struct {
-	FollowServiceImpl
+	RelationServiceImpl
 	LikeServiceImpl
 }
 
