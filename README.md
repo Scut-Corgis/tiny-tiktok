@@ -207,3 +207,43 @@ sudo vim /usr/local/nginx/conf/nginx.conf
 
 1. APP端口
 2. 打开8080端口 sudo ufw allow 8080
+
+
+---
+## Version 2.0
+
+项目结构和软件性能优化：
+1. ...
+2. redis缓存
+3. ...
+
+### 项目架构
+
+...
+
+### Redis
+#### redis本地安装配置
+1. 安装：\
+https://blog.csdn.net/X_lsod/article/details/123263429
+按照上述教程安装，并**启动**。
+2. 配置：\
+在redis.conf文件内:
+搜索"bind",找到redis的ip地址，端口号默认为6379。将config.go内的"Redis_addr_port"替换。
+搜索"requirepass"(未配置密码可忽略),找到redis设置的密码。将config.go内的"Redis_password"替换。
+3. 测试：\
+命令行可查看，也可使用redis可视化工具。\
+redis可视化工具下载:https://github.com/lework/RedisDesktopManager-Windows/releases
+
+4. 说明: \
+目前只使用了一个redis库，其余设置均为默认设置。
+
+
+#### redis开发规范
+1. util/redisConstants.go \
+该文件是对redis填入的key和TTL进行书写格式的规范\
+以key为例:采用类似`const 模块_表名_key = "模块:表名:"`的分级结构，字符间的":"即为分级目录。\
+例如：`const Relation_Follow_Key = "relation:follow:"`，在该文件内进行统一设置，使用时再加上对应的id或唯一性标识的字段。\
+TTL类似。
+
+
+    

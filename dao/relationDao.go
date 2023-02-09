@@ -21,29 +21,29 @@ type UserResp struct {
 增加follow关系
 userId 关注 followId
 */
-func InsertFollow(userId int64, followId int64) (bool, error) {
+func InsertFollow(userId int64, followId int64) error {
 	follow := Follow{
 		UserId:     followId,
 		FollowerId: userId, // 登录的用户是粉丝
 	}
 	if err := Db.Table("follows").Create(&follow).Error; err != nil {
 		log.Println(err.Error())
-		return false, err
+		return err
 	}
-	return true, nil
+	return nil
 }
 
 /*
 删除follow关系
 userId 关注 followId
 */
-func DeleteFollow(userId int64, followId int64) (bool, error) {
+func DeleteFollow(userId int64, followId int64) error {
 	follow := Follow{}
 	if err := Db.Table("follows").Where("user_id = ? and follower_id = ?", followId, userId).Delete(&follow).Error; err != nil {
 		log.Println(err.Error())
-		return false, err
+		return err
 	}
-	return true, nil
+	return nil
 }
 
 /*

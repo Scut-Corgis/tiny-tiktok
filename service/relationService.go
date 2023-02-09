@@ -11,8 +11,8 @@ type RelationService interface {
 	// UnFollow 取关followId用户
 	UnFollow(userId int64, followId int64) (bool, error)
 
-	// IsFollowed 查询是否已关注followId用户
-	JudgeIsFollowById(userId int64, followId int64) bool
+	// IsFollowed 查询是否id1用户已关注id2用户
+	JudgeIsFollowById(id1 int64, id2 int64) bool
 
 	// CountFollowers 获取用户粉丝数
 	CountFollowers(id int64) int64
