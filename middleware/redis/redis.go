@@ -3,12 +3,17 @@ package redis
 import (
 	"context"
 	"log"
+	"sync"
+	"time"
 
 	"github.com/Scut-Corgis/tiny-tiktok/config"
 	"github.com/go-redis/redis/v8"
 )
 
-// 定义一个全局变量
+var ctx = context.Background()
+var mutex sync.Mutex
+
+// RedisDb 定义一个全局变量
 var RedisDb *redis.Client
 var Ctx = context.Background()
 
@@ -23,4 +28,24 @@ func InitRedis() {
 		log.Panicln("err:", err.Error())
 	}
 	log.Println("redis has connected!")
+}
+
+func Lock(key string, value string) bool {
+	mutex.Lock() // 保证程序不存在并发冲突问题
+	defer mutex.Unlock()
+	ret, err := RedisDb.SetNX(ctx, key, value, time.Second*10).Result()
+	if err != nil {
+		log.Println(err.Error())
+		return ret
+	}
+	return ret
+}
+
+func Unlock(key string) int64 {
+	ret, err := RedisDb.Del(ctx, key).Result()
+	if err != nil {
+		log.Println(err.Error())
+		return ret
+	}
+	return ret
 }

@@ -31,7 +31,7 @@ func Init() {
 		}
 		FtpChan <- conn
 	}
-	log.Println("ftp初始化成功！")
+	log.Println("ftp initialize successfully!")
 	go keepalive()
 }
 
@@ -39,9 +39,9 @@ func SendVideoFile(filename string, file io.Reader) error {
 	conn := <-FtpChan
 	err := conn.Stor("./videos/"+filename+".mp4", file)
 	if err != nil {
-		log.Fatalln("视频发送失败 : ", filename, "Error : ", err)
+		log.Fatalln("video sent failed:", filename, "Error:", err)
 	} else {
-		log.Println("视频发送成功！")
+		log.Println("video sent successfully!")
 	}
 	FtpChan <- conn
 	return err

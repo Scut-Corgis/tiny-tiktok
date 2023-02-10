@@ -3,8 +3,11 @@ package controller
 import (
 	"github.com/Scut-Corgis/tiny-tiktok/dao"
 	"github.com/Scut-Corgis/tiny-tiktok/middleware/jwt"
+	"github.com/Scut-Corgis/tiny-tiktok/middleware/redis"
 	"github.com/Scut-Corgis/tiny-tiktok/service"
 	"github.com/gin-gonic/gin"
+	"log"
+	"math/rand"
 	"net/http"
 	"strconv"
 )
@@ -24,31 +27,47 @@ type UserResponse struct {
 func Register(c *gin.Context) {
 	username := c.Query("username")
 	password := c.Query("password")
-	usi := service.UserServiceImpl{}
-	user := usi.QueryUserByName(username)
-	if username == user.Name {
-		c.JSON(http.StatusOK, UserLoginResponse{
-			Response: Response{StatusCode: 1, StatusMsg: "User already exist!"},
-		})
-	} else {
-		encoderPassword, err := service.HashEncode(password)
-		if err != nil {
+
+	value := strconv.Itoa(rand.Int())
+	lock := redis.Lock(username, value) // 加锁
+	if lock {
+		log.Println("Add lock successfully!")
+		usi := service.UserServiceImpl{}
+		user := usi.QueryUserByName(username)
+		if username == user.Name {
 			c.JSON(http.StatusOK, UserLoginResponse{
-				Response: Response{StatusCode: 1, StatusMsg: "Incorrect password format!"},
+				Response: Response{StatusCode: 1, StatusMsg: "User already exist!"},
+			})
+		} else {
+			encoderPassword, err := service.HashEncode(password)
+			if err != nil {
+				c.JSON(http.StatusOK, UserLoginResponse{
+					Response: Response{StatusCode: 1, StatusMsg: "Incorrect password format!"},
+				})
+			}
+			newUser := dao.User{
+				Name:     username,
+				Password: encoderPassword,
+			}
+			if !usi.InsertUser(&newUser) {
+				println("Insert user failed！")
+			}
+			unlock := redis.Unlock(username) // 解锁
+			if unlock != 0 {
+				c.JSON(http.StatusOK, UserLoginResponse{
+					Response: Response{StatusCode: 1, StatusMsg: "Register failed!"},
+				})
+			}
+			user := usi.QueryUserByName(username)
+			c.JSON(http.StatusOK, UserLoginResponse{
+				Response: Response{StatusCode: 0, StatusMsg: "Register successfully!"},
+				UserId:   user.Id,
+				Token:    jwt.GenerateToken(username),
 			})
 		}
-		newUser := dao.User{
-			Name:     username,
-			Password: encoderPassword,
-		}
-		if !usi.InsertUser(&newUser) {
-			println("Insert user failed！")
-		}
-		user := usi.QueryUserByName(username)
+	} else {
 		c.JSON(http.StatusOK, UserLoginResponse{
-			Response: Response{StatusCode: 0, StatusMsg: "Register successfully!"},
-			UserId:   user.Id,
-			Token:    jwt.GenerateToken(username),
+			Response: Response{StatusCode: 1, StatusMsg: "Wait for register!"},
 		})
 	}
 }

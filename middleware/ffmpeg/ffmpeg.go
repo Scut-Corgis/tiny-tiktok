@@ -35,7 +35,7 @@ func Init() {
 	Ffchan = make(chan Ffmsg, config.Ssh_max_taskCnt)
 	go dispatcher()
 	go keepalive()
-	log.Println("ssh初始化成功")
+	log.Println("ssh initialize successfully!")
 }
 
 // 将ffmpeg命令以及其参数通过ssh运行，若运行失败，则重新放入channel运行
@@ -45,7 +45,7 @@ func dispatcher() {
 			err := Ffmpeg(f.VideoName, f.ImageName)
 			if err != nil {
 				Ffchan <- f
-				log.Println("ffmpeg调用失败，等待重新执行")
+				log.Println("ffmpeg call failed, wait for re-execute")
 			}
 		}(ffmsg)
 	}
@@ -66,11 +66,11 @@ func Ffmpeg(videoName, imageName string) error {
 	session.Stdout = &b
 
 	if err := session.Run("ffmpeg -ss 00:00:01 -i " + config.Ftp_video_path + videoName + ".mp4 -vframes 1 " + config.Ftp_image_path + imageName + ".jpg"); err != nil {
-		log.Println("SSH failed to run: " + err.Error())
-		log.Println("远端输出错误信息 : ", b.String())
+		log.Println("SSH failed to run: ", err.Error())
+		log.Println("remote fail message: ", b.String())
 		return err
 	}
-	log.Println("ffmpeg 执行成功")
+	log.Println("ffmpeg start successfully")
 	return nil
 }
 
@@ -79,7 +79,7 @@ func keepalive() {
 	for {
 		s, err := ClientSSH.NewSession()
 		if err != nil {
-			log.Println("ssh连接断开！ err : ", err)
+			log.Println("ssh is disconnected err: ", err)
 		}
 		time.Sleep(10 * time.Second)
 		s.Close()
