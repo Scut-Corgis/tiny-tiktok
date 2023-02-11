@@ -15,6 +15,8 @@ var mutex sync.Mutex
 
 // RedisDb 定义一个全局变量
 var RedisDb *redis.Client
+var RedisDbCommentVideoId *redis.Client // key:comment_id value:video_id relation 1:1
+var RedisDbVideoCommentId *redis.Client // key:video_id value:comment_id ralation 1:n
 var Ctx = context.Background()
 
 func InitRedis() {
@@ -22,6 +24,18 @@ func InitRedis() {
 		Addr:     config.Redis_addr_port,
 		Password: config.Redis_password,
 		DB:       0, // redis一共16个库，指定其中一个库即可
+	})
+	// 将key:comment_id value:video_id存入DB1
+	RedisDbCommentVideoId = redis.NewClient(&redis.Options{
+		Addr:     config.Redis_addr_port,
+		Password: config.Redis_password,
+		DB:       1,
+	})
+	// 将key:video_id value:comment_id存入DB2
+	RedisDbVideoCommentId = redis.NewClient(&redis.Options{
+		Addr:     config.Redis_addr_port,
+		Password: config.Redis_password,
+		DB:       2,
 	})
 	_, err := RedisDb.Ping(Ctx).Result()
 	if err != nil {

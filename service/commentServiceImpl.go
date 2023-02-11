@@ -2,7 +2,10 @@ package service
 
 import (
 	"github.com/Scut-Corgis/tiny-tiktok/dao"
+	"github.com/Scut-Corgis/tiny-tiktok/middleware/redis"
+	"github.com/Scut-Corgis/tiny-tiktok/util"
 	"log"
+	"strconv"
 )
 
 type CommentServiceImpl struct {
@@ -26,6 +29,12 @@ func (CommentServiceImpl) InsertComment(comment *dao.Comment) bool {
 		log.Println("Insert comment failed!")
 		return flag
 	}
+
+	// 注入redis
+	redisCommentKey := util.Relation_Comment_Key + strconv.FormatInt(comment.Id, 10)
+	redis.RedisDb.SAdd(redis.Ctx, redisCommentKey, comment.VideoId)
+	// 更新过期时间
+	redis.RedisDb.Expire(redis.Ctx, redisCommentKey, util.Relation_Follow_TTL)
 	log.Println("Insert comment successfully!")
 	return flag
 }
