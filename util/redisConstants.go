@@ -15,3 +15,7 @@ const Relation_FollowerList_TTL = Day
 // comment 模块
 const Relation_Comment_Key = "relation:comment"
 const Relation_Comment_TTL = Day
+
+// video 模块
+const Relation_Video_Key = "relation:video"
+const Relation_Video_TTL = Day

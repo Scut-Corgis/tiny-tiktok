@@ -2,7 +2,6 @@ package controller
 
 import (
 	"github.com/Scut-Corgis/tiny-tiktok/service"
-	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -28,7 +27,6 @@ func CommentAction(c *gin.Context) {
 
 	// 获取当前用户
 	currentName := c.GetString("username")
-	log.Println(currentName)
 	user := usi.QueryUserByName(currentName)
 
 	// 获取当前视频
@@ -38,7 +36,9 @@ func CommentAction(c *gin.Context) {
 
 	actionType := c.Query("action_type")
 	if !dao.JudgeVideoIsExist(id) {
-		c.JSON(http.StatusOK, likeResponse{StatusCode: 1, StatusMsg: "Video doesn't exist"})
+		c.JSON(http.StatusOK, CommentActionResponse{
+			Response: Response{StatusCode: 1, StatusMsg: "Video doesn't exist"},
+		})
 	}
 	if actionType == "1" {
 		text := c.Query("comment_text")

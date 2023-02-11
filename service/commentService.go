@@ -6,6 +6,9 @@ type CommentService interface {
 	// QueryCommentsByVideoId 获取评论列表
 	QueryCommentsByVideoId(id int64) []dao.Comment
 
+	// PostComment 发布评论
+	PostComment(comment *dao.Comment) (int32, string)
+
 	// InsertComment 插入评论
 	InsertComment(comment *dao.Comment) bool
 

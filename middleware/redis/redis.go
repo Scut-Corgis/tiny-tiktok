@@ -10,13 +10,12 @@ import (
 	"github.com/go-redis/redis/v8"
 )
 
-var ctx = context.Background()
 var mutex sync.Mutex
 
 // RedisDb 定义一个全局变量
 var RedisDb *redis.Client
-var RedisDbCommentVideoId *redis.Client // key:comment_id value:video_id relation 1:1
-var RedisDbVideoCommentId *redis.Client // key:video_id value:comment_id ralation 1:n
+var RedisDbCommentIdVideoId *redis.Client // key:comment_id value:video_id relation 1:1
+var RedisDbVideoIdCommentId *redis.Client // key:video_id value:comment_id ralation 1:n
 var Ctx = context.Background()
 
 func InitRedis() {
@@ -26,13 +25,13 @@ func InitRedis() {
 		DB:       0, // redis一共16个库，指定其中一个库即可
 	})
 	// 将key:comment_id value:video_id存入DB1
-	RedisDbCommentVideoId = redis.NewClient(&redis.Options{
+	RedisDbCommentIdVideoId = redis.NewClient(&redis.Options{
 		Addr:     config.Redis_addr_port,
 		Password: config.Redis_password,
 		DB:       1,
 	})
 	// 将key:video_id value:comment_id存入DB2
-	RedisDbVideoCommentId = redis.NewClient(&redis.Options{
+	RedisDbVideoIdCommentId = redis.NewClient(&redis.Options{
 		Addr:     config.Redis_addr_port,
 		Password: config.Redis_password,
 		DB:       2,
@@ -47,7 +46,7 @@ func InitRedis() {
 func Lock(key string, value string) bool {
 	mutex.Lock() // 保证程序不存在并发冲突问题
 	defer mutex.Unlock()
-	ret, err := RedisDb.SetNX(ctx, key, value, time.Second*10).Result()
+	ret, err := RedisDb.SetNX(Ctx, key, value, time.Second*10).Result()
 	if err != nil {
 		log.Println("Lock error:", err.Error())
 		return ret
@@ -56,7 +55,7 @@ func Lock(key string, value string) bool {
 }
 
 func Unlock(key string) bool {
-	err := RedisDb.Del(ctx, key).Err()
+	err := RedisDb.Del(Ctx, key).Err()
 	if err != nil {
 		log.Println("Unlock error:", err.Error())
 		return false

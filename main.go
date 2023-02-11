@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/Scut-Corgis/tiny-tiktok/util"
 	"log"
 
 	"github.com/Scut-Corgis/tiny-tiktok/dao"
@@ -28,4 +29,5 @@ func initDependencies() {
 	redis.InitRedis()
 	ffmpeg.Init()
 	ftp.Init()
+	util.InitwordsFilter()
 }

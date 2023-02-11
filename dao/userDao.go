@@ -47,7 +47,7 @@ func QueryUserRespById(id int64) (UserResp, error) {
 	}
 }
 
-// InsertUser 将User插入user表内
+// InsertUser 将User插入users表内
 func InsertUser(user *User) bool {
 	if err := Db.Create(&user).Error; err != nil {
 		log.Println(err.Error())
