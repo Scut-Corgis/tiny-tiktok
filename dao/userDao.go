@@ -11,7 +11,7 @@ type User struct {
 	Password string
 }
 
-// QueryUserByName 根据用户名查询用户
+// QueryUserByName 根据name查询User
 func QueryUserByName(name string) (User, error) {
 	user := User{}
 	if err := Db.Where("name = ?", name).First(&user).Error; err != nil {
@@ -21,7 +21,7 @@ func QueryUserByName(name string) (User, error) {
 	return user, nil
 }
 
-// QueryUserById 根据用户id查询用户
+// QueryUserById 根据id查询User
 func QueryUserById(id int64) (User, error) {
 	user := User{}
 	if err := Db.Where("id = ?", id).First(&user).Error; err != nil {
@@ -31,6 +31,7 @@ func QueryUserById(id int64) (User, error) {
 	return user, nil
 }
 
+// QueryUserRespById 根据id查询UserResp
 func QueryUserRespById(id int64) (UserResp, error) {
 	userInfo := UserResp{}
 	user, err := QueryUserById(id)
@@ -46,7 +47,7 @@ func QueryUserRespById(id int64) (UserResp, error) {
 	}
 }
 
-// InsertUser 将user插入表内
+// InsertUser 将User插入user表内
 func InsertUser(user *User) bool {
 	if err := Db.Create(&user).Error; err != nil {
 		log.Println(err.Error())

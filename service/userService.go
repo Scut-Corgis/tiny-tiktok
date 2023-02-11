@@ -14,4 +14,10 @@ type UserService interface {
 
 	// InsertUser 将User插到users表中
 	InsertUser(user *dao.User) bool
+
+	// Register 用户注册
+	Register(username string, password string) (int32, string)
+
+	// Login 用户登录
+	Login(username string, password string) (int32, string)
 }
