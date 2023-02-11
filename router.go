@@ -13,7 +13,7 @@ func initRouter(r *gin.Engine) {
 	apiRouter := r.Group("/douyin")
 
 	// basic apis
-	apiRouter.GET("/feed/", jwt.AuthGetWithoutLogin(), controller.Feed) //本实现为不校验token，因为逻辑上没有必要，登陆或不登陆均可以获取feed流
+	apiRouter.GET("/feed/", jwt.AuthGetWithoutLogin(), controller.Feed) // 本实现为不校验token，因为逻辑上没有必要，登陆或不登陆均可以获取feed流
 	apiRouter.GET("/user/", jwt.AuthGet(), controller.UserInfo)
 	apiRouter.POST("/user/register/", controller.Register)
 	apiRouter.POST("/user/login/", controller.Login)

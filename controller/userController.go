@@ -53,16 +53,17 @@ func Register(c *gin.Context) {
 				println("Insert user failed！")
 			}
 			unlock := redis.Unlock(username) // 解锁
-			if unlock != 0 {
+			if !unlock {
 				c.JSON(http.StatusOK, UserLoginResponse{
 					Response: Response{StatusCode: 1, StatusMsg: "Register failed!"},
 				})
 			}
+			log.Println("Unlock successfully!")
 			user := usi.QueryUserByName(username)
 			c.JSON(http.StatusOK, UserLoginResponse{
 				Response: Response{StatusCode: 0, StatusMsg: "Register successfully!"},
 				UserId:   user.Id,
-				Token:    jwt.GenerateToken(username),
+				Token:    jwt.GenerateToken(username, user.Id),
 			})
 		}
 	} else {
@@ -82,7 +83,7 @@ func Login(c *gin.Context) {
 		c.JSON(http.StatusOK, UserLoginResponse{
 			Response: Response{StatusCode: 0, StatusMsg: "Login success"},
 			UserId:   user.Id,
-			Token:    jwt.GenerateToken(user.Name),
+			Token:    jwt.GenerateToken(user.Name, user.Id),
 		})
 	} else {
 		c.JSON(http.StatusOK, UserLoginResponse{

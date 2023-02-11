@@ -41,7 +41,7 @@ func TestPublish(t *testing.T) {
 	}
 	fmt.Println(string(body))
 
-	token := jwt.GenerateToken("Corgis")
+	token := jwt.GenerateToken("Corgis", 1000)
 	fmt.Println("--------")
 
 	//投稿测试

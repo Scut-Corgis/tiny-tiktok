@@ -7,7 +7,7 @@ import (
 )
 
 func TestCommentAction(t *testing.T) {
-	token := "token=" + jwt.GenerateToken("qly")
+	token := "token=" + jwt.GenerateToken("qly", 1000)
 
 	// 评论操作——添加评论
 	url1 := "http://127.0.0.1:8080/douyin/comment/action/?video_id=1002&action_type=1&comment_text=fuck"
@@ -21,7 +21,7 @@ func TestCommentAction(t *testing.T) {
 }
 
 func TestCommentList(t *testing.T) {
-	token := jwt.GenerateToken("qly")
+	token := jwt.GenerateToken("qly", 1000)
 	url1 := "http://127.0.0.1:8080/douyin/comment/list/?video_id=1002&token=" + token
 	method1 := "GET"
 	SendRequest(method1, url1, strings.NewReader(token))

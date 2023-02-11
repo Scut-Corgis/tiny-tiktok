@@ -10,15 +10,17 @@ import (
 var mySigningKey = []byte("tiny-tiktok") // 密钥
 
 type MyCustomClaims struct {
-	Name string `json:"name"` //token中只放入了用户名
+	Name string `json:"name"` // 用户名
+	Id   int64  `json:"id"`   // id
 	jwt.RegisteredClaims
 }
 
-func GenerateToken(name string) string {
-	fmt.Printf("generate token: %v\n", name)
+func GenerateToken(name string, id int64) string {
+	fmt.Printf("generate token: %v %v\n", name, id)
 	// Create the claims
 	claims := MyCustomClaims{
 		name,
+		id,
 		jwt.RegisteredClaims{
 			// A usual scenario is to set the expiration time relative to the current time
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)),

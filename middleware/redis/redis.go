@@ -35,17 +35,17 @@ func Lock(key string, value string) bool {
 	defer mutex.Unlock()
 	ret, err := RedisDb.SetNX(ctx, key, value, time.Second*10).Result()
 	if err != nil {
-		log.Println(err.Error())
+		log.Println("Lock error:", err.Error())
 		return ret
 	}
 	return ret
 }
 
-func Unlock(key string) int64 {
-	ret, err := RedisDb.Del(ctx, key).Result()
+func Unlock(key string) bool {
+	err := RedisDb.Del(ctx, key).Err()
 	if err != nil {
-		log.Println(err.Error())
-		return ret
+		log.Println("Unlock error:", err.Error())
+		return false
 	}
-	return ret
+	return true
 }

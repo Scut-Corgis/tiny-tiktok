@@ -1,6 +1,6 @@
 /*
 userController测试文件
-go test -v userController_test.go
+go test -v userController_test.go common_test.go
 */
 package controller
 
@@ -32,7 +32,7 @@ func TestLogin(t *testing.T) {
 }
 
 func TestUserInfo(t *testing.T) {
-	token := jwt.GenerateToken("qly")
+	token := jwt.GenerateToken("wpy51", 1089)
 
 	// 用户信息——用户不存在
 	url1 := "http://127.0.0.1:8080/douyin/user/?user_id=9999&token=" + token
