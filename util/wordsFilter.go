@@ -7,12 +7,13 @@ import (
 
 var Filter *sensitive.Filter
 
-var path = "./"
+const path = "./config/sensitiveDict.txt"
 
-func InitwordsFilter() {
-	filter := sensitive.New()
-	err := filter.LoadWordDict(path)
+func InitWordsFilter() {
+	Filter = sensitive.New()
+	err := Filter.LoadWordDict(path)
 	if err != nil {
-		log.Println("InitFilter failed:", err.Error())
+		log.Println("filter init failed:", err.Error())
 	}
+	log.Println("filter init successfully!")
 }

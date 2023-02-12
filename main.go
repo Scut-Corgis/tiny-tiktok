@@ -29,5 +29,5 @@ func initDependencies() {
 	redis.InitRedis()
 	ffmpeg.Init()
 	ftp.Init()
-	util.InitwordsFilter()
+	util.InitWordsFilter()
 }

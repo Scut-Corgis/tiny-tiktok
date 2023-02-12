@@ -7,10 +7,7 @@ type CommentService interface {
 	QueryCommentsByVideoId(id int64) []dao.Comment
 
 	// PostComment 发布评论
-	PostComment(comment *dao.Comment) (int32, string)
-
-	// InsertComment 插入评论
-	InsertComment(comment *dao.Comment) bool
+	PostComment(comment dao.Comment) (int32, string)
 
 	// DeleteComment 删除评论
 	DeleteComment(id int64) bool

@@ -2,6 +2,7 @@ package controller
 
 import (
 	"github.com/Scut-Corgis/tiny-tiktok/service"
+	"github.com/Scut-Corgis/tiny-tiktok/util"
 	"net/http"
 	"strconv"
 	"time"
@@ -26,35 +27,39 @@ func CommentAction(c *gin.Context) {
 	usi := service.UserServiceImpl{}
 
 	// 获取当前用户
-	currentName := c.GetString("username")
-	user := usi.QueryUserByName(currentName)
+	currentUserName := c.GetString("username")
+	user := usi.QueryUserByName(currentUserName)
 
 	// 获取当前视频
-	video_id := c.Query("video_id")
-	id, _ := strconv.ParseInt(video_id, 10, 64)
-	video, _ := dao.QueryVideoById(id)
+	id := c.Query("video_id")
+	videoId, _ := strconv.ParseInt(id, 10, 64)
+	video := csi.QueryVideoById(videoId)
 
 	actionType := c.Query("action_type")
-	if !dao.JudgeVideoIsExist(id) {
-		c.JSON(http.StatusOK, CommentActionResponse{
-			Response: Response{StatusCode: 1, StatusMsg: "Video doesn't exist"},
-		})
-	}
+	//if !dao.JudgeVideoIsExist(videoId) {
+	//	c.JSON(http.StatusOK, CommentActionResponse{
+	//		Response: Response{StatusCode: 1, StatusMsg: "Video doesn't exist"},
+	//	})
+	//}
 	if actionType == "1" {
 		text := c.Query("comment_text")
+		text = util.Filter.Replace(text, '#') // 评论敏感词过滤
 		t := time.Now()
 		comment := dao.Comment{
 			UserId:      user.Id,
-			VideoId:     id,
+			VideoId:     videoId,
 			CommentText: text,
 			CreateDate:  t,
 		}
-		if !csi.InsertComment(&comment) {
-			println("Insert comment failed!")
+		code, message := csi.PostComment(comment)
+		if code != 0 {
+			c.JSON(http.StatusOK, CommentActionResponse{
+				Response: Response{StatusCode: code, StatusMsg: message},
+			})
 		}
 		userInfo, _ := usi.QueryUserRespById(user.Id)
 		c.JSON(http.StatusOK, CommentActionResponse{
-			Response: Response{StatusCode: 0, StatusMsg: "success"},
+			Response: Response{StatusCode: code, StatusMsg: message},
 			CommentInfo: CommentInfo{
 				Id: comment.Id,
 				User: User{
@@ -69,29 +74,26 @@ func CommentAction(c *gin.Context) {
 			},
 		})
 	} else {
-		comment_id := c.Query("comment_id")
-		commentId, _ := strconv.ParseInt(comment_id, 10, 64)
-		if !csi.DeleteComment(commentId) {
-			c.JSON(http.StatusOK, likeResponse{StatusCode: 1, StatusMsg: "Comment not found!"})
-		} else {
-			c.JSON(http.StatusOK, likeResponse{StatusCode: 0, StatusMsg: "Comment delete successfully!"})
-		}
+		id := c.Query("comment_id")
+		commentId, _ := strconv.ParseInt(id, 10, 64)
+		code, message := csi.DeleteComment(commentId)
+		c.JSON(http.StatusOK, likeResponse{StatusCode: code, StatusMsg: message})
 	}
 }
 
-// CommentList all videos have same demo comment list
+// CommentList GET /douyin/comment/list/ 评论列表
 func CommentList(c *gin.Context) {
 	usi := service.UserServiceImpl{}
 	csi := service.CommentServiceImpl{}
 
-	video_id := c.Query("video_id")
-	id, _ := strconv.ParseInt(video_id, 10, 64)
-	video, _ := dao.QueryVideoById(id)
+	id := c.Query("video_id")
+	videoId, _ := strconv.ParseInt(id, 10, 64)
+	video := csi.QueryVideoById(videoId)
 
-	if !dao.JudgeVideoIsExist(id) {
-		c.JSON(http.StatusOK, likeResponse{StatusCode: 1, StatusMsg: "Video doesn't exist"})
-	}
-	comments := csi.QueryCommentsByVideoId(id)
+	//if !dao.JudgeVideoIsExist(id) {
+	//	c.JSON(http.StatusOK, likeResponse{StatusCode: 1, StatusMsg: "Video doesn't exist"})
+	//}
+	comments := csi.QueryCommentsByVideoId(videoId)
 	var commonList []CommentInfo
 	for _, comment := range comments {
 		user, err := usi.QueryUserRespById(comment.UserId)

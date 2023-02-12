@@ -35,7 +35,7 @@ func Init() {
 	Ffchan = make(chan Ffmsg, config.Ssh_max_taskCnt)
 	go dispatcher()
 	go keepalive()
-	log.Println("ssh initialize successfully!")
+	log.Println("ssh init successfully!")
 }
 
 // 将ffmpeg命令以及其参数通过ssh运行，若运行失败，则重新放入channel运行
