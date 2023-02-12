@@ -1,12 +1,13 @@
 package controller
 
 import (
+	"net/http"
+	"strconv"
+
 	"github.com/Scut-Corgis/tiny-tiktok/dao"
 	"github.com/Scut-Corgis/tiny-tiktok/middleware/jwt"
 	"github.com/Scut-Corgis/tiny-tiktok/service"
 	"github.com/gin-gonic/gin"
-	"net/http"
-	"strconv"
 )
 
 type UserLoginResponse struct {
