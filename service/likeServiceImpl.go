@@ -7,7 +7,7 @@ import (
 )
 
 type LikeServiceImpl struct {
-	UserService
+	UserService //出错
 }
 
 func (LikeServiceImpl) Like(userId int64, videoId int64) error {
