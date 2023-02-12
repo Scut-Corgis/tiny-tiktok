@@ -6,6 +6,6 @@ import (
 
 func TestAuth(*testing.T) {
 	username := "corgis"
-	token := GenerateToken(username)
+	token := GenerateToken(username, 1000)
 	println(token)
 }

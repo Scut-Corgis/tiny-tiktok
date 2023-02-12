@@ -1,17 +1,26 @@
 package service
 
 import (
+<<<<<<< HEAD
 	"log"
+=======
+	"github.com/Scut-Corgis/tiny-tiktok/middleware/redis"
+	"log"
+	"math/rand"
+	"strconv"
+	"time"
+>>>>>>> c389386d2593800df078ce9d9c590487823972e0
 
 	"github.com/Scut-Corgis/tiny-tiktok/dao"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type UserServiceImpl struct {
-	FollowServiceImpl
+	RelationServiceImpl
 	LikeServiceImpl
 }
 
+// QueryUserByName 根据name获取User对象
 func (UserServiceImpl) QueryUserByName(name string) dao.User {
 	user, err := dao.QueryUserByName(name)
 	if err != nil {
@@ -23,6 +32,7 @@ func (UserServiceImpl) QueryUserByName(name string) dao.User {
 	return user
 }
 
+// QueryUserById 根据id获取User对象
 func (UserServiceImpl) QueryUserById(id int64) dao.User {
 	user, err := dao.QueryUserById(id)
 	if err != nil {
@@ -34,6 +44,7 @@ func (UserServiceImpl) QueryUserById(id int64) dao.User {
 	return user
 }
 
+// QueryUserRespById 根据id获取UserResp对象
 func (UserServiceImpl) QueryUserRespById(id int64) (dao.UserResp, error) {
 	userResp, err := dao.QueryUserRespById(id)
 	if err != nil {
@@ -45,17 +56,51 @@ func (UserServiceImpl) QueryUserRespById(id int64) (dao.UserResp, error) {
 	return userResp, nil
 }
 
-func (UserServiceImpl) InsertUser(user *dao.User) bool {
-	flag := dao.InsertUser(user)
-	if flag == false {
-		log.Println("Insert user failed!")
-		return flag
+// Register 用户注册，返回状态码和状态信息
+func (UserServiceImpl) Register(username string, password string) (int32, string) {
+	rand.Seed(time.Now().UnixNano())
+	value := strconv.Itoa(rand.Int())
+	lock := redis.Lock(username, value) // 加锁
+	if lock {
+		log.Println("Add lock successfully!")
+		user, _ := dao.QueryUserByName(username)
+		if username == user.Name {
+			return 1, "User already exist!"
+		} else {
+			encoderPassword, err := HashEncode(password)
+			if err != nil {
+				return 1, "Incorrect password format!"
+			}
+			newUser := dao.User{
+				Name:     username,
+				Password: encoderPassword,
+			}
+			if !dao.InsertUser(&newUser) {
+				return 1, "Insert user failed！"
+			}
+			unlock := redis.Unlock(username) // 解锁
+			if !unlock {
+				return 1, "Register failed!"
+			}
+			log.Println("Unlock successfully!")
+			return 0, "Register successfully!"
+		}
+	} else {
+		return 1, "Wait for register!"
 	}
-	log.Println("Insert user successfully!")
-	return flag
 }
 
-// HashEncode hash加密密码
+// Login 用户登录，返回状态码和状态信息
+func (UserServiceImpl) Login(username string, password string) (int32, string) {
+	user, _ := dao.QueryUserByName(username)
+	if ComparePasswords(user.Password, password) {
+		return 0, "Login success"
+	} else {
+		return 1, "Username or Password error"
+	}
+}
+
+// HashEncode 加密密码
 func HashEncode(password string) (string, error) {
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
