@@ -32,7 +32,7 @@ func TestLogin(t *testing.T) {
 }
 
 func TestUserInfo(t *testing.T) {
-	token := jwt.GenerateToken("wpy51", 1089)
+	token := jwt.GenerateToken("qly", 1000)
 
 	// 用户信息——用户不存在
 	url1 := "http://127.0.0.1:8080/douyin/user/?user_id=9999&token=" + token

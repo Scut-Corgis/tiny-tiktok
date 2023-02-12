@@ -31,7 +31,7 @@ func (CommentServiceImpl) PostComment(comment dao.Comment) (int32, string) {
 	if flag1 == false {
 		return 1, "Post comment failed!"
 	}
-	flag2 := InsertRedis(comment.VideoId, comment.Id) // 添加redis缓存
+	flag2 := CommentInsertRedis(comment.VideoId, comment.Id) // 添加redis缓存
 	if !flag2 {
 		log.Println("Insert redis failed!")
 	}
@@ -65,7 +65,7 @@ func (CommentServiceImpl) DeleteComment(id int64) (int32, string) {
 	return 0, "Delete comment successfully!"
 }
 
-func InsertRedis(video_id int64, comment_id int64) bool {
+func CommentInsertRedis(video_id int64, comment_id int64) bool {
 	// 更新RedisDbVideoIdCommentId
 	redisVideoKey := util.Relation_Video_Key + strconv.FormatInt(video_id, 10)
 	if err := redis.RedisDbVideoIdCommentId.SAdd(redis.Ctx, redisVideoKey, comment_id).Err(); err != nil {

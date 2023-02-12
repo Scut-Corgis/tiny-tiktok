@@ -2,6 +2,7 @@ package service
 
 import (
 	"github.com/Scut-Corgis/tiny-tiktok/middleware/redis"
+	"github.com/Scut-Corgis/tiny-tiktok/util"
 	"log"
 	"math/rand"
 	"strconv"
@@ -109,6 +110,16 @@ func HashEncode(password string) (string, error) {
 func ComparePasswords(password1 string, password2 string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(password1), []byte(password2))
 	if err != nil {
+		return false
+	}
+	return true
+}
+
+func UserInsertRedis(userId int64, username string) bool {
+	// 更新RedisDbUserIdUserName
+	redisUserKey := util.Relation_User_Key + strconv.FormatInt(userId, 10)
+	if err := redis.RedisDbCommentIdVideoId.Set(redis.Ctx, redisUserKey, username, util.Relation_User_TTL).Err(); err != nil {
+		log.Println("Insert RedisDbUserIdUserName failed!")
 		return false
 	}
 	return true

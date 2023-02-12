@@ -101,8 +101,9 @@ func AuthPost() gin.HandlerFunc {
 		})
 		if err == nil {
 			if claims, ok := token.Claims.(*MyCustomClaims); ok && token.Valid {
-				log.Println("Token right : ", claims.Name)
+				log.Println("Token right:", claims.Name, claims.Id)
 				c.Set("username", claims.Name)
+				c.Set("id", claims.Id)
 				c.Next()
 				return
 			}
