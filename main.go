@@ -30,4 +30,5 @@ func initDependencies() {
 	ffmpeg.Init()
 	ftp.Init()
 	util.InitWordsFilter()
+	util.InitCuckooFilter()
 }

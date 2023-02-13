@@ -8,6 +8,7 @@ require (
 	github.com/golang-jwt/jwt/v4 v4.4.3
 	github.com/importcjj/sensitive v0.0.0-20200106142752-42d1c505be7b
 	github.com/jlaffaye/ftp v0.1.0
+	github.com/linvon/cuckoo-filter v0.4.0
 	golang.org/x/crypto v0.0.0-20220214200702-86341886e292
 	gorm.io/driver/mysql v1.4.5
 	gorm.io/gorm v1.24.3
@@ -15,6 +16,7 @@ require (
 
 require (
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
+	github.com/dgryski/go-metro v0.0.0-20200812162917-85c65e2d0165 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 )
 
