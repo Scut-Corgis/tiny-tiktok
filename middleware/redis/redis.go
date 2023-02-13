@@ -14,7 +14,6 @@ var mutex sync.Mutex
 
 // RedisDb 定义一个全局变量
 var RedisDb *redis.Client
-var RedisDbUserIdUserName *redis.Client   // 将key:user_id value:username存入DB3
 var RedisDbCommentIdVideoId *redis.Client // key:comment_id value:video_id relation 1:1
 var RedisDbVideoIdCommentId *redis.Client // key:video_id value:comment_id ralation 1:n
 var Ctx = context.Background()
@@ -36,12 +35,6 @@ func InitRedis() {
 		Addr:     config.Redis_addr_port,
 		Password: config.Redis_password,
 		DB:       2,
-	})
-	// 将key:user_id value:username存入DB3
-	RedisDbUserIdUserName = redis.NewClient(&redis.Options{
-		Addr:     config.Redis_addr_port,
-		Password: config.Redis_password,
-		DB:       3,
 	})
 	_, err := RedisDb.Ping(Ctx).Result()
 	if err != nil {

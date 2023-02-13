@@ -5,10 +5,6 @@ import "time"
 const Day = time.Hour * 24
 const Month = Day * 30
 
-// user 模块
-const Relation_User_Key = "relation:user"
-const Relation_User_TTL = Month
-
 // relation 模块
 const Relation_Follow_Key = "relation:follow:"
 const Relation_Follow_TTL = Day
