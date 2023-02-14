@@ -18,3 +18,7 @@ const Relation_Comment_TTL = Day
 
 // video 模块
 const Relation_Video_Key = "relation:video"
+
+// 点赞模块
+const Like_User_Key = "like:user"
+const Like_Video_key = "like:video"

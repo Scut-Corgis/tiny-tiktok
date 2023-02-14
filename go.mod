@@ -6,7 +6,9 @@ require (
 	github.com/brianvoe/gofakeit/v6 v6.20.1
 	github.com/gin-gonic/gin v1.8.2
 	github.com/golang-jwt/jwt/v4 v4.4.3
+	github.com/importcjj/sensitive v0.0.0-20200106142752-42d1c505be7b
 	github.com/jlaffaye/ftp v0.1.0
+	github.com/streadway/amqp v1.0.0
 	golang.org/x/crypto v0.0.0-20220214200702-86341886e292
 	gorm.io/driver/mysql v1.4.5
 	gorm.io/gorm v1.24.3

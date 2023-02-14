@@ -16,6 +16,9 @@ var mutex sync.Mutex
 var RedisDb *redis.Client
 var RedisDbCommentIdVideoId *redis.Client // key:comment_id value:video_id relation 1:1
 var RedisDbVideoIdCommentId *redis.Client // key:video_id value:comment_id ralation 1:n
+
+var RedisDbLikeUserIdVideoId *redis.Client // key:user_id value:video_id ralation 1:n
+var RedisDbLikeVideoIdUserId *redis.Client // key:video_id value:user_id ralation 1:n
 var Ctx = context.Background()
 
 func InitRedis() {
@@ -35,6 +38,18 @@ func InitRedis() {
 		Addr:     config.Redis_addr_port,
 		Password: config.Redis_password,
 		DB:       2,
+	})
+	// 将key:user_id vakue:video_id 存入DB3
+	RedisDbLikeUserIdVideoId = redis.NewClient(&redis.Options{
+		Addr:     config.Redis_addr_port,
+		Password: config.Redis_password,
+		DB:       3,
+	})
+	// 将key:video_id vakue:user_id 存入DB4
+	RedisDbLikeVideoIdUserId = redis.NewClient(&redis.Options{
+		Addr:     config.Redis_addr_port,
+		Password: config.Redis_password,
+		DB:       4,
 	})
 	_, err := RedisDb.Ping(Ctx).Result()
 	if err != nil {

@@ -263,4 +263,21 @@ comments表 user_id
    TTL类似。
 
 
-    
+#### rabbitmq
+
+下载安装：
+https://blog.csdn.net/qq_22638399/article/details/81704372
+如果 /etc/rabbitmq中没有rabbitmq.conf可以自己创建一个，然后添加 [{rabbit, [{loopback_users, []}]}]. 就可以远程登录http://ip:15672
+云服务器远程访问需要开放端口：
+https://blog.csdn.net/Escorts/article/details/102698760
+
+添加用户：
+https://blog.csdn.net/chenshourui/article/details/81203770?spm=1001.2101.3001.6650.2&utm_medium=distribute.pc_relevant.none-task-blog-2%7Edefault%7ECTRLIST%7ERate-2-81203770-blog-79469773.pc_relevant_recovery_v2&depth_1-utm_source=distribute.pc_relevant.none-task-blog-2%7Edefault%7ECTRLIST%7ERate-2-81203770-blog-79469773.pc_relevant_recovery_v2&utm_relevant_index=5
+
+我是用户名:tiktok 密码：123456 都设置成这个吧，就不用下载后在该用户密码了
+
+使用：
+基本上就是使用简单模式，
+1 先初始化自己的实例 New__RabbitMQ tcp连接已经在MyRabbitMQ中了，所以就设置一下通道
+2 生产者：
+3 消费者：都差不多

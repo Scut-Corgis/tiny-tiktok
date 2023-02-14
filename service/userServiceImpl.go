@@ -1,15 +1,16 @@
 package service
 
 import (
-<<<<<<< HEAD
+	//<<<<<<< HEAD
 	"log"
-=======
+	//=======
 	"github.com/Scut-Corgis/tiny-tiktok/middleware/redis"
-	"log"
+	//"log"
 	"math/rand"
 	"strconv"
 	"time"
->>>>>>> c389386d2593800df078ce9d9c590487823972e0
+
+	//>>>>>>> c389386d2593800df078ce9d9c590487823972e0
 
 	"github.com/Scut-Corgis/tiny-tiktok/dao"
 	"golang.org/x/crypto/bcrypt"

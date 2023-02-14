@@ -1,13 +1,21 @@
 package controller
 
+// import (
+// <<<<<<< HEAD
+// 	"net/http"
+// 	"strconv"
+
+// 	"github.com/Scut-Corgis/tiny-tiktok/dao"
+// =======
+// >>>>>>> c389386d2593800df078ce9d9c590487823972e0
+// 	"github.com/Scut-Corgis/tiny-tiktok/middleware/jwt"
+// 	"github.com/Scut-Corgis/tiny-tiktok/service"
+// 	"github.com/gin-gonic/gin"
+// )
 import (
-<<<<<<< HEAD
 	"net/http"
 	"strconv"
 
-	"github.com/Scut-Corgis/tiny-tiktok/dao"
-=======
->>>>>>> c389386d2593800df078ce9d9c590487823972e0
 	"github.com/Scut-Corgis/tiny-tiktok/middleware/jwt"
 	"github.com/Scut-Corgis/tiny-tiktok/service"
 	"github.com/gin-gonic/gin"

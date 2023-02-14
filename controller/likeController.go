@@ -21,17 +21,17 @@ type GetLikeListResponse struct {
 
 // 点赞和取消点赞功能
 func FavoriteAction(c *gin.Context) {
-	username := c.GetString("username")
+	StrUserId := c.GetString("id")
 	favoriteService := service.LikeServiceImpl{}
 	//user := favoriteService.QueryUserByName(username) //这种调用会出错！
-	user := service.UserServiceImpl{}.QueryUserByName(username)
+	//user := service.UserServiceImpl{}.QueryUserByName(username)
 	//user, err := dao.QueryUserByName(username)
 	// if err != nil {
 	// 	c.JSON(http.StatusOK, Response{StatusCode: 1, StatusMsg: "查询用户出错"})
 	// 	return
 	// }
 
-	userId := user.Id
+	userId, _ := strconv.ParseInt(StrUserId, 10, 64)
 	strVideoId := c.Query("video_id")
 	videoId, _ := strconv.ParseInt(strVideoId, 10, 64)
 	strActionType := c.Query("action_type")

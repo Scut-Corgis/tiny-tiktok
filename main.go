@@ -1,12 +1,14 @@
 package main
 
 import (
-	"github.com/Scut-Corgis/tiny-tiktok/util"
 	"log"
+
+	"github.com/Scut-Corgis/tiny-tiktok/util"
 
 	"github.com/Scut-Corgis/tiny-tiktok/dao"
 	"github.com/Scut-Corgis/tiny-tiktok/middleware/ffmpeg"
 	"github.com/Scut-Corgis/tiny-tiktok/middleware/ftp"
+	"github.com/Scut-Corgis/tiny-tiktok/middleware/rabbitmq"
 	"github.com/Scut-Corgis/tiny-tiktok/middleware/redis"
 	"github.com/gin-gonic/gin"
 )
@@ -26,8 +28,11 @@ func main() {
 func initDependencies() {
 	log.SetFlags(log.Lshortfile)
 	dao.Init()
+	rabbitmq.Init()
+	rabbitmq.InitLikeRabbitMQ()
 	redis.InitRedis()
 	ffmpeg.Init()
 	ftp.Init()
 	util.InitWordsFilter()
+
 }
