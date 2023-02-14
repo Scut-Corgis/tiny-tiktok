@@ -44,14 +44,19 @@ func (UserServiceImpl) QueryUserById(id int64) dao.User {
 
 // QueryUserRespById 根据id获取UserResp对象
 func (UserServiceImpl) QueryUserRespById(id int64) (dao.UserResp, error) {
-	userResp, err := dao.QueryUserRespById(id)
+	rsi := RelationServiceImpl{}
+	userInfo := dao.UserResp{}
+	user, err := dao.QueryUserById(id)
 	if err != nil {
-		log.Println("error:", err.Error())
-		log.Println("User not found!")
-		return userResp, err
+		log.Println(err.Error())
+		return userInfo, err
 	}
-	log.Println("Query user successfully!")
-	return userResp, nil
+	userInfo.FollowerCount = rsi.CountFollowers(id) // 统计粉丝数量
+	userInfo.FollowCount = rsi.CountFollowings(id)  // 统计关注博主的数量
+	userInfo.Id = user.Id
+	userInfo.Name = user.Name
+	return userInfo, err
+
 }
 
 // Register 用户注册，返回状态码和状态信息
