@@ -262,5 +262,58 @@ comments表 user_id
    例如：`const Relation_Follow_Key = "relation:follow:"`，在该文件内进行统一设置，使用时再加上对应的id或唯一性标识的字段。\
    TTL类似。
 
+#### redis 安全性
 
-    
+##### 缓存击穿 — 分布式锁
+
+```go
+func Lock(key string, value string) bool {
+	mutex.Lock() // 保证程序不存在并发冲突问题
+	defer mutex.Unlock()
+	ret, err := RedisDb.SetNX(Ctx, key, value, time.Second*5).Result()
+	if err != nil {
+		log.Println("Lock error:", err.Error())
+		return ret
+	}
+	return ret
+}
+
+func Unlock(key string) bool {
+	err := RedisDb.Del(Ctx, key).Err()
+	if err != nil {
+		log.Println("Unlock error:", err.Error())
+		return false
+	}
+	return true
+}
+
+/*
+使用方法:
+Lock()
+service业务
+...
+Unlock()
+*/
+```
+
+##### 缓存穿透 — 布谷鸟过滤器
+
+```go
+// 新建一个过滤器，第一个参数为桶大小，第二个为指纹大小，第三个为过滤器容量
+cf := cuckoo.NewFilter(4, 9, 3900, cuckoo.TableTypePacked)
+fmt.Println(cf.Info())
+fmt.Println(cf.FalsePositiveRate())
+
+a := []byte("A")
+cf.Add(a) // 向过滤器添加一个数据
+fmt.Println(cf.Contain(a)) // 判断过滤器是否包含该数据
+fmt.Println(cf.Size())
+
+b := cf.Encode() // 编码过滤器
+ncf, _ := cuckoo.Decode(b) // 解码过滤器
+fmt.Println(ncf.Contain(a))
+
+cf.Delete(a) // 删除元素
+fmt.Println(cf.Size())
+```
+

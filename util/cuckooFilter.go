@@ -2,28 +2,12 @@ package util
 
 import (
 	"github.com/linvon/cuckoo-filter"
+	"log"
 )
 
-var CuckooFilter *cuckoo.Filter
+var CuckooFilterUserName *cuckoo.Filter // 新建一个过滤器过滤用户名
 
 func InitCuckooFilter() {
-	CuckooFilter = cuckoo.NewFilter(4, 8, 100000, cuckoo.TableTypePacked)
+	CuckooFilterUserName = cuckoo.NewFilter(4, 8, 100000, cuckoo.TableTypePacked)
+	log.Println("CuckooFilter init successfully!")
 }
-
-//func main() {
-//	cf := cuckoo.NewFilter(4, 8, 100000, cuckoo.TableTypePacked)
-//	fmt.Println(cf.Info())
-//	fmt.Println(cf.FalsePositiveRate())
-//
-//	a := []byte("A")
-//	cf.Add(a)
-//	fmt.Println(cf.Contain(a))
-//	fmt.Println(cf.Size())
-//
-//	b, _ := cf.Encode()
-//	ncf, _ := cuckoo.Decode(b)
-//	fmt.Println(ncf.Contain(a))
-//
-//	cf.Delete(a)
-//	fmt.Println(cf.Size())
-//}

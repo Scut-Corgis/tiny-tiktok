@@ -29,6 +29,10 @@ func TestLogin(t *testing.T) {
 	url2 := "http://127.0.0.1:8080/douyin/user/login/?username=qly&password=122"
 	method2 := "POST"
 	SendRequest(method2, url2, nil)
+	// 用户登录——用户名不存在
+	url3 := "http://127.0.0.1:8080/douyin/user/login/?username=qqly&password=122"
+	method3 := "POST"
+	SendRequest(method3, url3, nil)
 }
 
 func TestUserInfo(t *testing.T) {
