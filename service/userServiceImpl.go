@@ -1,12 +1,13 @@
 package service
 
 import (
-	"github.com/Scut-Corgis/tiny-tiktok/middleware/redis"
-	"github.com/Scut-Corgis/tiny-tiktok/util"
 	"log"
 	"math/rand"
 	"strconv"
 	"time"
+
+	"github.com/Scut-Corgis/tiny-tiktok/middleware/redis"
+	"github.com/Scut-Corgis/tiny-tiktok/util"
 
 	"github.com/Scut-Corgis/tiny-tiktok/dao"
 	"golang.org/x/crypto/bcrypt"
