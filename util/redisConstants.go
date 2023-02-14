@@ -1,21 +1,31 @@
 package util
 
 import (
+	"math/rand"
 	"time"
 )
 
 const Day = time.Hour * 24
 const Month = Day * 30
 
+var HourRandnum int64 = rand.Int63n(24)
+var DayRandnum int64 = rand.Int63n(30)
+
 // user模块
 const User_Id_Key = "user:id:" // key:user_id value:username relation 1:1
 
 // relation 模块
 const Relation_Follow_Key = "relation:follow:"
-const Relation_Follow_TTL = Day
 
-const Relation_FollowerList_Key = "relation:followerList:"
-const Relation_FollowerList_TTL = Day
+var Relation_Follow_TTL = Day + Day*time.Duration(DayRandnum)
+
+const Relation_FollowerCnt_Key = "relation:followersCount:"
+
+var Relation_FollowerCnt_TTL = Day + Day*time.Duration(DayRandnum)
+
+const Relation_FollowingCnt_Key = "relation:followingsCount:"
+
+var Relation_FollowingCnt_TTL = Day + Day*time.Duration(DayRandnum)
 
 // comment 模块
 const Relation_Comment_Key = "relation:comment"

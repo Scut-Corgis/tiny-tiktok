@@ -27,10 +27,11 @@ var RedisDbLikeVideoIdUserId *redis.Client // key:video_id value:user_id ralatio
 var Ctx = context.Background()
 
 func InitRedis() {
+
 	RedisDb = redis.NewClient(&redis.Options{
 		Addr:     config.Redis_addr_port,
 		Password: config.Redis_password,
-		DB:       0, // redis一共16个库，指定其中一个库即可
+		DB:       0,
 	})
 
 	// 将key:comment_id value:video_id存入DB1

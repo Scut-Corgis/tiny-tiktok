@@ -32,6 +32,10 @@ func (RelationServiceImpl) Follow(userId int64, followId int64) (bool, error) {
 	redis.RedisDb.SAdd(redis.Ctx, redisFollowKey, followId)
 	// 更新过期时间
 	redis.RedisDb.Expire(redis.Ctx, redisFollowKey, util.Relation_Follow_TTL)
+
+	// 保证数据一致性：主动使count缓存失效
+	rsi.ExpireFollowerCnt(followId)
+	rsi.ExpireFollowingCnt(userId)
 	return true, nil
 }
 
@@ -56,7 +60,9 @@ func (RelationServiceImpl) UnFollow(userId int64, followId int64) (bool, error) 
 	redis.RedisDb.SRem(redis.Ctx, redisFollowKey, followId)
 	// 更新过期时间
 	redis.RedisDb.Expire(redis.Ctx, redisFollowKey, util.Relation_Follow_TTL)
-
+	// 保证数据一致性：主动使count缓存失效
+	rsi.ExpireFollowerCnt(followId)
+	rsi.ExpireFollowingCnt(userId)
 	return true, nil
 }
 
@@ -77,21 +83,30 @@ func (RelationServiceImpl) JudgeIsFollowById(userId int64, followId int64) bool 
 		redis.RedisDb.Expire(redis.Ctx, redisFollowKey, util.Relation_Follow_TTL)
 		return true
 	}
-	return dao.JudgeIsFollowById(userId, followId)
+	// 对于出现redis过期的情况：
+	// redis中没记录，则在mysql中查
+	flag = dao.JudgeIsFollowById(userId, followId)
+	if flag {
+		// 更新redis
+		redis.RedisDb.SAdd(redis.Ctx, redisFollowKey, followId)
+		redis.RedisDb.Expire(redis.Ctx, redisFollowKey, util.Relation_Follow_TTL)
+	}
+	return flag
 }
 
 /*
 获取用户关注列表
 */
 func (RelationServiceImpl) GetFollowList(userId int64) ([]dao.UserResp, error) {
+	//#优化：关注列表由于要返回具体用户信息，且redis存在过期的情况，数据一致性无法保证，因此，暂不做redis缓存
+	usi := UserServiceImpl{}
 	followList := make([]dao.UserResp, 0)
-
 	followIds, err := dao.QueryFollowsIdByUserId(userId)
 	if nil != err {
 		return followList, err
 	}
 	for _, followId := range followIds {
-		followInfo, err := dao.QueryUserRespById(followId)
+		followInfo, err := usi.QueryUserRespById(followId)
 		if nil != err {
 			return followList, err
 		}
@@ -106,15 +121,18 @@ func (RelationServiceImpl) GetFollowList(userId int64) ([]dao.UserResp, error) {
 获取用户粉丝列表
 */
 func (RelationServiceImpl) GetFollowerList(userId int64) ([]dao.UserResp, error) {
+	//#优化：关注列表由于要返回具体用户信息，且redis存在过期的情况，数据一致性无法保证，因此，暂不做redis缓存
+	rsi := RelationServiceImpl{}
 	followerList := make([]dao.UserResp, 0)
 	followerIds, err := dao.QueryFollowersIdByUserId(userId)
 	if nil != err {
 		return followerList, err
 	}
+
 	// 注：range获取数组项不能修改数组中结构体的值
 	for _, followerId := range followerIds {
 		followerInfo, err := dao.QueryUserRespById(followerId)
-		isFollow := dao.JudgeIsFollowById(userId, followerId)
+		isFollow := rsi.JudgeIsFollowById(userId, followerId)
 		if nil != err {
 			return followerList, err
 		}
@@ -132,6 +150,7 @@ func (RelationServiceImpl) GetFollowerList(userId int64) ([]dao.UserResp, error)
 获取用户好友列表
 */
 func (RelationServiceImpl) GetFriendList(userId int64) ([]dao.UserResp, error) {
+	//#优化：关注列表由于要返回具体用户信息，且redis存在过期的情况，数据一致性无法保证，因此，暂不做redis缓存
 	friendList := make([]dao.UserResp, 0)
 	// 查出关注列表
 	followIds, err := dao.QueryFollowsIdByUserId(userId)
@@ -155,10 +174,51 @@ func (RelationServiceImpl) GetFriendList(userId int64) ([]dao.UserResp, error) {
 
 // 统计id用户粉丝数
 func (RelationServiceImpl) CountFollowers(id int64) int64 {
-	return dao.CountFollowers(id)
+	redisFollowerCntKey := util.Relation_FollowerCnt_Key + strconv.FormatInt(id, 10)
+	// redis是否存在该键值对
+	if cnt, err := redis.RedisDb.SCard(redis.Ctx, redisFollowerCntKey).Result(); cnt > 0 {
+		if err != nil {
+			log.Println("redis query error!")
+			return -1
+		}
+		// 更新过期时间
+		redis.RedisDb.Expire(redis.Ctx, redisFollowerCntKey, util.Relation_FollowerCnt_TTL)
+		return cnt
+	}
+	cnt := dao.CountFollowers(id)
+	redis.RedisDb.Set(redis.Ctx, redisFollowerCntKey, cnt, util.Relation_FollowerCnt_TTL)
+	return cnt
 }
 
 // 统计id用户关注数
 func (RelationServiceImpl) CountFollowings(id int64) int64 {
-	return dao.CountFollowings(id)
+	redisFollowingCntKey := util.Relation_FollowingCnt_Key + strconv.FormatInt(id, 10)
+	// redis是否存在该键值对
+	if cnt, err := redis.RedisDb.SCard(redis.Ctx, redisFollowingCntKey).Result(); cnt > 0 {
+		if err != nil {
+			log.Println("redis query error!")
+			return -1
+		}
+		// 更新过期时间
+		redis.RedisDb.Expire(redis.Ctx, redisFollowingCntKey, util.Relation_FollowingCnt_TTL)
+		return cnt
+	}
+	cnt := dao.CountFollowings(id)
+
+	redis.RedisDb.Set(redis.Ctx, redisFollowingCntKey, cnt, util.Relation_FollowingCnt_TTL)
+	return cnt
+}
+
+// 主动使cnt的redis缓存失效
+func (RelationServiceImpl) ExpireFollowerCnt(id int64) {
+	// 由于关注或取关操作导致cnt缓存不一致
+	redisFollowerCntKey := util.Relation_FollowerCnt_Key + strconv.FormatInt(id, 10)
+	redis.RedisDb.Expire(redis.Ctx, redisFollowerCntKey, 0)
+}
+
+// 主动使cnt的redis缓存失效
+func (RelationServiceImpl) ExpireFollowingCnt(id int64) {
+	// 由于关注或取关操作导致cnt缓存不一致
+	redisFollowingCntKey := util.Relation_FollowingCnt_Key + strconv.FormatInt(id, 10)
+	redis.RedisDb.Expire(redis.Ctx, redisFollowingCntKey, 0)
 }

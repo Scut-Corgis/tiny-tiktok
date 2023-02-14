@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"log"
 	"net/http"
 	"strconv"
 
@@ -27,7 +28,10 @@ func RelationAction(c *gin.Context) {
 		c.JSON(http.StatusOK, Response{StatusCode: -1, StatusMsg: "token错误"})
 		return
 	}
+	// token中的id有问题
+	//userId, err := strconv.ParseInt(c.GetString("id"), 10, 64)
 	userId := user.Id
+	log.Println(userId)
 	// Step2. 判断to_user_id解析是否有误
 	followId, err := strconv.ParseInt(c.Query("to_user_id"), 10, 64)
 	followUser := usi.QueryUserById(followId)
