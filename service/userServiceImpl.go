@@ -1,17 +1,6 @@
 package service
 
 import (
-	//<<<<<<< HEAD
-	"log"
-	//=======
-
-	"github.com/Scut-Corgis/tiny-tiktok/middleware/redis"
-	//"log"
-	"math/rand"
-	"strconv"
-	"time"
-
-	//>>>>>>> c389386d2593800df078ce9d9c590487823972e0
 	"github.com/Scut-Corgis/tiny-tiktok/middleware/redis"
 	"github.com/Scut-Corgis/tiny-tiktok/util"
 	"log"
