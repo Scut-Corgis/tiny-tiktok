@@ -2,12 +2,13 @@ package rabbitmq
 
 import (
 	"fmt"
+	"github.com/Scut-Corgis/tiny-tiktok/config"
 	"log"
 
 	"github.com/streadway/amqp"
 )
 
-const MQURL = "amqp://tiktok:123456@127.0.0.1:5672/"
+var MQURL = "amqp://" + config.RabbitMQ_username + ":" + config.RabbitMQ_passsword + "@" + config.RabbitMQ_IP + ":" + config.RabbitMQ_host + "/"
 
 type RabbitMQ struct {
 	Conn *amqp.Connection
