@@ -2,7 +2,9 @@ package redis
 
 import (
 	"context"
+	"github.com/Scut-Corgis/tiny-tiktok/util"
 	"log"
+	"math/rand"
 	"sync"
 	"time"
 
@@ -14,8 +16,6 @@ var mutex sync.Mutex
 
 // RedisDb 定义一个全局变量
 var RedisDb *redis.Client
-var RedisDbCommentIdVideoId *redis.Client // key:comment_id value:video_id relation 1:1
-var RedisDbVideoIdCommentId *redis.Client // key:video_id value:comment_id ralation 1:n
 var Ctx = context.Background()
 
 func InitRedis() {
@@ -23,18 +23,6 @@ func InitRedis() {
 		Addr:     config.Redis_addr_port,
 		Password: config.Redis_password,
 		DB:       0, // redis一共16个库，指定其中一个库即可
-	})
-	// 将key:comment_id value:video_id存入DB1
-	RedisDbCommentIdVideoId = redis.NewClient(&redis.Options{
-		Addr:     config.Redis_addr_port,
-		Password: config.Redis_password,
-		DB:       1,
-	})
-	// 将key:video_id value:comment_id存入DB2
-	RedisDbVideoIdCommentId = redis.NewClient(&redis.Options{
-		Addr:     config.Redis_addr_port,
-		Password: config.Redis_password,
-		DB:       2,
 	})
 	_, err := RedisDb.Ping(Ctx).Result()
 	if err != nil {
@@ -61,4 +49,9 @@ func Unlock(key string) bool {
 		return false
 	}
 	return true
+}
+
+func RandomTime() time.Duration {
+	rand.Seed(time.Now().Unix())
+	return time.Duration(rand.Int63n(25))*time.Hour + util.Day // 设置1-2天的随机过期时间
 }

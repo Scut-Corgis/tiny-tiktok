@@ -2,6 +2,7 @@ package service
 
 import (
 	"github.com/Scut-Corgis/tiny-tiktok/middleware/redis"
+	"github.com/Scut-Corgis/tiny-tiktok/util"
 	"log"
 	"math/rand"
 	"strconv"
@@ -53,7 +54,7 @@ func (UserServiceImpl) QueryUserRespById(id int64) (dao.UserResp, error) {
 }
 
 // Register 用户注册，返回状态码和状态信息
-func (UserServiceImpl) Register(username string, password string) (int32, string) {
+func (UserServiceImpl) Register(username string, password string) (dao.User, int32, string) {
 	rand.Seed(time.Now().UnixNano())
 	value := strconv.Itoa(rand.Int())
 	lock := redis.Lock(username, value) // 加锁
@@ -61,28 +62,31 @@ func (UserServiceImpl) Register(username string, password string) (int32, string
 		log.Println("Add lock successfully!")
 		user, _ := dao.QueryUserByName(username)
 		if username == user.Name {
-			return 1, "User already exist!"
+			return dao.User{}, 1, "User already exist!"
 		} else {
 			encoderPassword, err := HashEncode(password)
 			if err != nil {
-				return 1, "Incorrect password format!"
+				return dao.User{}, 1, "Incorrect password format!"
 			}
 			newUser := dao.User{
 				Name:     username,
 				Password: encoderPassword,
 			}
 			if !dao.InsertUser(&newUser) {
-				return 1, "Insert user failed！"
+				return dao.User{}, 1, "Insert user failed！"
 			}
 			unlock := redis.Unlock(username) // 解锁
 			if !unlock {
-				return 1, "Register failed!"
+				return dao.User{}, 1, "Register failed!"
 			}
 			log.Println("Unlock successfully!")
-			return 0, "Register successfully!"
+			// 添加redis缓存
+			user, _ := dao.QueryUserByName(username)
+			UserInsertRedis(user.Id, user.Name)
+			return user, 0, "Register successfully!"
 		}
 	} else {
-		return 1, "Wait for register!"
+		return dao.User{}, 1, "Wait for register!"
 	}
 }
 
@@ -109,6 +113,16 @@ func HashEncode(password string) (string, error) {
 func ComparePasswords(password1 string, password2 string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(password1), []byte(password2))
 	if err != nil {
+		return false
+	}
+	return true
+}
+
+func UserInsertRedis(id int64, name string) bool {
+	// 插入键值对 key:user_id value:username
+	redisIdKey := util.User_Id_Key + strconv.FormatInt(id, 10)
+	if err := redis.RedisDb.Set(redis.Ctx, redisIdKey, name, redis.RandomTime()).Err(); err != nil {
+		log.Println("Insert key:comment_id value:video_id into redis failed!")
 		return false
 	}
 	return true
