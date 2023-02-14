@@ -156,10 +156,14 @@ func PublishList(c *gin.Context) {
 		log.Fatalln("strconv.ParseInt(userIdStr, 10, 64) 失败")
 	}
 	var videoList []Video = make([]Video, 0)
+<<<<<<< HEAD
 
 	videoIdList := dao.GetVideoIdListByUserId(authorId)
 	//videoIdList := dao.GetVideoIdListByUserId(authorId, queryUserId)
 	//videoIdList := dao.GetVideoIdListByUserId(authorId)
+=======
+	videoIdList := dao.GetVideoIdListByUserId(authorId)
+>>>>>>> 729273f5e2a529a86effec9021e5730d990ca5be
 	for _, videoId := range videoIdList {
 		videoDetail, _ := dao.QueryVideoDetailByVideoId(videoId, queryUserId)
 		video := Video{

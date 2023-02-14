@@ -35,4 +35,6 @@ func initDependencies() {
 	ftp.Init()
 	util.InitWordsFilter()
 
+	util.InitCuckooFilter()
+
 }

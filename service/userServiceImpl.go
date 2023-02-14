@@ -4,6 +4,7 @@ import (
 	//<<<<<<< HEAD
 	"log"
 	//=======
+
 	"github.com/Scut-Corgis/tiny-tiktok/middleware/redis"
 	//"log"
 	"math/rand"
@@ -11,6 +12,12 @@ import (
 	"time"
 
 	//>>>>>>> c389386d2593800df078ce9d9c590487823972e0
+	"github.com/Scut-Corgis/tiny-tiktok/middleware/redis"
+	"github.com/Scut-Corgis/tiny-tiktok/util"
+	"log"
+	"math/rand"
+	"strconv"
+	"time"
 
 	"github.com/Scut-Corgis/tiny-tiktok/dao"
 	"golang.org/x/crypto/bcrypt"
@@ -58,41 +65,54 @@ func (UserServiceImpl) QueryUserRespById(id int64) (dao.UserResp, error) {
 }
 
 // Register 用户注册，返回状态码和状态信息
-func (UserServiceImpl) Register(username string, password string) (int32, string) {
+func (UserServiceImpl) Register(username string, password string) (dao.User, int32, string) {
 	rand.Seed(time.Now().UnixNano())
 	value := strconv.Itoa(rand.Int())
 	lock := redis.Lock(username, value) // 加锁
 	if lock {
 		log.Println("Add lock successfully!")
+		// 布谷鸟过滤器过滤
+		if util.CuckooFilterUserName.Contain([]byte(username)) {
+			return dao.User{}, 1, "User already exist!"
+		}
 		user, _ := dao.QueryUserByName(username)
 		if username == user.Name {
-			return 1, "User already exist!"
+			return dao.User{}, 1, "User already exist!"
 		} else {
 			encoderPassword, err := HashEncode(password)
 			if err != nil {
-				return 1, "Incorrect password format!"
+				return dao.User{}, 1, "Incorrect password format!"
 			}
 			newUser := dao.User{
 				Name:     username,
 				Password: encoderPassword,
 			}
 			if !dao.InsertUser(&newUser) {
-				return 1, "Insert user failed！"
+				return dao.User{}, 1, "Insert user failed！"
 			}
 			unlock := redis.Unlock(username) // 解锁
 			if !unlock {
-				return 1, "Register failed!"
+				return dao.User{}, 1, "Register failed!"
 			}
 			log.Println("Unlock successfully!")
-			return 0, "Register successfully!"
+			// 添加布谷鸟过滤器
+			util.CuckooFilterUserName.Add([]byte(username))
+			// 添加redis缓存
+			user, _ := dao.QueryUserByName(username)
+			UserInsertRedis(user.Id, user.Name)
+			return user, 0, "Register successfully!"
 		}
 	} else {
-		return 1, "Wait for register!"
+		return dao.User{}, 1, "Wait for register!"
 	}
 }
 
 // Login 用户登录，返回状态码和状态信息
 func (UserServiceImpl) Login(username string, password string) (int32, string) {
+	// 布谷鸟过滤器过滤
+	if !util.CuckooFilterUserName.Contain([]byte(username)) {
+		return 1, "User doesn't exist!"
+	}
 	user, _ := dao.QueryUserByName(username)
 	if ComparePasswords(user.Password, password) {
 		return 0, "Login success"
@@ -114,6 +134,16 @@ func HashEncode(password string) (string, error) {
 func ComparePasswords(password1 string, password2 string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(password1), []byte(password2))
 	if err != nil {
+		return false
+	}
+	return true
+}
+
+func UserInsertRedis(id int64, name string) bool {
+	// 插入键值对 key:user_id value:username
+	redisIdKey := util.User_Id_Key + strconv.FormatInt(id, 10)
+	if err := redis.RedisDb.Set(redis.Ctx, redisIdKey, name, redis.RandomTime()).Err(); err != nil {
+		log.Println("Insert key:comment_id value:video_id into redis failed!")
 		return false
 	}
 	return true
