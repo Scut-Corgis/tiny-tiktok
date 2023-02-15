@@ -55,3 +55,13 @@ func InsertUser(user *User) bool {
 	}
 	return true
 }
+
+// QueryAllNames 查询所有的用户名
+func QueryAllNames() []string {
+	names := make([]string, 0)
+	if err := Db.Table("users").Select("name").Find(&names).Error; nil != err {
+		log.Println(err.Error())
+		return names
+	}
+	return names
+}
