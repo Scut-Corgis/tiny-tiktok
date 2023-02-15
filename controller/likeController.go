@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"github.com/Scut-Corgis/tiny-tiktok/middleware/redis"
 	"net/http"
 	"strconv"
 
@@ -36,7 +37,7 @@ func FavoriteAction(c *gin.Context) {
 	videoId, _ := strconv.ParseInt(strVideoId, 10, 64)
 	strActionType := c.Query("action_type")
 	actionType, _ := strconv.ParseInt(strActionType, 10, 8)
-	if !dao.JudgeVideoIsExist(videoId) {
+	if !redis.CuckooFilterVideoId.Contain([]byte(strconv.FormatInt(videoId, 10))) {
 		c.JSON(http.StatusOK, likeResponse{StatusCode: 1, StatusMsg: "视频不存在！"})
 		return
 	}

@@ -47,7 +47,7 @@ func QueryUserRespById(id int64) (UserResp, error) {
 	}
 }
 
-// InsertUser 将User插入users表内
+// InsertUser 将user插入users表内
 func InsertUser(user *User) bool {
 	if err := Db.Create(&user).Error; err != nil {
 		log.Println(err.Error())
@@ -59,7 +59,7 @@ func InsertUser(user *User) bool {
 // QueryAllNames 查询所有的用户名
 func QueryAllNames() []string {
 	names := make([]string, 0)
-	if err := Db.Table("users").Select("name").Find(&names).Error; nil != err {
+	if err := Db.Table("users").Select("name").Find(&names).Error; err != nil {
 		log.Println(err.Error())
 		return names
 	}

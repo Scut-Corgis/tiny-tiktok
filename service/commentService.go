@@ -3,6 +3,9 @@ package service
 import "github.com/Scut-Corgis/tiny-tiktok/dao"
 
 type CommentService interface {
+	// CommentCount 根据视频id统计评论数量
+	CommentCount(id int64) (int64, error)
+
 	// QueryCommentsByVideoId 获取评论列表
 	QueryCommentsByVideoId(id int64) []dao.Comment
 

@@ -1,6 +1,8 @@
 package controller
 
 import (
+	"github.com/Scut-Corgis/tiny-tiktok/middleware/redis"
+	"github.com/Scut-Corgis/tiny-tiktok/service"
 	"log"
 	"net/http"
 	"strconv"
@@ -24,38 +26,27 @@ type VideoListResponse struct {
 	VideoList []Video `json:"video_list"`
 }
 
-// Feed same demo video list for every request
+// Feed GET/douyin/feed/ 视频流接口
 func Feed(c *gin.Context) {
-	username := c.GetString("username")
-	var queryUserId int64
-	if username == "" {
-		queryUserId = -1
-	} else {
-		queryUser, _ := dao.QueryUserByName(username)
-		queryUserId = queryUser.Id
-	}
-
+	vsi := service.VideoServiceImpl{}
+	queryUserId := c.GetInt64("id")
 	latestTimeStr := c.Query("latest_time")
 
 	if latestTimeStr == "" {
 		latestTimeStr = strconv.FormatInt(time.Now().Unix(), 10)
 	}
-	latestTimeInt, err := strconv.ParseInt(latestTimeStr, 10, 64)
-	if err != nil {
-		log.Fatalln("timeStr 转 timeInt 出现了意料之外的错误")
-	}
-	//客户端可能会传一个超长的时间戳.
+	latestTimeInt, _ := strconv.ParseInt(latestTimeStr, 10, 64)
+	// 时间戳校准
 	if latestTimeInt > time.Now().Unix() {
 		latestTimeInt = time.Now().Unix()
 	}
-
 	latestTime := time.Unix(latestTimeInt, 0)
-	videoIdList := dao.GetMost30videosIdList(latestTime)
+	videoIdList := vsi.GetMost30videosIdList(latestTime)
 
-	var videoList []Video = make([]Video, 0, len(videoIdList))
-	var nextTimeInt int64 = time.Now().Unix()
+	var videoList = make([]Video, 0, len(videoIdList))
+	var nextTimeInt = time.Now().Unix()
 	for _, videoId := range videoIdList {
-		videoDetail, publishTime := dao.QueryVideoDetailByVideoId(videoId, queryUserId)
+		videoDetail, publishTime := vsi.QueryVideoDetailByVideoId(videoId, queryUserId)
 		publishTimeInt := publishTime.Unix()
 		if publishTimeInt < nextTimeInt {
 			nextTimeInt = publishTimeInt
@@ -80,13 +71,14 @@ func Feed(c *gin.Context) {
 	})
 }
 
-// Publish save upload file to ftp server
+// Publish POST/douyin/publish/action/ 投稿接口
 func Publish(c *gin.Context) {
+	vsi := service.VideoServiceImpl{}
 	username := c.GetString("username")
+	id := c.GetInt64("id")
 	title := c.PostForm("title")
 
-	user, err := dao.QueryUserByName(username)
-	if err != nil {
+	if !redis.CuckooFilterUserName.Contain([]byte(username)) {
 		c.JSON(http.StatusOK, Response{StatusCode: 1, StatusMsg: "User doesn't exist"})
 		return
 	}
@@ -102,36 +94,33 @@ func Publish(c *gin.Context) {
 	timeToDB := time.Now()
 	pubilishTImeIntNano := timeToDB.UnixNano()
 	publishTimeStr := strconv.FormatInt(pubilishTImeIntNano, 10)
-	//	timeStr := time.Now().Format("2006-01-02 15:04:05")
 	videoName := username + "_" + publishTimeStr
 	imageName := username + "_" + publishTimeStr
 
 	videoFile, err := data.Open()
 	if err != nil {
-		log.Fatalln("pulish意料之外的错误， data.Open()失败")
+		log.Fatalln("data open failed")
 	}
-	//ftp发送视频文件
+	// ftp 发送视频文件
 	err = ftp.SendVideoFile(videoName, videoFile)
 	if err != nil {
-		log.Println(username, "的视频ftp失败")
-		c.JSON(http.StatusOK, Response{StatusCode: 1, StatusMsg: "视频ftp失败！"})
+		log.Println(username, "video ftp failed")
+		c.JSON(http.StatusOK, Response{StatusCode: 1, StatusMsg: "video ftp failed!"})
 		return
 	}
 	//插入数据库
 	video := &dao.Video{
-		AuthorId:    user.Id,
+		AuthorId:    id,
 		PlayUrl:     "http://" + config.Url_addr + config.Url_Play_prefix + videoName + ".mp4",
 		CoverUrl:    "http://" + config.Url_addr + config.Url_Image_prefix + imageName + ".jpg",
 		PublishTime: timeToDB,
 		Title:       title,
 	}
-	err = dao.InsertVideosTable(video)
-	if err != nil {
-		log.Println(username, "的视频，数据库插入失败")
-		c.JSON(http.StatusOK, Response{StatusCode: 1, StatusMsg: "视频数据库插入失败！"})
-		return
+	flag := vsi.InsertVideosTable(video)
+	if !flag {
+		c.JSON(http.StatusOK, Response{StatusCode: 1, StatusMsg: "Insert video failed!"})
 	} else {
-		log.Println("视频数据库插入成功")
+		log.Println("Insert video successfully!")
 	}
 	// ssh调用ffmpeg
 	ffmpeg.Ffchan <- ffmpeg.Ffmsg{
@@ -145,16 +134,11 @@ func Publish(c *gin.Context) {
 	})
 }
 
-// PublishList all users have same publish video list
+// PublishList GET/douyin/publish/list/ 发布列表
 func PublishList(c *gin.Context) {
-	username := c.GetString("username")
-	queryUser, _ := dao.QueryUserByName(username)
-	queryUserId := queryUser.Id
+	queryUserId := c.GetInt64("id")
 	userIdStr := c.Query("user_id")
-	authorId, err := strconv.ParseInt(userIdStr, 10, 64)
-	if err != nil {
-		log.Fatalln("strconv.ParseInt(userIdStr, 10, 64) 失败")
-	}
+	authorId, _ := strconv.ParseInt(userIdStr, 10, 64)
 	var videoList = make([]Video, 0)
 	videoIdList := dao.GetVideoIdListByUserId(authorId)
 	for _, videoId := range videoIdList {

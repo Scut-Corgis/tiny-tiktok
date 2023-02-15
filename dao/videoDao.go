@@ -40,19 +40,17 @@ type Comment struct {
 	CreateDate  time.Time `gorm:"column:create_date"`
 }
 
-// QueryVideoById 根据视频id查询视频， 请确保id存在！
+// QueryVideoById 根据视频id查询视频
 func QueryVideoById(id int64) (Video, error) {
 	video := Video{}
 	if err := Db.Where("id = ?", id).First(&video).Error; err != nil {
 		log.Println(err.Error())
-		if video.Id == 0 {
-			log.Fatalln("查询了不存在的视频id")
-		}
 		return video, err
 	}
 	return video, nil
 }
 
+// InsertVideosTable 将video插入videos表内
 func InsertVideosTable(video *Video) error {
 	if err := Db.Create(&video).Error; err != nil {
 		log.Println(err.Error())
@@ -61,22 +59,16 @@ func InsertVideosTable(video *Video) error {
 	return nil
 }
 
-/*
-QueryVideoDetailByVideoId
-参数为VideoId， 以及调用该函数的查询作者的ID，若无查询作者，请定为-1。
-返回videoDetail,视频发布时间;
-该函数不会返回err，因为参数确保是有效的，若无效会直接os.exit()
-多了一个发布时间，主要是方便处理feed流回复返回的next_time,不需要可以丢弃
-*/
+// QueryVideoDetailByVideoId 根据视频id和查询用户id查询视频的详细信息
 func QueryVideoDetailByVideoId(videoId int64, queryUserId int64) (VideoDetail, time.Time) {
 	var err error
 	var detailVideo VideoDetail
-	videoshort, err := QueryVideoById(videoId)
-	publishTIme := videoshort.PublishTime
+	videoShort, err := QueryVideoById(videoId)
+	publishTIme := videoShort.PublishTime
 	if err != nil {
 		log.Fatalln("QueryVideoDetailByVideoId : 参数id可能有误")
 	}
-	userTable, err := QueryUserRespById(videoshort.AuthorId)
+	userTable, err := QueryUserRespById(videoShort.AuthorId)
 	if err != nil {
 		log.Fatalln("QueryUserRespById : 视频作者id可能有误")
 	}
@@ -85,11 +77,11 @@ func QueryVideoDetailByVideoId(videoId int64, queryUserId int64) (VideoDetail, t
 		userTable.IsFollow = true
 	}
 
-	detailVideo.Id = videoshort.Id
+	detailVideo.Id = videoShort.Id
 	detailVideo.Author = userTable
-	detailVideo.PlayUrl = videoshort.PlayUrl
-	detailVideo.CoverUrl = videoshort.CoverUrl
-	detailVideo.Title = videoshort.Title
+	detailVideo.PlayUrl = videoShort.PlayUrl
+	detailVideo.CoverUrl = videoShort.CoverUrl
+	detailVideo.Title = videoShort.Title
 
 	Db.Model(&Like{}).Where("video_id = ?", detailVideo.Id).Count(&detailVideo.FavoriteCount)   // 统计点赞数量
 	Db.Model(&Comment{}).Where("video_id = ?", detailVideo.Id).Count(&detailVideo.CommentCount) // 统计评论数量
@@ -120,15 +112,24 @@ func GetVideoIdListByUserId(authorId int64) []int64 {
 	return videoIdList
 }
 
-func JudgeIsFavorite(userid int64, videoId int64) bool { // 判断userid是否点赞了VideoId
+func JudgeIsFavorite(userId int64, videoId int64) bool { // 判断userid是否点赞了VideoId
 	var count int64
-	Db.Model(&Like{}).Where("user_id = ? and video_id = ?", userid, videoId).Count(&count)
+	Db.Model(&Like{}).Where("user_id = ? and video_id = ?", userId, videoId).Count(&count)
 	return count > 0
 }
 
-// JudgeVideoIsExist 判断videoId的视频是否存在
-func JudgeVideoIsExist(videoId int64) bool {
-	var count int64
-	Db.Model(&Video{}).Where(map[string]interface{}{"id": videoId}).Count(&count)
-	return count > 0
+//// JudgeVideoIsExist 判断videoId的视频是否存在
+//func JudgeVideoIsExist(videoId int64) bool {
+//	// 布谷鸟过滤器
+//	return redis.CuckooFilterVideoId.Contain([]byte(strconv.FormatInt(videoId, 10)))
+//}
+
+// QueryAllVideoIds 查询所有的用户名
+func QueryAllVideoIds() []int64 {
+	videos := make([]int64, 0)
+	if err := Db.Table("videos").Select("id").Find(&videos).Error; err != nil {
+		log.Println(err.Error())
+		return videos
+	}
+	return videos
 }

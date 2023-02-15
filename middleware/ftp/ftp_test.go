@@ -1,6 +1,7 @@
 package ftp
 
 import (
+	"fmt"
 	"os"
 	"strconv"
 	"testing"
@@ -13,9 +14,10 @@ func TestFfmpeg(t *testing.T) {
 		name := "bear.mp4"
 		file, err := os.Open("/Users/zaizai/Projects/GolandProjects/tiny-tiktok/data/" + name)
 		if err != nil {
-			t.Fatal("打开不了文件")
+			t.Fatal("Can't open the file")
 		}
-		go SendVideoFile(strconv.Itoa(i)+name, file)
+		err = SendVideoFile(strconv.Itoa(i), file)
+		fmt.Println(err)
 	}
 	time.Sleep(2 * time.Second)
 }

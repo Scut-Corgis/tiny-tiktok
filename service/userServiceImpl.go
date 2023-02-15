@@ -67,7 +67,7 @@ func (UserServiceImpl) Register(username string, password string) (dao.User, int
 	if lock {
 		log.Println("Add lock successfully!")
 		// 布谷鸟过滤器过滤
-		if util.CuckooFilterUserName.Contain([]byte(username)) {
+		if redis.CuckooFilterUserName.Contain([]byte(username)) {
 			return dao.User{}, 1, "User already exist!"
 		}
 		user, _ := dao.QueryUserByName(username)
@@ -91,7 +91,7 @@ func (UserServiceImpl) Register(username string, password string) (dao.User, int
 			}
 			log.Println("Unlock successfully!")
 			// 添加布谷鸟过滤器
-			util.CuckooFilterUserName.Add([]byte(username))
+			redis.CuckooFilterUserName.Add([]byte(username))
 			// 添加redis缓存
 			user, _ := dao.QueryUserByName(username)
 			UserInsertRedis(user.Id, user.Name)
@@ -105,7 +105,7 @@ func (UserServiceImpl) Register(username string, password string) (dao.User, int
 // Login 用户登录，返回状态码和状态信息
 func (UserServiceImpl) Login(username string, password string) (int32, string) {
 	// 布谷鸟过滤器过滤
-	if !util.CuckooFilterUserName.Contain([]byte(username)) {
+	if !redis.CuckooFilterUserName.Contain([]byte(username)) {
 		return 1, "User doesn't exist!"
 	}
 	user, _ := dao.QueryUserByName(username)

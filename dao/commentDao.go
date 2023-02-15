@@ -4,6 +4,16 @@ import (
 	"log"
 )
 
+// CommentCount 根据视频id统计评论数量
+func CommentCount(id int64) (int64, error) {
+	var count int64
+	err := Db.Model(&Comment{}).Where("video_id = ?", id).Count(&count).Error
+	if err != nil {
+		return -1, err
+	}
+	return count, nil
+}
+
 // QueryCommentsByVideoId 根据视频id查询评论列表
 func QueryCommentsByVideoId(id int64) ([]Comment, error) {
 	var comment []Comment

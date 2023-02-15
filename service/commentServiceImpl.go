@@ -13,6 +13,28 @@ type CommentServiceImpl struct {
 	VideoServiceImpl
 }
 
+// CommentCount 根据视频id统计评论数量
+func (CommentServiceImpl) CommentCount(id int64) (int64, error) {
+	// 先查redis缓存
+	redisVideoKey := util.Comment_Video_Key + strconv.FormatInt(id, 10)
+	cnt1, err1 := redis.RedisDb.SCard(redis.Ctx, redisVideoKey).Result()
+	if err1 != nil {
+		log.Println("count from redis error:", err1)
+	}
+	// 更新过期时间
+	redis.RedisDb.Expire(redis.Ctx, redisVideoKey, redis.RandomTime())
+	if cnt1 > 0 {
+		return cnt1, nil
+	}
+	// 再查数据库
+	cnt2, err2 := dao.CommentCount(id)
+	if err2 != nil {
+		log.Println("count from db error:", err2)
+		return 0, err2
+	}
+	return cnt2, nil
+}
+
 // QueryCommentsByVideoId 根据视频id获取comment列表
 func (CommentServiceImpl) QueryCommentsByVideoId(id int64) []dao.Comment {
 	commentsList, err := dao.QueryCommentsByVideoId(id)

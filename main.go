@@ -1,14 +1,13 @@
 package main
 
 import (
-	"log"
-
+	"github.com/Scut-Corgis/tiny-tiktok/middleware/rabbitmq"
 	"github.com/Scut-Corgis/tiny-tiktok/util"
+	"log"
 
 	"github.com/Scut-Corgis/tiny-tiktok/dao"
 	"github.com/Scut-Corgis/tiny-tiktok/middleware/ffmpeg"
 	"github.com/Scut-Corgis/tiny-tiktok/middleware/ftp"
-	"github.com/Scut-Corgis/tiny-tiktok/middleware/rabbitmq"
 	"github.com/Scut-Corgis/tiny-tiktok/middleware/redis"
 	"github.com/gin-gonic/gin"
 )
@@ -34,7 +33,5 @@ func initDependencies() {
 	ffmpeg.Init()
 	ftp.Init()
 	util.InitWordsFilter()
-
-	util.InitCuckooFilter()
-
+	redis.InitCuckooFilter()
 }
