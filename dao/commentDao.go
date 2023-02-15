@@ -25,12 +25,13 @@ func QueryCommentsByVideoId(id int64) ([]Comment, error) {
 }
 
 // InsertComment 将comment插入到comments表内
-func InsertComment(comment *Comment) bool {
-	if err := Db.Create(&comment).Error; err != nil {
+func InsertComment(comment Comment) (Comment, error) {
+	err := Db.Create(&comment).Error
+	if err != nil {
 		log.Println(err.Error())
-		return false
+		return Comment{}, err
 	}
-	return true
+	return comment, err
 }
 
 // DeleteComment 根据评论id将评论删除

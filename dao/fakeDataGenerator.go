@@ -94,6 +94,6 @@ func FakeComments(num int) {
 		comment.VideoId = rand.Int63n(videoCount) + 1000
 		comment.CommentText = gofakeit.Sentence(20)
 		comment.CreateDate = gofakeit.Date()
-		InsertComment(&comment)
+		InsertComment(comment)
 	}
 }

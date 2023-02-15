@@ -48,16 +48,20 @@ func (CommentServiceImpl) QueryCommentsByVideoId(id int64) []dao.Comment {
 }
 
 // PostComment 发表评论
-func (CommentServiceImpl) PostComment(comment dao.Comment) (int32, string) {
-	flag1 := dao.InsertComment(&comment)
-	if flag1 == false {
-		return 1, "Post comment failed!"
+func (CommentServiceImpl) PostComment(comment dao.Comment) (int64, int32, string) {
+	// 布谷鸟过滤器过滤
+	if !redis.CuckooFilterVideoId.Contain([]byte(strconv.FormatInt(comment.VideoId, 10))) {
+		return -1, 1, "Video not Found!"
 	}
-	flag2 := CommentInsertRedis(comment.VideoId, comment.Id) // 添加redis缓存
-	if !flag2 {
+	commentNew, err := dao.InsertComment(comment)
+	if err != nil {
+		return -1, 1, "Post comment failed!"
+	}
+	flag := CommentInsertRedis(comment.VideoId, comment.Id) // 添加redis缓存
+	if !flag {
 		log.Println("Insert redis failed!")
 	}
-	return 0, "Post comment successfully!"
+	return commentNew.Id, 0, "Post comment successfully!"
 }
 
 // DeleteComment 根据评论id删除评论

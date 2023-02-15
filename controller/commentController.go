@@ -36,11 +36,6 @@ func CommentAction(c *gin.Context) {
 	video := csi.QueryVideoById(videoId)
 
 	actionType := c.Query("action_type")
-	//if !dao.JudgeVideoIsExist(videoId) {
-	//	c.JSON(http.StatusOK, CommentActionResponse{
-	//		Response: Response{StatusCode: 1, StatusMsg: "Video doesn't exist"},
-	//	})
-	//}
 	if actionType == "1" {
 		text := c.Query("comment_text")
 		text = util.Filter.Replace(text, '#') // 评论敏感词过滤
@@ -51,7 +46,7 @@ func CommentAction(c *gin.Context) {
 			CommentText: text,
 			CreateDate:  t,
 		}
-		code, message := csi.PostComment(comment)
+		commentId, code, message := csi.PostComment(comment)
 		if code != 0 {
 			c.JSON(http.StatusOK, CommentActionResponse{
 				Response: Response{StatusCode: code, StatusMsg: message},
@@ -61,7 +56,7 @@ func CommentAction(c *gin.Context) {
 		c.JSON(http.StatusOK, CommentActionResponse{
 			Response: Response{StatusCode: code, StatusMsg: message},
 			CommentInfo: CommentInfo{
-				Id: comment.Id,
+				Id: commentId,
 				User: User{
 					Id:            userInfo.Id,
 					Name:          userInfo.Name,
@@ -70,7 +65,7 @@ func CommentAction(c *gin.Context) {
 					IsFollow:      usi.JudgeIsFollowById(userInfo.Id, video.AuthorId),
 				},
 				CommentText: text,
-				CreateDate:  time.Now(),
+				CreateDate:  t,
 			},
 		})
 	} else {
