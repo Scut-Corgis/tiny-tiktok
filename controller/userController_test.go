@@ -11,7 +11,7 @@ import (
 
 func TestRegister(t *testing.T) {
 	// 用户注册——成功
-	url1 := "http://127.0.0.1:8080/douyin/user/register/?username=qly&password=123"
+	url1 := "http://127.0.0.1:8080/douyin/user/register/?username=qlyy&password=123"
 	method1 := "POST"
 	SendRequest(method1, url1, nil)
 	// 用户注册——用户名重复

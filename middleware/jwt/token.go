@@ -1,7 +1,7 @@
 package jwt
 
 import (
-	"fmt"
+	"log"
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
@@ -16,7 +16,7 @@ type MyCustomClaims struct {
 }
 
 func GenerateToken(name string, id int64) string {
-	fmt.Printf("generate token: %v %v\n", name, id)
+	log.Printf("generate token —— name:%v id:%v\n", name, id)
 	// Create the claims
 	claims := MyCustomClaims{
 		name,
@@ -28,8 +28,8 @@ func GenerateToken(name string, id int64) string {
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	if ss, err := token.SignedString(mySigningKey); err == nil {
-		fmt.Println("generate token success!")
-		fmt.Println("token : ", ss)
+		log.Println("generate token success!")
+		log.Println("token:", ss)
 		return ss
 	} else {
 		println("generate token fail\n")
