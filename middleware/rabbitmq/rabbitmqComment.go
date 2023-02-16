@@ -1,8 +1,11 @@
 package rabbitmq
 
 import (
+	"fmt"
+	"github.com/Scut-Corgis/tiny-tiktok/dao"
 	"github.com/streadway/amqp"
 	"log"
+	"strconv"
 )
 
 type CommentMQ struct {
@@ -93,6 +96,11 @@ func (c *CommentMQ) Consumer() {
 
 func consumerCommentDel(messages <-chan amqp.Delivery) {
 	for message := range messages {
-		log.Println(message.Body)
+		id := fmt.Sprintf("%s", message.Body)
+		commentId, _ := strconv.Atoi(id)
+		flag := dao.DeleteComment(int64(commentId))
+		if !flag {
+			log.Println("Comment delete failed!")
+		}
 	}
 }

@@ -69,8 +69,8 @@ func CommentAction(c *gin.Context) {
 			},
 		})
 	} else {
-		id := c.Query("comment_id")
-		commentId, _ := strconv.ParseInt(id, 10, 64)
+		cId := c.Query("comment_id")
+		commentId, _ := strconv.ParseInt(cId, 10, 64)
 		code, message := csi.DeleteComment(commentId)
 		c.JSON(http.StatusOK, likeResponse{StatusCode: code, StatusMsg: message})
 	}
