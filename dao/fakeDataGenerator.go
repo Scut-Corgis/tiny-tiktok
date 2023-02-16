@@ -30,7 +30,7 @@ func FakeUsers(num int) {
 		user.Name = gofakeit.Username()
 		user.Password = gofakeit.Password(false, false, true, false, false, 8)
 		// fmt.Println(user)
-		InsertUser(&user)
+		InsertUser(user)
 	}
 }
 

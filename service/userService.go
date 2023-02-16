@@ -13,7 +13,7 @@ type UserService interface {
 	QueryUserRespById(id int64) (dao.UserResp, error)
 
 	// Register 用户注册
-	Register(username string, password string) (dao.User, int32, string)
+	Register(username string, password string) (int64, int32, string)
 
 	// Login 用户登录
 	Login(username string, password string) (int32, string)

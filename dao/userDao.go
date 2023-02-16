@@ -32,12 +32,13 @@ func QueryUserById(id int64) (User, error) {
 }
 
 // InsertUser 将User插入users表内
-func InsertUser(user *User) bool {
-	if err := Db.Create(&user).Error; err != nil {
+func InsertUser(user User) (User, error) {
+	err := Db.Create(&user).Error
+	if err != nil {
 		log.Println(err.Error())
-		return false
+		return user, err
 	}
-	return true
+	return user, err
 }
 
 // QueryAllNames 查询所有用户名
