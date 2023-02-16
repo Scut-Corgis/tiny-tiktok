@@ -136,13 +136,14 @@ func Publish(c *gin.Context) {
 
 // PublishList GET/douyin/publish/list/ 发布列表
 func PublishList(c *gin.Context) {
+	vsi := service.VideoServiceImpl{}
 	queryUserId := c.GetInt64("id")
 	userIdStr := c.Query("user_id")
 	authorId, _ := strconv.ParseInt(userIdStr, 10, 64)
 	var videoList = make([]Video, 0)
 	videoIdList := dao.GetVideoIdListByUserId(authorId)
 	for _, videoId := range videoIdList {
-		videoDetail, _ := dao.QueryVideoDetailByVideoId(videoId, queryUserId)
+		videoDetail, _ := vsi.QueryVideoDetailByVideoId(videoId, queryUserId)
 		video := Video{
 			Id:            videoDetail.Id,
 			Author:        User(videoDetail.Author),

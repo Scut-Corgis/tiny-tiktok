@@ -59,39 +59,6 @@ func InsertVideosTable(video *Video) error {
 	return nil
 }
 
-// QueryVideoDetailByVideoId 根据视频id和查询用户id查询视频的详细信息
-func QueryVideoDetailByVideoId(videoId int64, queryUserId int64) (VideoDetail, time.Time) {
-	var err error
-	var detailVideo VideoDetail
-	videoShort, err := QueryVideoById(videoId)
-	publishTIme := videoShort.PublishTime
-	if err != nil {
-		log.Fatalln("QueryVideoDetailByVideoId : 参数id可能有误")
-	}
-	userTable, err := QueryUserRespById(videoShort.AuthorId)
-	if err != nil {
-		log.Fatalln("QueryUserRespById : 视频作者id可能有误")
-	}
-	// 若queryUserId不为-1，则多一步查询是否关注了视频发布的作者
-	if queryUserId != -1 && JudgeIsFollowById(queryUserId, userTable.Id) {
-		userTable.IsFollow = true
-	}
-
-	detailVideo.Id = videoShort.Id
-	detailVideo.Author = userTable
-	detailVideo.PlayUrl = videoShort.PlayUrl
-	detailVideo.CoverUrl = videoShort.CoverUrl
-	detailVideo.Title = videoShort.Title
-
-	Db.Model(&Like{}).Where("video_id = ?", detailVideo.Id).Count(&detailVideo.FavoriteCount)   // 统计点赞数量
-	Db.Model(&Comment{}).Where("video_id = ?", detailVideo.Id).Count(&detailVideo.CommentCount) // 统计评论数量
-	//查询是否点赞了视频
-	if queryUserId != -1 && JudgeIsFavorite(queryUserId, detailVideo.Id) {
-		detailVideo.IsFavorite = true
-	}
-	return detailVideo, publishTIme
-}
-
 func GetMost30videosIdList(latestTime time.Time) []int64 {
 	var videoIdList = make([]int64, 0, 30)
 	//Db.Raw("SELECT id FROM videos WHERE publish_time < ? ORDER BY publish_time desc LIMIT 30", latestTime).Scan(&videoIdList)
@@ -111,18 +78,6 @@ func GetVideoIdListByUserId(authorId int64) []int64 {
 	}
 	return videoIdList
 }
-
-func JudgeIsFavorite(userId int64, videoId int64) bool { // 判断userid是否点赞了VideoId
-	var count int64
-	Db.Model(&Like{}).Where("user_id = ? and video_id = ?", userId, videoId).Count(&count)
-	return count > 0
-}
-
-//// JudgeVideoIsExist 判断videoId的视频是否存在
-//func JudgeVideoIsExist(videoId int64) bool {
-//	// 布谷鸟过滤器
-//	return redis.CuckooFilterVideoId.Contain([]byte(strconv.FormatInt(videoId, 10)))
-//}
 
 // QueryAllVideoIds 查询所有的用户名
 func QueryAllVideoIds() []int64 {

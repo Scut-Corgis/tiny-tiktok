@@ -83,7 +83,8 @@ func (LikeServiceImpl) Unlike(userId int64, videoId int64) error {
 }
 
 func (LikeServiceImpl) GetVideo(videoId int64, userId int64) dao.VideoDetail {
-	VideoDetail, _ := dao.QueryVideoDetailByVideoId(videoId, userId)
+	vsi := VideoServiceImpl{}
+	VideoDetail, _ := vsi.QueryVideoDetailByVideoId(videoId, userId)
 	return VideoDetail
 }
 

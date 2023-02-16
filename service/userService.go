@@ -12,9 +12,6 @@ type UserService interface {
 	// QueryUserRespById 根据id获取UserResp对象
 	QueryUserRespById(id int64) (dao.UserResp, error)
 
-	// InsertUser 将User插到users表中
-	InsertUser(user *dao.User) bool
-
 	// Register 用户注册
 	Register(username string, password string) (dao.User, int32, string)
 

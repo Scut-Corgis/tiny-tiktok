@@ -151,6 +151,7 @@ func (RelationServiceImpl) GetFollowerList(userId int64) ([]dao.UserResp, error)
 获取用户好友列表
 */
 func (RelationServiceImpl) GetFriendList(userId int64) ([]dao.UserResp, error) {
+	usi := UserServiceImpl{}
 	//#优化：关注列表由于要返回具体用户信息，且redis存在过期的情况，数据一致性无法保证，因此，暂不做redis缓存
 	usi := UserServiceImpl{}
 	friendList := make([]dao.UserResp, 0)
