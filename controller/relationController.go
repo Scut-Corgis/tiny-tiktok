@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"log"
 	"net/http"
 	"strconv"
 
@@ -12,6 +13,11 @@ import (
 type UserListResponse struct {
 	Response
 	UserList []dao.UserResp `json:"user_list"`
+}
+
+type FriendListResponse struct {
+	Response
+	FriendList []dao.FriendResp `json:"user_list"`
 }
 
 /*
@@ -188,11 +194,6 @@ func FollowerList(c *gin.Context) {
 处理获取好友/互关列表接口
 */
 func FriendList(c *gin.Context) {
-	// ------------------------------------------------------------
-	// 方案说明中 好友列表描述与粉丝列表相同，直接调用FollowerList即可
-	// FollowerList(c)
-	// 这里将好友列表请求识别为互关列表，执行以下逻辑
-	// ------------------------------------------------------------
 	// Step1. 判断token、user_id解析是否有误
 	username := c.GetString("username")
 	usi := service.UserServiceImpl{}
@@ -207,12 +208,12 @@ func FriendList(c *gin.Context) {
 	realUserId := user.Id
 	userId, err := strconv.ParseInt(c.Query("user_id"), 10, 64)
 	if err != nil || realUserId != userId {
-		c.JSON(http.StatusOK, UserListResponse{
+		c.JSON(http.StatusOK, FriendListResponse{
 			Response: Response{
 				StatusCode: -1,
 				StatusMsg:  "用户id有误",
 			},
-			UserList: nil,
+			FriendList: nil,
 		})
 		return
 	}
@@ -220,21 +221,21 @@ func FriendList(c *gin.Context) {
 	rsi := service.RelationServiceImpl{}
 	friendList, err := rsi.GetFriendList(userId)
 	if err != nil {
-		c.JSON(http.StatusOK, UserListResponse{
+		c.JSON(http.StatusOK, FriendListResponse{
 			Response: Response{
 				StatusCode: -1,
 				StatusMsg:  "获取好友列表失败",
 			},
-			UserList: nil,
+			FriendList: nil,
 		})
 		return
 	}
-
-	c.JSON(http.StatusOK, UserListResponse{
+	log.Println(friendList)
+	c.JSON(http.StatusOK, FriendListResponse{
 		Response: Response{
 			StatusCode: 0,
 			StatusMsg:  "获取好友列表成功！",
 		},
-		UserList: friendList,
+		FriendList: friendList,
 	})
 }

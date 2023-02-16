@@ -39,14 +39,23 @@ CREATE TABLE `likes` (
 -- ----------------------------
 -- Table structure for users
 -- ----------------------------
-DROP TABLE IF EXISTS `users`;
-CREATE TABLE `users` (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '用户id，自增主键',
-  `name` varchar(255) NOT NULL COMMENT '用户名',
-  `password` varchar(255) NOT NULL COMMENT '用户密码',
-  PRIMARY KEY (`id`),
-  KEY `name_idx` (`name`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=1000 DEFAULT CHARSET=utf8 COMMENT='用户表';
+DROP TABLE IF EXISTS `messages`;
+CREATE TABLE `messages` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '消息id，自增主键',
+	`to_user_id` bigint(20) NOT NULL COMMENT '接收用户id',
+  `from_user_id` bigint(20) NOT NULL COMMENT '发送用户id',
+  `content` varchar(255) NOT NULL COMMENT '消息内容',
+  `create_time` varchar(255) NOT NULL COMMENT '消息发送时间',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1000 DEFAULT CHARSET=utf8 COMMENT='消息表';
+-- DROP TABLE IF EXISTS `users`;
+-- CREATE TABLE `users` (
+--   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '用户id，自增主键',
+--   `name` varchar(255) NOT NULL COMMENT '用户名',
+--   `password` varchar(255) NOT NULL COMMENT '用户密码',
+--   PRIMARY KEY (`id`),
+--   KEY `name_idx` (`name`) USING BTREE
+-- ) ENGINE=InnoDB AUTO_INCREMENT=1000 DEFAULT CHARSET=utf8 COMMENT='用户表';
 
 -- ----------------------------
 -- Table structure for videos

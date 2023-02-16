@@ -17,15 +17,15 @@ type UserResp struct {
 	IsFollow      bool   `json:"is_follow"`
 }
 
-type FriendUser struct {
-	UserResp
-	Avatar string `json:avatar`
-}
-
 type FriendResp struct {
-	FriendUser
-	Message string `json:message`
-	MsgType int64  `json:msgType`
+	Id            int64  `json:"id"`
+	Name          string `json:"name"`
+	FollowCount   int64  `json:"follow_count"`
+	FollowerCount int64  `json:"follower_count"`
+	IsFollow      bool   `json:"is_follow"`
+	Avatar        string `json:"avatar"`
+	Message       string `json:"message"`
+	MsgType       int64  `json:"msgType"`
 }
 
 /*

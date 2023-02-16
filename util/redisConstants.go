@@ -43,3 +43,7 @@ var Message_LatestMsg_TTL = Month + time.Hour*time.Duration(HourRandnum)
 const Message_MsgList_Key = "message:messageList:"
 
 var Message_MsgList_TTL = Month + time.Hour*time.Duration(HourRandnum)
+
+const Message_MessageId_Key = "message:messageId:"
+
+var Message_MessageId_TTL = Day + time.Hour*time.Duration(HourRandnum)

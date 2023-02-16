@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"strconv"
 	"time"
 
 	"github.com/Scut-Corgis/tiny-tiktok/dao"
@@ -14,80 +13,162 @@ import (
 
 type MessageServiceImpl struct{}
 
-type RedisMessage struct {
+// type RedisMessage struct {
+// 	Id         int64  `json:"id"`
+// 	Content    string `json:"content"`
+// 	CreateTime string `json:"createTime"`
+// }
+
+type LatestMessage struct {
 	Content    string `json:"content"`
 	CreateTime string `json:"createTime"`
+	MsgType    int64  `json:"msgType"` // 1为发送方，0为接收方
 }
 
 /*
 发送消息
 */
 func (MessageServiceImpl) SendMessage(userId int64, toUserId int64, content string) (bool, error) {
-	msgKey := genMsgKey(userId, toUserId)
 	createTime := time.Now().Format("2006-01-02 15:04:05")
 
-	//redis缓存
-
-	redisMsg := RedisMessage{
-		Content:    content,
-		CreateTime: createTime,
-	}
-	// 消息以hash类型保存
-	data, err := json.Marshal(redisMsg)
+	// redis缓存 最新消息
+	redisLatestMessage := LatestMessage{}
+	// #优化：content长度限制，防止恶意缓存注入
+	redisLatestMessage.Content = content
+	redisLatestMessage.CreateTime = createTime
+	redisLatestMessage.MsgType = 1
+	dataFrom, err := json.Marshal(redisLatestMessage)
 	if err != nil {
 		log.Println(err)
 	}
-	// 最新消息
-	redisLatestMsgFrom := util.Message_LatestMsg_Key + strconv.FormatInt(userId, 10)
-	if redis.RedisDb.Set(redis.Ctx, redisLatestMsgFrom, data, util.Message_LatestMsg_TTL).Err() != nil {
+	msgKey := genMsgKey(userId, toUserId)
+	redisLatestMsgKey := util.Message_LatestMsg_Key + msgKey
+	if redis.RedisDb.Set(redis.Ctx, redisLatestMsgKey, dataFrom, util.Message_LatestMsg_TTL).Err() != nil {
 		log.Println(err)
 	}
 
-	redisLatestMsgTo := util.Message_LatestMsg_Key + strconv.FormatInt(toUserId, 10)
-	if redis.RedisDb.Set(redis.Ctx, redisLatestMsgTo, data, util.Message_LatestMsg_TTL).Err() != nil {
+	msgId, err := dao.InsertMessage(userId, toUserId, content, createTime)
+	if err != nil || msgId < 0 {
 		log.Println(err)
+		return false, err
 	}
-	// 全部消息
-	redisMsgListKey := util.Message_MsgList_Key + msgKey
-	if redis.RedisDb.SAdd(redis.Ctx, redisMsgListKey, data).Err() != nil {
-		log.Println(err)
-	}
-	redis.RedisDb.Expire(redis.Ctx, redisMsgListKey, util.Message_MsgList_TTL)
-	//
-	// redis.RedisDb.Do("hmset", redis.RedisDb.Args{redisMsgKey}.AddFlat(redisMsg)...)
-	// //获取缓存
-	// value, _ := redis.RedisDb.Values(redis.RedisDb.Do("hgetall", redisMsgKey))
-	// //将values转成结构体
-	// object := &RedisMessage{}
-	// redis.RedisDb.ScanStruct(value, object)
+	redisMessageIdKey := util.Message_MessageId_Key + genMsgKey(userId, toUserId)
+	redis.RedisDb.SAdd(redis.Ctx, redisMessageIdKey, msgId)
+	redis.RedisDb.Expire(redis.Ctx, redisMessageIdKey, util.Message_MessageId_TTL)
+	return true, nil
+	// 全部消息不缓存，redis使用的内存空间，防止恶意缓存注入，撑爆内存
+	// //redis缓存 全部消息
+	// redisMsg := RedisMessage{
+	// 	Content:    content,
+	// 	CreateTime: createTime,
+	// }
+	// // 消息以hash类型保存
+	// data, err := json.Marshal(redisMsg)
+	// if err != nil {
+	// 	log.Println(err)
+	// }
+	// redisMsgListKey := util.Message_MsgList_Key + msgKey
+	// if redis.RedisDb.SAdd(redis.Ctx, redisMsgListKey, data).Err() != nil {
+	// 	log.Println(err)
+	// }
+	// redis.RedisDb.Expire(redis.Ctx, redisMsgListKey, util.Message_MsgList_TTL)
 
-	// redis.RedisDb.SAdd(redis.Ctx, redisMsgKey, redisMsg)
-
-	//#优化 mysql的增加放到消息队列里
-	return dao.InsertMessage(msgKey, content, createTime)
 }
 
 /*
 读取聊天记录
 */
 func (MessageServiceImpl) GetChatRecord(userId int64, toUserId int64) ([]dao.MessageResp, error) {
-	msgKey := genMsgKey(userId, toUserId)
 	msgList := make([]dao.MessageResp, 0)
-
-	messages, err := dao.QueryMessagesByMsgKey(msgKey)
+	messages, err := dao.QueryMessagesByMsgKey(userId, toUserId)
 	if err != nil {
 		return msgList, err
 	}
+	// redis 去重
+	redisMessageIdKey := util.Message_MessageId_Key + genMsgKey(userId, toUserId)
 	for _, message := range messages {
+		if flag, err := redis.RedisDb.SIsMember(redis.Ctx, redisMessageIdKey, message.Id).Result(); flag {
+			if err != nil {
+				log.Println(err)
+			}
+			continue
+		}
 		msgResp := dao.MessageResp{}
 		msgResp.Id = message.Id
-		msgResp.ToUserId = toUserId
-		msgResp.FromUserId = userId
+		msgResp.ToUserId = message.ToUserId
+		msgResp.FromUserId = message.FromUserId
 		msgResp.Content = message.Content
-		msgResp.CreateTime = message.CreateTime
+		msgResp.CreateTime = timeStringToUnix(message.CreateTime) //接口文档有误
+		redis.RedisDb.SAdd(redis.Ctx, redisMessageIdKey, message.Id)
+		redis.RedisDb.Expire(redis.Ctx, redisMessageIdKey, util.Message_MessageId_TTL)
 		msgList = append(msgList, msgResp)
 	}
 	return msgList, nil
+}
+
+/*
+获取最新聊天记录
+*/
+func (MessageServiceImpl) GetLatestMessage(userId int64, toUserId int64) (LatestMessage, error) {
+
+	// 当前用户为发送方
+	sendLatestMsg := LatestMessage{}
+	redisLatestMsgKey := util.Message_LatestMsg_Key + genMsgKey(userId, toUserId)
+	sendStringCmd, err1 := redis.RedisDb.Get(redis.Ctx, redisLatestMsgKey).Result()
+	if err1 == nil {
+		err := json.Unmarshal([]byte(sendStringCmd), &sendLatestMsg)
+		if err != nil {
+			log.Println(err)
+		}
+	}
+	// 当前用户为接收方
+	recvLatestMsg := LatestMessage{}
+	redisLatestMsgKey = util.Message_LatestMsg_Key + genMsgKey(toUserId, userId)
+	recvStringCmd, err2 := redis.RedisDb.Get(redis.Ctx, redisLatestMsgKey).Result()
+	if err2 == nil {
+		err := json.Unmarshal([]byte(recvStringCmd), &recvLatestMsg)
+		if err == nil {
+			//当前用户为接收方进行的查询，所以改成0
+			recvLatestMsg.MsgType = 0
+		}
+	}
+	if err1 == nil && err2 == nil {
+		sendTime := timeStringToUnix(sendLatestMsg.CreateTime)
+		recvTime := timeStringToUnix(recvLatestMsg.CreateTime)
+		if sendTime < recvTime {
+			return recvLatestMsg, nil
+		} else {
+			return sendLatestMsg, nil
+		}
+	} else if err1 == nil {
+		return sendLatestMsg, nil
+	} else if err2 == nil {
+		return recvLatestMsg, nil
+	}
+	// 缓存没数据，则去数据库查
+	latestMsg := LatestMessage{}
+	message, err := dao.QueryLatestMessageByUserId(userId, toUserId)
+	if err != nil {
+		log.Println(err)
+		return latestMsg, err
+	}
+	latestMsg.Content = message.Content
+	latestMsg.CreateTime = message.CreateTime
+	if message.FromUserId == userId {
+		latestMsg.MsgType = 1
+	} else if message.ToUserId == userId {
+		latestMsg.MsgType = 0
+	}
+	return latestMsg, nil
+}
+
+/*
+时间字符串转时间戳
+*/
+func timeStringToUnix(timeString string) int64 {
+	loc, _ := time.LoadLocation("Local")
+	timeDate, _ := time.ParseInLocation("2006-01-02 15:04:05", timeString, loc)
+	return timeDate.Unix()
 }
 
 /*

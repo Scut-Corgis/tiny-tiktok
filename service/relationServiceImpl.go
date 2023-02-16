@@ -150,27 +150,80 @@ func (RelationServiceImpl) GetFollowerList(userId int64) ([]dao.UserResp, error)
 /*
 获取用户好友列表
 */
-func (RelationServiceImpl) GetFriendList(userId int64) ([]dao.UserResp, error) {
-	usi := UserServiceImpl{}
-	// 优化：关注列表由于要返回具体用户信息，且redis存在过期的情况，数据一致性无法保证，因此，暂不做redis缓存
-	friendList := make([]dao.UserResp, 0)
+func (RelationServiceImpl) GetFriendList(userId int64) ([]dao.FriendResp, error) {
+	//#优化：关注列表由于要返回具体用户信息，且redis存在过期的情况，数据一致性无法保证，因此，暂不做redis缓存
+	// ------------------------------------------------------------
+	// 方案说明中 好友列表的描述与粉丝列表相同，但与常识不同
+	// 现执行的逻辑为好友就是互关
+	// ------------------------------------------------------------
+
+	//进入好友页面，先将useId的所有msgid的redis缓存给删掉
+	redisMessageIdKey := util.Message_MessageId_Key + strconv.FormatInt(userId, 10) + "_"
+	redis.DelRedisCatchBatch(redisMessageIdKey)
+
+	friendList := make([]dao.FriendResp, 0)
+	rsi := RelationServiceImpl{}
+
+	// 若好友列表是粉丝列表
+	// followerList, err := rsi.GetFollowerList(userId)
+	// if err != nil {
+	// 	return friendList, err
+	// }
+	// for _, follower := range followerList {
+	// 	friendResp := dao.FriendResp{}
+
+	// 	friendResp.Id = follower.Id
+	// 	friendResp.Name = follower.Name
+	// 	friendResp.FollowCount = follower.FollowCount
+	// 	friendResp.FollowerCount = follower.FollowerCount
+	// 	friendResp.IsFollow = true
+	// 	friendResp.Avatar = "./data./female.png"
+	// 	msi := MessageServiceImpl{}
+	// 	latestMsg, err := msi.GetLatestMessage(userId, follower.Id)
+	// 	if err != nil {
+	// 		log.Println(err)
+	// 		return friendList, err
+	// 	}
+	// 	friendResp.Message = latestMsg.Content
+	// 	friendResp.MsgType = latestMsg.MsgType
+	// 	friendList = append(friendList, friendResp)
+	// }
+
+	// 若好友列表是互关列表启用以下注释
 	// 查出关注列表
+	usi := UserServiceImpl{}
 	followIds, err := dao.QueryFollowsIdByUserId(userId)
 	if nil != err {
 		return friendList, err
 	}
 	for _, followId := range followIds {
 		tmpFriendInfo, err := usi.QueryUserRespById(followId)
+		friendResp := dao.FriendResp{}
 		// 判断是否回关，回关了即为好友
-		isFollow := dao.JudgeIsFollowById(followId, userId)
+		isFollow := rsi.JudgeIsFollowById(followId, userId)
 		if nil != err {
 			return friendList, err
 		}
 		if isFollow {
-			tmpFriendInfo.IsFollow = true
-			friendList = append(friendList, tmpFriendInfo)
+			friendResp.Id = tmpFriendInfo.Id
+			friendResp.Name = tmpFriendInfo.Name
+			friendResp.FollowCount = tmpFriendInfo.FollowCount
+			friendResp.FollowerCount = tmpFriendInfo.FollowerCount
+			friendResp.IsFollow = true
+			//friendResp.Avatar = "E:/personal/Go_workplace/tiny-tiktok/data/female.png"
+			friendResp.Avatar = "E:/personal/Go_workplace/tiny-tiktok/data/female.png"
+			msi := MessageServiceImpl{}
+			latestMsg, err := msi.GetLatestMessage(userId, tmpFriendInfo.Id)
+			if err != nil {
+				log.Println(err)
+				return friendList, err
+			}
+			friendResp.Message = latestMsg.Content
+			friendResp.MsgType = latestMsg.MsgType
+			friendList = append(friendList, friendResp)
 		}
 	}
+
 	return friendList, nil
 }
 
