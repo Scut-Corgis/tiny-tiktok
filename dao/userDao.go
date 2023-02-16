@@ -31,23 +31,7 @@ func QueryUserById(id int64) (User, error) {
 	return user, nil
 }
 
-// QueryUserRespById 根据id查询UserResp
-func QueryUserRespById(id int64) (UserResp, error) {
-	userInfo := UserResp{}
-	user, err := QueryUserById(id)
-	if err != nil {
-		log.Println(err.Error())
-		return userInfo, err
-	} else {
-		userInfo.FollowerCount = CountFollowers(id) // 统计粉丝数量
-		userInfo.FollowCount = CountFollowings(id)  // 统计关注博主的数量
-		userInfo.Id = user.Id
-		userInfo.Name = user.Name
-		return userInfo, err
-	}
-}
-
-// InsertUser 将user插入users表内
+// InsertUser 将User插入users表内
 func InsertUser(user *User) bool {
 	if err := Db.Create(&user).Error; err != nil {
 		log.Println(err.Error())
@@ -56,7 +40,7 @@ func InsertUser(user *User) bool {
 	return true
 }
 
-// QueryAllNames 查询所有的用户名
+// QueryAllNames 查询所有用户名
 func QueryAllNames() []string {
 	names := make([]string, 0)
 	if err := Db.Table("users").Select("name").Find(&names).Error; err != nil {

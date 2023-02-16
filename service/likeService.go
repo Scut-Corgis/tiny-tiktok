@@ -45,7 +45,8 @@ type LikeService interface {
 
 // // 功能：获取视频详细信息
 func GetVideo(videoId int64, userId int64) dao.VideoDetail {
-	VideoDetail, _ := dao.QueryVideoDetailByVideoId(videoId, userId)
+	vsi := VideoServiceImpl{}
+	VideoDetail, _ := vsi.QueryVideoDetailByVideoId(videoId, userId)
 	return VideoDetail
 }
 

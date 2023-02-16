@@ -56,7 +56,6 @@ func (UserServiceImpl) QueryUserRespById(id int64) (dao.UserResp, error) {
 	userInfo.Id = user.Id
 	userInfo.Name = user.Name
 	return userInfo, err
-
 }
 
 // Register 用户注册，返回状态码和状态信息

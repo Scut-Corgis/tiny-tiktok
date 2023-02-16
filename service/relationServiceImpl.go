@@ -123,6 +123,7 @@ func (RelationServiceImpl) GetFollowList(userId int64) ([]dao.UserResp, error) {
 func (RelationServiceImpl) GetFollowerList(userId int64) ([]dao.UserResp, error) {
 	//#优化：关注列表由于要返回具体用户信息，且redis存在过期的情况，数据一致性无法保证，因此，暂不做redis缓存
 	rsi := RelationServiceImpl{}
+	usi := UserServiceImpl{}
 	followerList := make([]dao.UserResp, 0)
 	followerIds, err := dao.QueryFollowersIdByUserId(userId)
 	if nil != err {
@@ -131,7 +132,7 @@ func (RelationServiceImpl) GetFollowerList(userId int64) ([]dao.UserResp, error)
 
 	// 注：range获取数组项不能修改数组中结构体的值
 	for _, followerId := range followerIds {
-		followerInfo, err := dao.QueryUserRespById(followerId)
+		followerInfo, err := usi.QueryUserRespById(followerId)
 		isFollow := rsi.JudgeIsFollowById(userId, followerId)
 		if nil != err {
 			return followerList, err
@@ -150,6 +151,7 @@ func (RelationServiceImpl) GetFollowerList(userId int64) ([]dao.UserResp, error)
 获取用户好友列表
 */
 func (RelationServiceImpl) GetFriendList(userId int64) ([]dao.UserResp, error) {
+	usi := UserServiceImpl{}
 	//#优化：关注列表由于要返回具体用户信息，且redis存在过期的情况，数据一致性无法保证，因此，暂不做redis缓存
 	friendList := make([]dao.UserResp, 0)
 	// 查出关注列表
@@ -158,7 +160,7 @@ func (RelationServiceImpl) GetFriendList(userId int64) ([]dao.UserResp, error) {
 		return friendList, err
 	}
 	for _, followId := range followIds {
-		tmpFriendInfo, err := dao.QueryUserRespById(followId)
+		tmpFriendInfo, err := usi.QueryUserRespById(followId)
 		// 判断是否回关，回关了即为好友
 		isFollow := dao.JudgeIsFollowById(followId, userId)
 		if nil != err {
