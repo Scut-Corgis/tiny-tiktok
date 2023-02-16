@@ -19,13 +19,14 @@ type ChatResponse struct {
 */
 func MessageAction(c *gin.Context) {
 	username := c.GetString("username")
+	userId := c.GetInt64("id")
 	usi := service.UserServiceImpl{}
 	user := usi.QueryUserByName(username)
-	if username != user.Name {
+	if username != user.Name || userId != user.Id {
 		c.JSON(http.StatusOK, Response{StatusCode: -1, StatusMsg: "token错误"})
 		return
 	}
-	userId := user.Id
+
 	toUserId, err := strconv.ParseInt(c.Query("to_user_id"), 10, 64)
 	toUser := usi.QueryUserById(toUserId)
 	if nil != err {
@@ -48,7 +49,7 @@ func MessageAction(c *gin.Context) {
 	content := c.Query("content")
 
 	msi := service.MessageServiceImpl{}
-	if actionType == 3 {
+	if actionType == 1 {
 		flag, err := msi.SendMessage(userId, toUserId, content)
 		if nil != err || !flag {
 			c.JSON(http.StatusOK, Response{StatusCode: -1, StatusMsg: "发送消息失败"})

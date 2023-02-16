@@ -41,3 +41,12 @@ const Like_Video_key = "like:video"
 // Comment 模块
 const Comment_Comment_Key = "comment:comment:" // key:comment_id value:video_id relation 1:1
 const Comment_Video_Key = "comment:video:"     // key:video_id value:comment_id ralation 1:n
+
+// message 模块
+const Message_LatestMsg_Key = "message:latestMessage:"
+
+var Message_LatestMsg_TTL = Month + time.Hour*time.Duration(HourRandnum)
+
+const Message_MsgList_Key = "message:messageList:"
+
+var Message_MsgList_TTL = Month + time.Hour*time.Duration(HourRandnum)
