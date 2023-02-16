@@ -123,6 +123,7 @@ func (RelationServiceImpl) GetFollowList(userId int64) ([]dao.UserResp, error) {
 func (RelationServiceImpl) GetFollowerList(userId int64) ([]dao.UserResp, error) {
 	//#优化：关注列表由于要返回具体用户信息，且redis存在过期的情况，数据一致性无法保证，因此，暂不做redis缓存
 	rsi := RelationServiceImpl{}
+	usi := UserServiceImpl{}
 	followerList := make([]dao.UserResp, 0)
 	followerIds, err := dao.QueryFollowersIdByUserId(userId)
 	if nil != err {
@@ -131,7 +132,7 @@ func (RelationServiceImpl) GetFollowerList(userId int64) ([]dao.UserResp, error)
 
 	// 注：range获取数组项不能修改数组中结构体的值
 	for _, followerId := range followerIds {
-		followerInfo, err := dao.QueryUserRespById(followerId)
+		followerInfo, err := usi.QueryUserRespById(followerId)
 		isFollow := rsi.JudgeIsFollowById(userId, followerId)
 		if nil != err {
 			return followerList, err
@@ -151,6 +152,7 @@ func (RelationServiceImpl) GetFollowerList(userId int64) ([]dao.UserResp, error)
 */
 func (RelationServiceImpl) GetFriendList(userId int64) ([]dao.UserResp, error) {
 	//#优化：关注列表由于要返回具体用户信息，且redis存在过期的情况，数据一致性无法保证，因此，暂不做redis缓存
+	usi := UserServiceImpl{}
 	friendList := make([]dao.UserResp, 0)
 	// 查出关注列表
 	followIds, err := dao.QueryFollowsIdByUserId(userId)
@@ -158,7 +160,7 @@ func (RelationServiceImpl) GetFriendList(userId int64) ([]dao.UserResp, error) {
 		return friendList, err
 	}
 	for _, followId := range followIds {
-		tmpFriendInfo, err := dao.QueryUserRespById(followId)
+		tmpFriendInfo, err := usi.QueryUserRespById(followId)
 		// 判断是否回关，回关了即为好友
 		isFollow := dao.JudgeIsFollowById(followId, userId)
 		if nil != err {
@@ -213,12 +215,12 @@ func (RelationServiceImpl) CountFollowings(id int64) int64 {
 func (RelationServiceImpl) ExpireFollowerCnt(id int64) {
 	// 由于关注或取关操作导致cnt缓存不一致
 	redisFollowerCntKey := util.Relation_FollowerCnt_Key + strconv.FormatInt(id, 10)
-	redis.RedisDb.Expire(redis.Ctx, redisFollowerCntKey, 0)
+	redis.RedisDb.Del(redis.Ctx, redisFollowerCntKey)
 }
 
 // 主动使cnt的redis缓存失效
 func (RelationServiceImpl) ExpireFollowingCnt(id int64) {
 	// 由于关注或取关操作导致cnt缓存不一致
 	redisFollowingCntKey := util.Relation_FollowingCnt_Key + strconv.FormatInt(id, 10)
-	redis.RedisDb.Expire(redis.Ctx, redisFollowingCntKey, 0)
+	redis.RedisDb.Del(redis.Ctx, redisFollowingCntKey)
 }

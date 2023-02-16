@@ -54,8 +54,8 @@ type MessagePushEvent struct {
 }
 
 type CommentInfo struct {
-	Id          int64 `json:"id"`
-	User        User `json:"user"`
-	CommentText string `json:"content"`
+	Id          int64     `json:"id"`
+	User        User      `json:"user"`
+	CommentText string    `json:"content"`
 	CreateDate  time.Time `json:"create_date"`
 }

@@ -1,11 +1,12 @@
 package service
 
 import (
+	"log"
+	"strconv"
+
 	"github.com/Scut-Corgis/tiny-tiktok/dao"
 	"github.com/Scut-Corgis/tiny-tiktok/middleware/redis"
 	"github.com/Scut-Corgis/tiny-tiktok/util"
-	"log"
-	"strconv"
 )
 
 type CommentServiceImpl struct {

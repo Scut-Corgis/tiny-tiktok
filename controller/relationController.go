@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"log"
 	"net/http"
 	"strconv"
 
@@ -22,16 +21,14 @@ func RelationAction(c *gin.Context) {
 	//#优化：若token含userid，获取用户可以省去查数据库操作，或使用redis减少对数据库的访问
 	// Step1. 判断token解析是否有误
 	username := c.GetString("username")
+	userId := c.GetInt64("id")
 	usi := service.UserServiceImpl{}
 	user := usi.QueryUserByName(username)
-	if username != user.Name {
+	if username != user.Name || userId != user.Id {
 		c.JSON(http.StatusOK, Response{StatusCode: -1, StatusMsg: "token错误"})
 		return
 	}
-	// token中的id有问题
-	//userId, err := strconv.ParseInt(c.GetString("id"), 10, 64)
-	userId := user.Id
-	log.Println(userId)
+
 	// Step2. 判断to_user_id解析是否有误
 	followId, err := strconv.ParseInt(c.Query("to_user_id"), 10, 64)
 	followUser := usi.QueryUserById(followId)

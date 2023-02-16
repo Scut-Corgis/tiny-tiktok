@@ -17,6 +17,17 @@ type UserResp struct {
 	IsFollow      bool   `json:"is_follow"`
 }
 
+type FriendUser struct {
+	UserResp
+	Avatar string `json:avatar`
+}
+
+type FriendResp struct {
+	FriendUser
+	Message string `json:message`
+	MsgType int64  `json:msgType`
+}
+
 /*
 增加follow关系
 userId 关注 followId
