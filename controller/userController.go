@@ -26,7 +26,7 @@ func Register(c *gin.Context) {
 	password := c.Query("password")
 
 	usi := service.UserServiceImpl{}
-	user, code, message := usi.Register(username, password)
+	userId, code, message := usi.Register(username, password)
 
 	if code != 0 {
 		c.JSON(http.StatusOK, UserLoginResponse{
@@ -35,8 +35,8 @@ func Register(c *gin.Context) {
 	} else {
 		c.JSON(http.StatusOK, UserLoginResponse{
 			Response: Response{StatusCode: code, StatusMsg: message},
-			UserId:   user.Id,
-			Token:    jwt.GenerateToken(username, user.Id),
+			UserId:   userId,
+			Token:    jwt.GenerateToken(username, userId),
 		})
 	}
 }
