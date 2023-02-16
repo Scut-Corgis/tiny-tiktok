@@ -29,6 +29,7 @@ func initDependencies() {
 	dao.Init()
 	rabbitmq.Init()
 	rabbitmq.InitLikeRabbitMQ()
+	rabbitmq.InitCommentRabbitMQ()
 	redis.InitRedis()
 	ffmpeg.Init()
 	ftp.Init()

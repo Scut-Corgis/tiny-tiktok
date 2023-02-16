@@ -18,26 +18,26 @@ type RabbitMQ struct {
 
 var MyRabbitMQ *RabbitMQ
 
-// 创建结构体实例
+// Init 创建结构体实例
 func Init() {
 	MyRabbitMQ = &RabbitMQ{
 		Mqurl: MQURL,
 	}
 	var err error
 	MyRabbitMQ.Conn, err = amqp.Dial(MyRabbitMQ.Mqurl)
-	MyRabbitMQ.failOnErr(err, "创建连接失败")
-	log.Println("rabbitmq TCP连接成功")
+	MyRabbitMQ.failOnErr(err, "Create connection failed!")
+	log.Println("rabbitmq has connected!")
 }
 
-// 错误处理函数
+// failOnErr 错误处理函数
 func (r *RabbitMQ) failOnErr(err error, message string) {
 	if err != nil {
-		log.Fatalf("%s:%s", message, err)
+		log.Printf("%s:%s\n", message, err)
 		panic(fmt.Sprintf("%s:%s", message, err))
 	}
 }
 
-// 断开channel和connection
-func (r *RabbitMQ) Destory() {
+// Destroy 断开channel和connection
+func (r *RabbitMQ) Destroy() {
 	r.Conn.Close()
 }

@@ -40,10 +40,10 @@ func NewLikeRabbitMQ(queueName string) *RabbitMQLike {
 func InitLikeRabbitMQ() {
 	RabbitMQLikeAdd = NewLikeRabbitMQ("Like Add")
 	go RabbitMQLikeAdd.Consumer()
-	log.Println("RabbitMQLikeAdd success")
+	log.Println("RabbitMQLikeAdd init successfully!")
 	RabbitMQLikeDel = NewLikeRabbitMQ("Like Del")
 	go RabbitMQLikeDel.Consumer()
-	log.Println("RabbitMQLikeAdd success")
+	log.Println("RabbitMQLikeDel init successfully!")
 }
 
 func (likemq *RabbitMQLike) Producer(message string) {
@@ -106,7 +106,7 @@ func (likemq *RabbitMQLike) Consumer() {
 		go consumerLikeDel(messages)
 
 	}
-	log.Printf("[*] waiting for messages, to exit process CTRL+C")
+	//log.Printf("[*] waiting for messages, to exit process CTRL+C")
 	<-forever
 }
 
