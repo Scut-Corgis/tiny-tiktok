@@ -4,8 +4,8 @@ import (
 	"log"
 )
 
-// CommentCount 根据视频id统计评论数量
-func CommentCount(id int64) (int64, error) {
+// CountComments 根据视频id统计评论数量
+func CountComments(id int64) (int64, error) {
 	var count int64
 	err := Db.Model(&Comment{}).Where("video_id = ?", id).Count(&count).Error
 	if err != nil {
