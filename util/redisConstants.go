@@ -30,6 +30,7 @@ var Relation_FollowingCnt_TTL = Day + Day*time.Duration(DayRandnum)
 // 点赞模块
 const Like_User_Key = "like:user"
 const Like_Video_key = "like:video"
+const MyDefault = -1
 
 // Comment 模块
 const Comment_Comment_Key = "comment:comment:" // key:comment_id value:video_id relation 1:1
