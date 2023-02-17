@@ -6,7 +6,6 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/Scut-Corgis/tiny-tiktok/config"
 	"github.com/Scut-Corgis/tiny-tiktok/dao"
 	"github.com/Scut-Corgis/tiny-tiktok/middleware/rabbitmq"
 	"github.com/Scut-Corgis/tiny-tiktok/middleware/redis"
@@ -51,7 +50,7 @@ func (like LikeServiceImpl) Like(userId int64, videoId int64) error {
 		log.Println(key_userId, list)
 	} else { //如果点赞的用户id不在redis缓存中，
 		//在缓存中新建一个useridkey
-		if _, err := redis.RedisDb.SAdd(redis.Ctx, key_userId, config.MyDefault).Result(); err != nil {
+		if _, err := redis.RedisDb.SAdd(redis.Ctx, key_userId, util.MyDefault).Result(); err != nil {
 			log.Println("缓存创建key失败！")
 			redis.RedisDb.Del(redis.Ctx, key_userId)
 			return err
@@ -104,7 +103,7 @@ func (like LikeServiceImpl) Like(userId int64, videoId int64) error {
 		log.Println(key_videoId, list)
 	} else { //如果在缓存中
 		//先添加一个默认值
-		if _, err := redis.RedisDb.SAdd(redis.Ctx, key_videoId, config.MyDefault).Result(); err != nil {
+		if _, err := redis.RedisDb.SAdd(redis.Ctx, key_videoId, util.MyDefault).Result(); err != nil {
 			log.Println("缓存创建key失败！")
 			redis.RedisDb.Del(redis.Ctx, key_videoId)
 			return err
@@ -168,7 +167,7 @@ func (like LikeServiceImpl) Unlike(userId int64, videoId int64) error {
 		log.Println(key_userId, list)
 	} else { //如果取消点赞的用户id不在redis缓存中 过期了
 		//在缓存中新建一个useridkey
-		if _, err := redis.RedisDb.SAdd(redis.Ctx, key_userId, config.MyDefault).Result(); err != nil {
+		if _, err := redis.RedisDb.SAdd(redis.Ctx, key_userId, util.MyDefault).Result(); err != nil {
 			log.Println("缓存创建key失败！")
 			redis.RedisDb.Del(redis.Ctx, key_userId)
 			return err
@@ -220,7 +219,7 @@ func (like LikeServiceImpl) Unlike(userId int64, videoId int64) error {
 		log.Println(key_videoId, list)
 	} else { //如果不在缓存中
 		//先添加一个默认值
-		if _, err := redis.RedisDb.SAdd(redis.Ctx, key_videoId, config.MyDefault).Result(); err != nil {
+		if _, err := redis.RedisDb.SAdd(redis.Ctx, key_videoId, util.MyDefault).Result(); err != nil {
 			log.Println("缓存创建key失败！")
 			redis.RedisDb.Del(redis.Ctx, key_videoId)
 			return err
@@ -311,7 +310,7 @@ func (like LikeServiceImpl) GetLikeLists(userId int64) ([]dao.VideoDetail, error
 		for i := 0; i < videoIdListLen; i++ {
 			videoId, _ := strconv.ParseInt(videoIdList[i], 10, 64)
 			log.Println(videoId)
-			if videoId == config.MyDefault {
+			if videoId == util.MyDefault {
 				continue
 			}
 			go like.GetVideo(videoId, userId, &result, &wg)
@@ -319,7 +318,7 @@ func (like LikeServiceImpl) GetLikeLists(userId int64) ([]dao.VideoDetail, error
 		wg.Wait()
 		return result, nil
 	} else { //如果key_userId不存在缓存中，需要把数据库中的信息添加到缓存中
-		if _, err := redis.RedisDb.SAdd(redis.Ctx, key_userId, config.MyDefault).Result(); err != nil {
+		if _, err := redis.RedisDb.SAdd(redis.Ctx, key_userId, util.MyDefault).Result(); err != nil {
 			log.Println("添加缓存失败")
 			redis.RedisDb.Del(redis.Ctx, key_userId)
 			return nil, err
@@ -411,7 +410,7 @@ func (like LikeServiceImpl) IsLike(videoId int64, userId int64) (bool, error) {
 			}
 			return isLike, nil
 		} else { //如果key_userId不存在缓存中 那么key_userId key_videoId都不存在缓存当中，把数据库中的用户userId点赞的视频id添加到key_userId中
-			if _, err := redis.RedisDb.SAdd(redis.Ctx, key_userId, config.MyDefault).Result(); err != nil {
+			if _, err := redis.RedisDb.SAdd(redis.Ctx, key_userId, util.MyDefault).Result(); err != nil {
 				log.Println("添加缓存失败")
 				redis.RedisDb.Del(redis.Ctx, key_userId)
 				return false, err
@@ -467,7 +466,7 @@ func (like LikeServiceImpl) LikeCount(videoId int64) (int64, error) {
 
 		return result - 1, nil
 	} else { //如果键值key_videoId不在缓存中
-		if _, err := redis.RedisDb.SAdd(redis.Ctx, key_videoId, config.MyDefault).Result(); err != nil {
+		if _, err := redis.RedisDb.SAdd(redis.Ctx, key_videoId, util.MyDefault).Result(); err != nil {
 			log.Println("添加缓存失败")
 			redis.RedisDb.Del(redis.Ctx, key_videoId)
 			return -1, err
