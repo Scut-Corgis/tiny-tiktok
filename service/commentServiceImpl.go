@@ -29,7 +29,7 @@ func (CommentServiceImpl) CommentCount(id int64) (int64, error) {
 		return cnt1, nil
 	}
 	// 再查数据库
-	cnt2, err2 := dao.CommentCount(id)
+	cnt2, err2 := dao.CountComments(id)
 	if err2 != nil {
 		log.Println("count from db error:", err2)
 		return 0, err2
