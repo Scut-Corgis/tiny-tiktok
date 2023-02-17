@@ -46,7 +46,6 @@ func TestPublish(t *testing.T) {
 		return
 	}
 	req.Header.Add("User-Agent", "Apifox/1.0.0 (https://www.apifox.cn)")
-
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 	res, err := client.Do(req)
 	if err != nil {
