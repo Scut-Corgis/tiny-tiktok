@@ -43,7 +43,7 @@ func (VideoServiceImpl) QueryVideoDetailByVideoId(videoId int64, queryUserId int
 	videoDetail.CoverUrl = video.CoverUrl
 	videoDetail.Title = video.Title
 	videoDetail.FavoriteCount, _ = usi.LikeCount(videoId)
-	videoDetail.CommentCount, _ = csi.CommentCount(videoId)
+	videoDetail.CommentCount, _ = csi.CountComments(videoId)
 	videoDetail.IsFavorite, _ = usi.IsLike(videoId, queryUserId)
 	return videoDetail, video.PublishTime
 }

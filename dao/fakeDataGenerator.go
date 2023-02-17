@@ -12,7 +12,6 @@ import (
 
 func RebuildTable() bool {
 	cmd := exec.Command("sh", "/Users/zaizai/Projects/GolandProjects/tiny-tiktok/config/rebuildTable.sh")
-	//cmd := exec.Command("sh", "/home/admin/tiny-tiktok/config/rebuildTable.sh")
 	var stderr bytes.Buffer
 	cmd.Stderr = &stderr
 	err := cmd.Run()
@@ -29,8 +28,10 @@ func FakeUsers(num int) {
 		user := User{}
 		user.Name = gofakeit.Username()
 		user.Password = gofakeit.Password(false, false, true, false, false, 8)
-		// fmt.Println(user)
-		InsertUser(user)
+		_, err := InsertUser(user)
+		if err != nil {
+			return
+		}
 	}
 }
 
@@ -45,7 +46,10 @@ func FakeFollows(num int) {
 		for a == b {
 			b = rand.Int63n(count)
 		}
-		InsertFollow(a+1000, b+1000)
+		err := InsertFollow(a+1000, b+1000)
+		if err != nil {
+			return
+		}
 	}
 }
 
@@ -61,7 +65,10 @@ func FakeVideos(num int) {
 		video.CoverUrl = gofakeit.URL()
 		video.PublishTime = gofakeit.Date()
 		video.Title = gofakeit.Noun()
-		InsertVideosTable(&video)
+		err := InsertVideosTable(&video)
+		if err != nil {
+			return
+		}
 	}
 }
 
@@ -75,11 +82,11 @@ func FakeLikes(num int) {
 		var a, b int64
 		a = rand.Int63n(countUser)
 		b = rand.Int63n(countVideo)
-		// for a == b {
-		// 	b = rand.Int63n(countVideo)
-		// }
 		like := Like{UserId: a + 1001, VideoId: b + 1001}
-		InsertLike(&like)
+		err := InsertLike(&like)
+		if err != nil {
+			return
+		}
 	}
 }
 func FakeComments(num int) {
@@ -94,6 +101,9 @@ func FakeComments(num int) {
 		comment.VideoId = rand.Int63n(videoCount) + 1000
 		comment.CommentText = gofakeit.Sentence(20)
 		comment.CreateDate = gofakeit.Date()
-		InsertComment(comment)
+		_, err := InsertComment(comment)
+		if err != nil {
+			return
+		}
 	}
 }

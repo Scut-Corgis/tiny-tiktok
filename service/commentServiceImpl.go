@@ -12,11 +12,10 @@ import (
 
 type CommentServiceImpl struct {
 	UserServiceImpl
-	VideoServiceImpl
 }
 
-// CommentCount 根据视频id统计评论数量
-func (CommentServiceImpl) CommentCount(id int64) (int64, error) {
+// CountComments 根据视频id统计评论数量
+func (CommentServiceImpl) CountComments(id int64) (int64, error) {
 	// 先查redis缓存
 	redisVideoKey := util.Comment_Video_Key + strconv.FormatInt(id, 10)
 	cnt1, err1 := redis.RedisDb.SCard(redis.Ctx, redisVideoKey).Result()
