@@ -15,7 +15,7 @@ func TestCommentAction(t *testing.T) {
 	SendRequest(method1, url1, strings.NewReader(token))
 
 	// 评论操作——删除评论
-	url2 := "http://127.0.0.1:8080/douyin/comment/action/?video_id=1000&action_type=2&comment_id=1010"
+	url2 := "http://127.0.0.1:8080/douyin/comment/action/?video_id=1000&action_type=2&comment_id=1018"
 	method2 := "POST"
 	SendRequest(method2, url2, strings.NewReader(token))
 }

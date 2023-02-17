@@ -62,7 +62,7 @@ func InsertVideosTable(video *Video) error {
 func GetMost30videosIdList(latestTime time.Time) []int64 {
 	var videoIdList = make([]int64, 0, 30)
 	//Db.Raw("SELECT id FROM videos WHERE publish_time < ? ORDER BY publish_time desc LIMIT 30", latestTime).Scan(&videoIdList)
-	if err := Db.Select("id").Where("publish_time < ?", latestTime).Order("publish_time desc").Limit(30).Find(&videoIdList).Error; err != nil {
+	if err := Db.Table("videos").Select("id").Where("publish_time < ?", latestTime).Order("publish_time desc").Limit(30).Find(&videoIdList).Error; err != nil {
 		log.Println(err.Error())
 		return videoIdList
 	}
@@ -72,7 +72,7 @@ func GetMost30videosIdList(latestTime time.Time) []int64 {
 func GetVideoIdListByUserId(authorId int64) []int64 {
 	var videoIdList = make([]int64, 0)
 	//Db.Raw("SELECT id FROM videos WHERE author_id = ?", authorId).Scan(&videoIdList)
-	if err := Db.Select("id").Where("author_id = ?", authorId).Find(&videoIdList).Error; err != nil {
+	if err := Db.Table("videos").Select("id").Where("author_id = ?", authorId).Find(&videoIdList).Error; err != nil {
 		log.Println(err.Error())
 		return videoIdList
 	}
