@@ -1,9 +1,10 @@
 package service
 
 import (
-	"github.com/Scut-Corgis/tiny-tiktok/dao"
 	"log"
 	"time"
+
+	"github.com/Scut-Corgis/tiny-tiktok/dao"
 )
 
 type VideoServiceImpl struct {
@@ -41,9 +42,9 @@ func (VideoServiceImpl) QueryVideoDetailByVideoId(videoId int64, queryUserId int
 	videoDetail.PlayUrl = video.PlayUrl
 	videoDetail.CoverUrl = video.CoverUrl
 	videoDetail.Title = video.Title
-	videoDetail.FavoriteCount, _ = usi.FavouriteCount(videoId)
+	videoDetail.FavoriteCount, _ = usi.LikeCount(videoId)
 	videoDetail.CommentCount, _ = csi.CommentCount(videoId)
-	videoDetail.IsFavorite, _ = usi.IsFavourite(videoId, queryUserId)
+	videoDetail.IsFavorite, _ = usi.IsLike(videoId, queryUserId)
 	return videoDetail, video.PublishTime
 }
 

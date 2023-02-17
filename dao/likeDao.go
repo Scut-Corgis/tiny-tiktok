@@ -50,20 +50,20 @@ func GetLikeVideoIdList(userId int64) ([]int64, error) {
 	return likeVideoIdList, nil
 }
 
-//// GetLikeUserIdList 根据videoId查询点赞该视频的全部user_id
-//func GetLikeUserIdList(videoId int64) ([]int64, error) {
-//	var likeUserIdList []int64 //存所有该视频点赞用户id；
-//	//查询likes表对应视频id点赞用户，返回查询结果
-//	err := Db.Model(Like{}).Where(map[string]interface{}{"video_id": videoId}).Pluck("user_id", &likeUserIdList).Error
-//	//查询过程出现错误，返回默认值0，并输出错误信息
-//	if err != nil {
-//		log.Println(err.Error())
-//		return nil, errors.New("get likeUserIdList failed")
-//	} else {
-//		//没查询到或者查询到结果，返回数量以及无报错
-//		return likeUserIdList, nil
-//	}
-//}
+// // GetLikeUserIdList 根据videoId查询点赞该视频的全部user_id
+func GetLikeUserIdList(videoId int64) ([]int64, error) {
+	var likeUserIdList []int64 //存所有该视频点赞用户id；
+	//查询likes表对应视频id点赞用户，返回查询结果
+	err := Db.Model(Like{}).Where(map[string]interface{}{"video_id": videoId}).Pluck("user_id", &likeUserIdList).Error
+	//查询过程出现错误，返回默认值0，并输出错误信息
+	if err != nil {
+		log.Println(err.Error())
+		return nil, errors.New("get likeUserIdList failed")
+	} else {
+		//没查询到或者查询到结果，返回数量以及无报错
+		return likeUserIdList, nil
+	}
+}
 
 // GetLikeCountByVideoId 根据video_id获取该视频的点赞数
 func GetLikeCountByVideoId(videoId int64) (int64, error) {

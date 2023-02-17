@@ -1,9 +1,10 @@
 package controller
 
 import (
-	"github.com/Scut-Corgis/tiny-tiktok/middleware/redis"
 	"net/http"
 	"strconv"
+
+	"github.com/Scut-Corgis/tiny-tiktok/middleware/redis"
 
 	"github.com/Scut-Corgis/tiny-tiktok/dao"
 	"github.com/Scut-Corgis/tiny-tiktok/service"
@@ -22,7 +23,7 @@ type GetLikeListResponse struct {
 
 // 点赞和取消点赞功能
 func FavoriteAction(c *gin.Context) {
-	StrUserId := c.GetString("id")
+	userId := c.GetInt64("id")
 	favoriteService := service.LikeServiceImpl{}
 	//user := favoriteService.QueryUserByName(username) //这种调用会出错！
 	//user := service.UserServiceImpl{}.QueryUserByName(username)
@@ -32,7 +33,7 @@ func FavoriteAction(c *gin.Context) {
 	// 	return
 	// }
 
-	userId, _ := strconv.ParseInt(StrUserId, 10, 64)
+	//userId, _ := strconv.ParseInt(StrUserId, 10, 64)
 	strVideoId := c.Query("video_id")
 	videoId, _ := strconv.ParseInt(strVideoId, 10, 64)
 	strActionType := c.Query("action_type")
