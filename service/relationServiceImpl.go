@@ -3,8 +3,11 @@ package service
 import (
 	"log"
 	"strconv"
+	"strings"
 
+	"github.com/Scut-Corgis/tiny-tiktok/config"
 	"github.com/Scut-Corgis/tiny-tiktok/dao"
+	"github.com/Scut-Corgis/tiny-tiktok/middleware/rabbitmq"
 	"github.com/Scut-Corgis/tiny-tiktok/middleware/redis"
 	"github.com/Scut-Corgis/tiny-tiktok/util"
 )
@@ -22,10 +25,18 @@ func (RelationServiceImpl) Follow(userId int64, followId int64) (bool, error) {
 	if isFollowed {
 		return false, nil
 	}
-	err := dao.InsertFollow(userId, followId)
-	if err != nil {
-		return false, err
-	}
+	// 插入数据库操作放入消息队列
+	sb := strings.Builder{}
+	sb.WriteString(strconv.FormatInt(userId, 10))
+	sb.WriteString(" ")
+	sb.WriteString(strconv.FormatInt(followId, 10))
+	rabbitmq.RabbitMQRelationAdd.Producer(sb.String())
+	log.Println("****relationMQ ADD success!")
+	// #优化: 下边注释勿删, 下为只含redis版本，以备测试用
+	// err := dao.InsertFollow(userId, followId)
+	// if err != nil {
+	// 	return false, err
+	// }
 
 	// 将查询到的关注关系注入Redis
 	redisFollowKey := util.Relation_Follow_Key + strconv.FormatInt(userId, 10)
@@ -50,10 +61,17 @@ func (RelationServiceImpl) UnFollow(userId int64, followId int64) (bool, error) 
 	if !isFollowed {
 		return false, nil
 	}
-	err := dao.DeleteFollow(userId, followId)
-	if err != nil {
-		return false, err
-	}
+	// 数据库删除操作放入消息队列
+	sb := strings.Builder{}
+	sb.WriteString(strconv.Itoa(int(userId)))
+	sb.WriteString(" ")
+	sb.WriteString(strconv.Itoa(int(followId)))
+	rabbitmq.RabbitMQRelationDel.Producer(sb.String())
+	log.Println("****relationMQ Del success!")
+	// err := dao.DeleteFollow(userId, followId)
+	// if err != nil {
+	// 	return false, err
+	// }
 
 	// 删除Redis中 redisFollowKey set集合中的followId元素
 	redisFollowKey := util.Relation_Follow_Key + strconv.FormatInt(userId, 10)
@@ -98,7 +116,7 @@ func (RelationServiceImpl) JudgeIsFollowById(userId int64, followId int64) bool 
 获取用户关注列表
 */
 func (RelationServiceImpl) GetFollowList(userId int64) ([]dao.UserResp, error) {
-	//#优化：关注列表由于要返回具体用户信息，且redis存在过期的情况，数据一致性无法保证，因此，暂不做redis缓存
+	//#优化：关注列表由于要(大V/经常登录用户)返回多个用户的信息，为确保数据一致性，会带来频繁的缓存删除和增加操作，暂不做redis缓存
 	usi := UserServiceImpl{}
 	followList := make([]dao.UserResp, 0)
 	followIds, err := dao.QueryFollowsIdByUserId(userId)
@@ -121,7 +139,7 @@ func (RelationServiceImpl) GetFollowList(userId int64) ([]dao.UserResp, error) {
 获取用户粉丝列表
 */
 func (RelationServiceImpl) GetFollowerList(userId int64) ([]dao.UserResp, error) {
-	//#优化：关注列表由于要返回具体用户信息，且redis存在过期的情况，数据一致性无法保证，因此，暂不做redis缓存
+	//#优化：关注列表由于要(大V/经常登录用户)返回多个用户的信息，为确保数据一致性，会带来频繁的缓存删除和增加操作，暂不做redis缓存
 	rsi := RelationServiceImpl{}
 	usi := UserServiceImpl{}
 	followerList := make([]dao.UserResp, 0)
@@ -151,45 +169,15 @@ func (RelationServiceImpl) GetFollowerList(userId int64) ([]dao.UserResp, error)
 获取用户好友列表
 */
 func (RelationServiceImpl) GetFriendList(userId int64) ([]dao.FriendResp, error) {
-	//#优化：关注列表由于要返回具体用户信息，且redis存在过期的情况，数据一致性无法保证，因此，暂不做redis缓存
-	// ------------------------------------------------------------
-	// 方案说明中 好友列表的描述与粉丝列表相同，但与常识不同
-	// 现执行的逻辑为好友就是互关
-	// ------------------------------------------------------------
+	//#优化：关注列表由于要(大V/经常登录用户)返回多个用户的信息，为确保数据一致性，会带来频繁的缓存删除和增加操作，暂不做redis缓存
 
-	//进入好友页面，先将useId的所有msgid的redis缓存给删掉
+	//进入好友页面，先将useId的所有msgid的redis缓存给删掉，实现进入聊天框后重新访问一次全部聊天记录
 	redisMessageIdKey := util.Message_MessageId_Key + strconv.FormatInt(userId, 10) + "_"
 	redis.DelRedisCatchBatch(redisMessageIdKey)
 
 	friendList := make([]dao.FriendResp, 0)
 	rsi := RelationServiceImpl{}
 
-	// 若好友列表是粉丝列表
-	// followerList, err := rsi.GetFollowerList(userId)
-	// if err != nil {
-	// 	return friendList, err
-	// }
-	// for _, follower := range followerList {
-	// 	friendResp := dao.FriendResp{}
-
-	// 	friendResp.Id = follower.Id
-	// 	friendResp.Name = follower.Name
-	// 	friendResp.FollowCount = follower.FollowCount
-	// 	friendResp.FollowerCount = follower.FollowerCount
-	// 	friendResp.IsFollow = true
-	// 	friendResp.Avatar = "./data./female.png"
-	// 	msi := MessageServiceImpl{}
-	// 	latestMsg, err := msi.GetLatestMessage(userId, follower.Id)
-	// 	if err != nil {
-	// 		log.Println(err)
-	// 		return friendList, err
-	// 	}
-	// 	friendResp.Message = latestMsg.Content
-	// 	friendResp.MsgType = latestMsg.MsgType
-	// 	friendList = append(friendList, friendResp)
-	// }
-
-	// 若好友列表是互关列表启用以下注释
 	// 查出关注列表
 	usi := UserServiceImpl{}
 	followIds, err := dao.QueryFollowsIdByUserId(userId)
@@ -211,7 +199,7 @@ func (RelationServiceImpl) GetFriendList(userId int64) ([]dao.FriendResp, error)
 			friendResp.FollowerCount = tmpFriendInfo.FollowerCount
 			friendResp.IsFollow = true
 			//friendResp.Avatar = "E:/personal/Go_workplace/tiny-tiktok/data/female.png"
-			friendResp.Avatar = "E:/personal/Go_workplace/tiny-tiktok/data/female.png"
+			friendResp.Avatar = config.Ftp_image_path + "female.png"
 			msi := MessageServiceImpl{}
 			latestMsg, err := msi.GetLatestMessage(userId, tmpFriendInfo.Id)
 			if err != nil {

@@ -4,9 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/Scut-Corgis/tiny-tiktok/dao"
+	"github.com/Scut-Corgis/tiny-tiktok/middleware/rabbitmq"
 	"github.com/Scut-Corgis/tiny-tiktok/middleware/redis"
 	"github.com/Scut-Corgis/tiny-tiktok/util"
 )
@@ -33,7 +36,6 @@ func (MessageServiceImpl) SendMessage(userId int64, toUserId int64, content stri
 
 	// redis缓存 最新消息
 	redisLatestMessage := LatestMessage{}
-	// #优化：content长度限制，防止恶意缓存注入
 	redisLatestMessage.Content = content
 	redisLatestMessage.CreateTime = createTime
 	redisLatestMessage.MsgType = 1
@@ -46,15 +48,23 @@ func (MessageServiceImpl) SendMessage(userId int64, toUserId int64, content stri
 	if redis.RedisDb.Set(redis.Ctx, redisLatestMsgKey, dataFrom, util.Message_LatestMsg_TTL).Err() != nil {
 		log.Println(err)
 	}
-
-	msgId, err := dao.InsertMessage(userId, toUserId, content, createTime)
-	if err != nil || msgId < 0 {
-		log.Println(err)
-		return false, err
-	}
-	redisMessageIdKey := util.Message_MessageId_Key + genMsgKey(userId, toUserId)
-	redis.RedisDb.SAdd(redis.Ctx, redisMessageIdKey, msgId)
-	redis.RedisDb.Expire(redis.Ctx, redisMessageIdKey, util.Message_MessageId_TTL)
+	sb := strings.Builder{}
+	sb.WriteString(strconv.FormatInt(userId, 10))
+	sb.WriteString(" ")
+	sb.WriteString(strconv.FormatInt(toUserId, 10))
+	sb.WriteString(" ")
+	sb.WriteString(content)
+	sb.WriteString(" ")
+	sb.WriteString(createTime)
+	rabbitmq.RabbitMQMessageAdd.Producer(sb.String())
+	// msgId, err := dao.InsertMessage(userId, toUserId, content, createTime)
+	// if err != nil || msgId < 0 {
+	// 	log.Println(err)
+	// 	return false, err
+	// }
+	// redisMessageIdKey := util.Message_MessageId_Key + genMsgKey(userId, toUserId)
+	// redis.RedisDb.SAdd(redis.Ctx, redisMessageIdKey, msgId)
+	// redis.RedisDb.Expire(redis.Ctx, redisMessageIdKey, util.Message_MessageId_TTL)
 	return true, nil
 	// 全部消息不缓存，redis使用的内存空间，防止恶意缓存注入，撑爆内存
 	// //redis缓存 全部消息

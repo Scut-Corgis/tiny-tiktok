@@ -1,13 +1,14 @@
 package main
 
 import (
-	"github.com/Scut-Corgis/tiny-tiktok/middleware/rabbitmq"
-	"github.com/Scut-Corgis/tiny-tiktok/util"
 	"log"
+
+	"github.com/Scut-Corgis/tiny-tiktok/util"
 
 	"github.com/Scut-Corgis/tiny-tiktok/dao"
 	"github.com/Scut-Corgis/tiny-tiktok/middleware/ffmpeg"
 	"github.com/Scut-Corgis/tiny-tiktok/middleware/ftp"
+	"github.com/Scut-Corgis/tiny-tiktok/middleware/rabbitmq"
 	"github.com/Scut-Corgis/tiny-tiktok/middleware/redis"
 	"github.com/gin-gonic/gin"
 )
@@ -30,6 +31,8 @@ func initDependencies() {
 	rabbitmq.Init()
 	rabbitmq.InitLikeRabbitMQ()
 	rabbitmq.InitCommentRabbitMQ()
+	rabbitmq.InitRelationRabbitMQ()
+	rabbitmq.InitMessageRabbitMQ()
 	redis.InitRedis()
 	ffmpeg.Init()
 	ftp.Init()
