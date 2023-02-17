@@ -260,7 +260,7 @@ func (like LikeServiceImpl) Unlike(userId int64, videoId int64) error {
 
 func (like LikeServiceImpl) GetVideo(videoId int64, userId int64, result *[]dao.VideoDetail, wg *sync.WaitGroup) {
 	defer wg.Done()
-	//vdi := VideoServiceImpl{}
+
 	//根据userId和videoId查询数据库中视频信息
 	videoDetail, _ := VideoServiceImpl{}.QueryVideoDetailByVideoId(videoId, userId)
 	log.Println(videoDetail)
