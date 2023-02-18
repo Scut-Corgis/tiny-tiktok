@@ -80,14 +80,15 @@ func CommentAction(c *gin.Context) {
 func CommentList(c *gin.Context) {
 	usi := service.UserServiceImpl{}
 	csi := service.CommentServiceImpl{}
+	vsi := service.VideoServiceImpl{}
 
 	id := c.Query("video_id")
 	videoId, _ := strconv.ParseInt(id, 10, 64)
-	video := csi.QueryVideoById(videoId)
+	video := vsi.QueryVideoById(videoId)
 
-	//if !dao.JudgeVideoIsExist(id) {
-	//	c.JSON(http.StatusOK, likeResponse{StatusCode: 1, StatusMsg: "Video doesn't exist"})
-	//}
+	if video == (dao.Video{}) {
+		c.JSON(http.StatusOK, likeResponse{StatusCode: 1, StatusMsg: "Video doesn't exist"})
+	}
 	comments := csi.QueryCommentsByVideoId(videoId)
 	var commonList []CommentInfo
 	for _, comment := range comments {

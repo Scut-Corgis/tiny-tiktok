@@ -15,9 +15,7 @@ type ChatResponse struct {
 	MessageList []dao.MessageResp `json:"message_list"`
 }
 
-/*
-处理发送消息请求
-*/
+// MessageAction POST /douyin/message/action/ 发送信息
 func MessageAction(c *gin.Context) {
 	username := c.GetString("username")
 	userId := c.GetInt64("id")
@@ -67,9 +65,7 @@ func MessageAction(c *gin.Context) {
 
 }
 
-/*
-处理消息列表请求
-*/
+// ChatRecord GET /douyin/message/chat/ 聊天记录
 func ChatRecord(c *gin.Context) {
 	username := c.GetString("username")
 	usi := service.UserServiceImpl{}

@@ -20,9 +20,7 @@ type FriendListResponse struct {
 	FriendList []dao.FriendResp `json:"user_list"`
 }
 
-/*
-处理关注和取关接口
-*/
+// RelationAction POST /douyin/relation/action/ 关注操作
 func RelationAction(c *gin.Context) {
 	//#优化：若token含userid，获取用户可以省去查数据库操作，或使用redis减少对数据库的访问
 	// Step1. 判断token解析是否有误
@@ -94,9 +92,7 @@ func RelationAction(c *gin.Context) {
 	}
 }
 
-/*
-处理获取当前用户的关注列表
-*/
+// FollowList GET /douyin/relation/follow/list/ 关注列表
 func FollowList(c *gin.Context) {
 	// Step1. 判断token、user_id解析是否有误
 	username := c.GetString("username")

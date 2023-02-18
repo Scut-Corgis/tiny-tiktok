@@ -21,7 +21,7 @@ type GetLikeListResponse struct {
 	VideoList  []dao.VideoDetail `json:"video_list"`  // 用户点赞视频列表
 }
 
-// 点赞和取消点赞功能
+// FavoriteAction POST /douyin/favorite/action/ 赞操作
 func FavoriteAction(c *gin.Context) {
 	userId := c.GetInt64("id")
 	favoriteService := service.LikeServiceImpl{}
@@ -58,6 +58,7 @@ func FavoriteAction(c *gin.Context) {
 	}
 }
 
+// FavoriteList GET /douyin/favorite/list/ 喜欢列表
 func FavoriteList(c *gin.Context) {
 	favoriteService := service.LikeServiceImpl{}
 	strsuccess := "获取点赞列表成功"
