@@ -19,7 +19,7 @@ var mutex sync.Mutex
 
 // RedisDb 定义一个全局变量
 var RedisDb *redis.Client
-
+var RedisDbBackUp *redis.Client
 var Ctx = context.Background()
 
 func InitRedis() {
@@ -28,11 +28,29 @@ func InitRedis() {
 		Password: config.Redis_password,
 		DB:       0,
 	})
-	_, err := RedisDb.Ping(Ctx).Result()
-	if err != nil {
-		log.Panicln("err:", err.Error())
+	RedisDbBackUp = redis.NewClient(&redis.Options{
+		Addr:     config.Redis_addr_port,
+		Password: config.Redis_password,
+		DB:       1,
+	})
+	_, err1 := RedisDb.Ping(Ctx).Result()
+	if err1 != nil {
+		log.Panicln("err:", err1.Error())
+	}
+	_, err2 := RedisDbBackUp.Ping(Ctx).Result()
+	if err2 != nil {
+		log.Panicln("err:", err2.Error())
 	}
 	log.Println("redis has connected!")
+	BackUp()
+	log.Println("redis backup successfully!")
+}
+
+func BackUp() {
+	keys, _ := RedisDb.Keys(Ctx, "*").Result()
+	for _, key := range keys {
+		RedisDb.Copy(Ctx, key, key, 1, true)
+	}
 }
 
 func Lock(key string, value string) bool {
