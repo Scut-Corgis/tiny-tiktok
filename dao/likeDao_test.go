@@ -39,9 +39,9 @@ func TestGetLikeCountByVideoId(t *testing.T) {
 	fmt.Println(err)
 }
 
-func TestGetLikInfo(t *testing.T) {
-	Init()
-	likeInfo, err := GetLikInfo(1000, 1000)
-	fmt.Println(likeInfo)
-	fmt.Println(err)
-}
+//func TestGetLikInfo(t *testing.T) {
+//	Init()
+//	likeInfo, err := GetLikInfo(1000, 1000)
+//	fmt.Println(likeInfo)
+//	fmt.Println(err)
+//}

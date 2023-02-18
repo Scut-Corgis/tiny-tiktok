@@ -15,9 +15,8 @@ func InsertLike(likeData *Like) error {
 	err := Db.Model(&Like{}).Create(&likeData).Error
 	if err != nil {
 		log.Println(err.Error())
-		return errors.New("insert likedata failed")
+		return errors.New("insert like data failed")
 	}
-	//log.Println("like insert success")
 	return nil
 }
 
@@ -26,9 +25,8 @@ func DeleteLike(userId int64, videoId int64) error {
 	err := Db.Where(map[string]interface{}{"user_id": userId, "video_id": videoId}).Delete(&Like{}).Error
 	if err != nil {
 		log.Println(err.Error())
-		return errors.New("delete likedata failed")
+		return errors.New("delete like data failed")
 	}
-	//log.Println("like delete success")
 	return nil
 }
 
@@ -39,7 +37,7 @@ func GetLikeVideoIdList(userId int64) ([]int64, error) {
 	if err != nil {
 		//查询数据为0，返回空likeVideoIdList切片，以及返回无错误
 		if "record not found" == err.Error() {
-			log.Println("there are no likeVideoId")
+			log.Println("there are no likeVideoIds")
 			return likeVideoIdList, nil
 		} else {
 			//如果查询数据库失败，返回获取likeVideoIdList失败
@@ -50,7 +48,7 @@ func GetLikeVideoIdList(userId int64) ([]int64, error) {
 	return likeVideoIdList, nil
 }
 
-// // GetLikeUserIdList 根据videoId查询点赞该视频的全部user_id
+// GetLikeUserIdList 根据videoId查询点赞该视频的全部user_id
 func GetLikeUserIdList(videoId int64) ([]int64, error) {
 	var likeUserIdList []int64 //存所有该视频点赞用户id；
 	//查询likes表对应视频id点赞用户，返回查询结果
@@ -76,18 +74,18 @@ func GetLikeCountByVideoId(videoId int64) (int64, error) {
 	return result, nil
 }
 
-func GetLikInfo(userId int64, videoId int64) (Like, error) {
-	var likeInfo Like
-
-	err := Db.Model(Like{}).Where(map[string]interface{}{"user_id": userId, "video_id": videoId}).First(&likeInfo).Error
-	if err != nil {
-		if "record not found" == err.Error() {
-			log.Println("can't find data")
-			return Like{}, nil
-		} else {
-			log.Println(err.Error())
-			return likeInfo, errors.New("get likeInfo failed")
-		}
-	}
-	return likeInfo, nil
-}
+//// GetLikInfo 获取点赞信息
+//func GetLikInfo(userId int64, videoId int64) (Like, error) {
+//	var likeInfo Like
+//	err := Db.Model(Like{}).Where(map[string]interface{}{"user_id": userId, "video_id": videoId}).First(&likeInfo).Error
+//	if err != nil {
+//		if "record not found" == err.Error() {
+//			log.Println("can't find data")
+//			return Like{}, nil
+//		} else {
+//			log.Println(err.Error())
+//			return likeInfo, errors.New("get likeInfo failed")
+//		}
+//	}
+//	return likeInfo, nil
+//}

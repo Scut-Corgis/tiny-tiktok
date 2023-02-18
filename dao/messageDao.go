@@ -20,6 +20,7 @@ type MessageResp struct {
 	CreateTime int64  `json:"create_time"`
 }
 
+// InsertMessage 插入message
 func InsertMessage(userId int64, toUserId int64, content string, createTime string) (int64, error) {
 	message := Message{
 		ToUserId:   toUserId,
@@ -34,6 +35,7 @@ func InsertMessage(userId int64, toUserId int64, content string, createTime stri
 	return message.Id, nil
 }
 
+// QueryMessagesByMsgKey 根据userId和toUserId获取所有message记录
 func QueryMessagesByMsgKey(userId int64, toUserId int64) ([]Message, error) {
 	message := make([]Message, 1)
 	if err := Db.Table("messages").Where("to_user_id = ? AND from_user_id = ?", toUserId, userId).Or("to_user_id = ? AND from_user_id = ?", userId, toUserId).Find(&message).Error; err != nil {
@@ -42,6 +44,7 @@ func QueryMessagesByMsgKey(userId int64, toUserId int64) ([]Message, error) {
 	return message, nil
 }
 
+// QueryLatestMessageByUserId 根据userId和toUserId获取最新的message记录
 func QueryLatestMessageByUserId(userId int64, toUserId int64) (Message, error) {
 	message := Message{}
 	if err := Db.Table("messages").Where("to_user_id = ? AND from_user_id = ?", toUserId, userId).Or("to_user_id = ? AND from_user_id = ?", userId, toUserId).Last(&message).Error; err != nil {
