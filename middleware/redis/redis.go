@@ -56,7 +56,7 @@ func BackUp() {
 func Lock(key string, value string) bool {
 	mutex.Lock() // 保证程序不存在并发冲突问题
 	defer mutex.Unlock()
-	ret, err := RedisDb.SetNX(Ctx, key, value, time.Second*5).Result()
+	ret, err := RedisDb.SetNX(Ctx, key, value, time.Second).Result()
 	if err != nil {
 		log.Println("Lock error:", err.Error())
 		return ret

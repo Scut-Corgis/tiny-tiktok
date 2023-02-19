@@ -30,16 +30,28 @@ func (UserServiceImpl) QueryUserByName(name string) dao.User {
 	return user
 }
 
-// QueryUserById 根据id获取User对象
+// QueryUserById 根据id获取User对象（密码屏蔽）
 func (UserServiceImpl) QueryUserById(id int64) dao.User {
-	user, err := dao.QueryUserById(id)
-	if err != nil {
-		log.Println("error:", err.Error())
-		log.Println("User not found!")
+	// 查找redis缓存
+	redisIdKey := util.User_Id_Key + strconv.FormatInt(id, 10)
+	name, err1 := redis.RedisDb.Get(redis.Ctx, redisIdKey).Result()
+	if err1 != nil {
+		log.Println(err1.Error())
+		user, err2 := dao.QueryUserById(id)
+		if err2 != nil {
+			log.Println("error:", err2.Error())
+			log.Println("User not found!")
+			user.Password = "" // 屏蔽密码
+			return user
+		}
+		log.Println("Query user successfully!")
 		return user
 	}
-	log.Println("Query user successfully!")
-	return user
+	redis.RedisDb.Expire(redis.Ctx, redisIdKey, redis.RandomTime()) // 缓存命中成功则更新过期时间
+	return dao.User{
+		Id:   id,
+		Name: name,
+	}
 }
 
 // QueryUserRespById 根据id获取UserResp对象
@@ -58,7 +70,7 @@ func (UserServiceImpl) QueryUserRespById(id int64) (dao.UserResp, error) {
 	return userInfo, err
 }
 
-// Register 用户注册，返回状态码和状态信息
+// Register 用户注册，返回注册用户id，状态码和状态信息
 func (UserServiceImpl) Register(username string, password string) (int64, int32, string) {
 	rand.Seed(time.Now().UnixNano())
 	value := strconv.Itoa(rand.Int())
@@ -66,36 +78,37 @@ func (UserServiceImpl) Register(username string, password string) (int64, int32,
 	if lock {
 		log.Println("Add lock successfully!")
 		// 布谷鸟过滤器过滤
-		if redis.CuckooFilterUserName.Contain([]byte(username)) {
-			return -1, 1, "User already exist!"
-		}
-		user, _ := dao.QueryUserByName(username)
-		if username == user.Name {
-			return -1, 1, "User already exist!"
-		} else {
-			encoderPassword, err := HashEncode(password)
-			if err != nil {
-				return -1, 1, "Incorrect password format!"
-			}
-			newUser := dao.User{
-				Name:     username,
-				Password: encoderPassword,
-			}
-			usr, err := dao.InsertUser(newUser)
-			if err != nil {
-				return -1, 1, "Insert user failed！"
-			}
-			unlock := redis.Unlock(username) // 解锁
-			if !unlock {
-				return -1, 1, "Register failed!"
-			}
-			log.Println("Unlock successfully!")
-			// 添加布谷鸟过滤器
+		if !redis.CuckooFilterUserName.Contain([]byte(username)) {
+			// 添加到过滤器
 			redis.CuckooFilterUserName.Add([]byte(username))
-			// 添加redis缓存
-			UserInsertRedis(usr.Id, user.Name)
-			return usr.Id, 0, "Register successfully!"
+			goto LOGIN
+		} else {
+			user, _ := dao.QueryUserByName(username)
+			if username == user.Name {
+				return -1, 1, "User already exist!"
+			}
 		}
+	LOGIN:
+		encoderPassword, err := HashEncode(password)
+		if err != nil {
+			return -1, 1, "Incorrect password format!"
+		}
+		newUser := dao.User{
+			Name:     username,
+			Password: encoderPassword,
+		}
+		usr, err := dao.InsertUser(newUser)
+		if err != nil {
+			return -1, 1, "Insert user failed！"
+		}
+		unlock := redis.Unlock(username) // 解锁
+		if !unlock {
+			return -1, 1, "Register failed!"
+		}
+		log.Println("Unlock successfully!")
+		// 添加redis缓存
+		UserInsertRedis(usr.Id, usr.Name)
+		return usr.Id, 0, "Register successfully!"
 	} else {
 		return -1, 1, "Wait for register!"
 	}
@@ -137,7 +150,7 @@ func UserInsertRedis(id int64, name string) bool {
 	// 插入键值对 key:user_id value:username
 	redisIdKey := util.User_Id_Key + strconv.FormatInt(id, 10)
 	if err := redis.RedisDb.Set(redis.Ctx, redisIdKey, name, redis.RandomTime()).Err(); err != nil {
-		log.Println("Insert key:comment_id value:video_id into redis failed!")
+		log.Println("Insert key:user_id value:name_id into redis failed!")
 		return false
 	}
 	return true
