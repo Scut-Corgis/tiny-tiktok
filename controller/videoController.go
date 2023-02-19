@@ -1,12 +1,13 @@
 package controller
 
 import (
-	"github.com/Scut-Corgis/tiny-tiktok/middleware/redis"
-	"github.com/Scut-Corgis/tiny-tiktok/service"
 	"log"
 	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/Scut-Corgis/tiny-tiktok/middleware/redis"
+	"github.com/Scut-Corgis/tiny-tiktok/service"
 
 	"github.com/Scut-Corgis/tiny-tiktok/config"
 	"github.com/Scut-Corgis/tiny-tiktok/dao"
@@ -30,8 +31,9 @@ type VideoListResponse struct {
 func Feed(c *gin.Context) {
 	vsi := service.VideoServiceImpl{}
 	queryUserId := c.GetInt64("id")
-	latestTimeStr := c.Query("latest_time")
 
+	// 获取时间戳，以正确的提供视频流给用户持续刷视频
+	latestTimeStr := c.Query("latest_time")
 	if latestTimeStr == "" {
 		latestTimeStr = strconv.FormatInt(time.Now().Unix(), 10)
 	}
@@ -41,6 +43,8 @@ func Feed(c *gin.Context) {
 		latestTimeInt = time.Now().Unix()
 	}
 	latestTime := time.Unix(latestTimeInt, 0)
+
+	//目前客户端可缓存30个视频
 	videoIdList := vsi.GetMost30videosIdList(latestTime)
 
 	var videoList = make([]Video, 0, len(videoIdList))
@@ -77,7 +81,7 @@ func Publish(c *gin.Context) {
 	username := c.GetString("username")
 	id := c.GetInt64("id")
 	title := c.PostForm("title")
-
+	// 布谷鸟过滤器确定用户名存在
 	if !redis.CuckooFilterUserName.Contain([]byte(username)) {
 		c.JSON(http.StatusOK, Response{StatusCode: 1, StatusMsg: "User doesn't exist"})
 		return

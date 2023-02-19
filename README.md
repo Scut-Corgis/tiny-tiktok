@@ -317,7 +317,6 @@ cf.Delete(a) // 删除元素
 fmt.Println(cf.Size())
 ```
 
-<<<<<<< HEAD
 #### rabbitmq
 
 下载安装：
@@ -336,5 +335,3 @@ https://blog.csdn.net/chenshourui/article/details/81203770?spm=1001.2101.3001.66
 1 先初始化自己的实例 New__RabbitMQ tcp连接已经在MyRabbitMQ中了，所以就设置一下通道
 2 生产者：
 3 消费者：都差不多
-=======
->>>>>>> 729273f5e2a529a86effec9021e5730d990ca5be
