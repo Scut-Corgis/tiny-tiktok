@@ -7,8 +7,8 @@ import (
 	"strconv"
 )
 
-var CuckooFilterUserName *cuckoo.Filter // 新建一个过滤器过滤用户名
-var CuckooFilterVideoId *cuckoo.Filter
+var CuckooFilterUserName *cuckoo.Filter // 过滤器过滤用户名
+var CuckooFilterVideoId *cuckoo.Filter  // 过滤器过滤视频id
 
 func InitCuckooFilter() {
 	CuckooFilterUserName = cuckoo.NewFilter(4, 8, 100000, cuckoo.TableTypePacked)
