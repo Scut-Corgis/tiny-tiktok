@@ -25,6 +25,7 @@ type CommentActionResponse struct {
 func CommentAction(c *gin.Context) {
 	csi := service.CommentServiceImpl{}
 	usi := service.UserServiceImpl{}
+	vsi := service.VideoServiceImpl{}
 
 	// 获取当前用户
 	currentUserName := c.GetString("username")
@@ -33,7 +34,7 @@ func CommentAction(c *gin.Context) {
 	// 获取当前视频
 	id := c.Query("video_id")
 	videoId, _ := strconv.ParseInt(id, 10, 64)
-	video := csi.QueryVideoById(videoId)
+	video := vsi.QueryVideoById(videoId)
 
 	actionType := c.Query("action_type")
 	if actionType == "1" {
