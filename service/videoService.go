@@ -20,4 +20,7 @@ type VideoService interface {
 
 	// InsertVideosTable 将video插入videos表内
 	InsertVideosTable(video *dao.Video) bool
+
+	// CountWorks 统计用户id的作品数
+	CountWorks(id int64) int
 }

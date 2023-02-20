@@ -1,7 +1,10 @@
 package service
 
 import (
+	"github.com/Scut-Corgis/tiny-tiktok/middleware/redis"
+	"github.com/Scut-Corgis/tiny-tiktok/util"
 	"log"
+	"strconv"
 	"time"
 
 	"github.com/Scut-Corgis/tiny-tiktok/dao"
@@ -59,4 +62,24 @@ func (VideoServiceImpl) GetMost30videosIdList(latestTime time.Time) []int64 {
 func (VideoServiceImpl) InsertVideosTable(video *dao.Video) bool {
 	err := dao.InsertVideosTable(video)
 	return err == nil
+}
+
+func (VideoServiceImpl) CountWorks(id int64) int64 {
+	redisUserKey := util.Video_User_key + strconv.FormatInt(id, 10)
+	if cnt, err := redis.RedisDb.SCard(redis.Ctx, redisUserKey).Result(); cnt > 0 {
+		if err != nil {
+			log.Println("redis query error!")
+			return -1
+		}
+		redis.RedisDb.Expire(redis.Ctx, redisUserKey, redis.RandomTime())
+		return cnt
+	}
+	cnt := int64(len(dao.GetVideoIdListByUserId(id)))
+	redis.RedisDb.Set(redis.Ctx, redisUserKey, cnt, util.Relation_FollowingCnt_TTL)
+	return cnt
+}
+
+func (VideoServiceImpl) ExpireWorks(id int64) {
+	redisUserKey := util.Video_User_key + strconv.FormatInt(id, 10)
+	redis.RedisDb.Del(redis.Ctx, redisUserKey)
 }

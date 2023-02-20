@@ -10,11 +10,14 @@ type Follow struct {
 }
 
 type UserResp struct {
-	Id            int64  `json:"id"`
-	Name          string `json:"name"`
-	FollowCount   int64  `json:"follow_count"`
-	FollowerCount int64  `json:"follower_count"`
-	IsFollow      bool   `json:"is_follow"`
+	Id             int64  `json:"id"`
+	Name           string `json:"name"`
+	FollowCount    int64  `json:"follow_count"`
+	FollowerCount  int64  `json:"follower_count"`
+	IsFollow       bool   `json:"is_follow"`
+	TotalFavorited int64  `json:"total_favorited"`
+	WorkCount      int64  `json:"work_count"`
+	FavoriteCount  int64  `json:"favorite_count"`
 }
 
 type FriendResp struct {

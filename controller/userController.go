@@ -63,6 +63,7 @@ func Login(c *gin.Context) {
 
 // UserInfo GET /douyin/user/ 用户信息
 func UserInfo(c *gin.Context) {
+	vsi := service.VideoServiceImpl{}
 	user_id := c.Query("user_id")
 	id, _ := strconv.ParseInt(user_id, 10, 64)
 	usi := service.UserServiceImpl{}
@@ -81,6 +82,9 @@ func UserInfo(c *gin.Context) {
 				userResp.FollowCount,
 				userResp.FollowerCount,
 				usi.JudgeIsFollowById(user.Id, id),
+				vsi.CountWorks(userResp.Id),
+				0,
+				0,
 			},
 		})
 	}

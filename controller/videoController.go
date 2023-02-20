@@ -121,6 +121,8 @@ func Publish(c *gin.Context) {
 		Title:       title,
 	}
 	flag := vsi.InsertVideosTable(video)
+	// 删除缓存
+	vsi.ExpireWorks(id)
 	if !flag {
 		c.JSON(http.StatusOK, Response{StatusCode: 1, StatusMsg: "Insert video failed!"})
 	} else {

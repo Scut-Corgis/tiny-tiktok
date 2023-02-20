@@ -48,3 +48,5 @@ var Message_MsgList_TTL = Month + time.Hour*time.Duration(HourRandnum)
 const Message_MessageId_Key = "message:messageId:"
 
 var Message_MessageId_TTL = Day + time.Hour*time.Duration(HourRandnum)
+
+const Video_User_key = "video:user:"
