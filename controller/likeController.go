@@ -5,7 +5,6 @@ import (
 	"strconv"
 
 	"github.com/Scut-Corgis/tiny-tiktok/middleware/redis"
-
 	"github.com/Scut-Corgis/tiny-tiktok/service"
 	"github.com/gin-gonic/gin"
 )
@@ -24,15 +23,6 @@ type GetLikeListResponse struct {
 func FavoriteAction(c *gin.Context) {
 	userId := c.GetInt64("id")
 	favoriteService := service.LikeServiceImpl{}
-	//user := favoriteService.QueryUserByName(username) //这种调用会出错！
-	//user := service.UserServiceImpl{}.QueryUserByName(username)
-	//user, err := dao.QueryUserByName(username)
-	// if err != nil {
-	// 	c.JSON(http.StatusOK, Response{StatusCode: 1, StatusMsg: "查询用户出错"})
-	// 	return
-	// }
-
-	//userId, _ := strconv.ParseInt(StrUserId, 10, 64)
 	strVideoId := c.Query("video_id")
 	videoId, _ := strconv.ParseInt(strVideoId, 10, 64)
 	strActionType := c.Query("action_type")

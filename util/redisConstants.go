@@ -28,8 +28,8 @@ const Relation_FollowingCnt_Key = "relation:followingsCount:"
 var Relation_FollowingCnt_TTL = Day + Day*time.Duration(DayRandnum)
 
 // 点赞模块
-const Like_User_Key = "like:user"
-const Like_Video_key = "like:video"
+const Like_User_Key = "like:user:"
+const Like_Video_key = "like:video:"
 const MyDefault = -1
 
 // Comment 模块

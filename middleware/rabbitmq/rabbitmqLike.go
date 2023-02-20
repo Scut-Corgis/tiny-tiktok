@@ -114,6 +114,7 @@ func consumerLikeAdd(messages <-chan amqp.Delivery) {
 	for message := range messages {
 		//解析数据
 		data := strings.Split(string(message.Body), ":")
+		log.Println(data)
 		userId, _ := strconv.ParseInt(data[0], 10, 64)
 		videoId, _ := strconv.ParseInt(data[1], 10, 64)
 
