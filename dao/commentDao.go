@@ -26,7 +26,7 @@ func QueryCommentsByVideoId(id int64) ([]Comment, error) {
 
 // InsertComment 将comment插入到comments表内
 func InsertComment(comment Comment) (Comment, error) {
-	err := Db.Create(&comment).Error
+	err := Db.Model(Comment{}).Create(&comment).Error
 	if err != nil {
 		log.Println(err.Error())
 		return Comment{}, err

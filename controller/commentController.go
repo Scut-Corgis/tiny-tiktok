@@ -28,13 +28,11 @@ func CommentAction(c *gin.Context) {
 	vsi := service.VideoServiceImpl{}
 
 	// 获取当前用户
-	currentUserName := c.GetString("username")
-	user := usi.QueryUserByName(currentUserName)
-
+	userId := c.GetInt64("id")
 	// 获取当前视频
 	id := c.Query("video_id")
 	videoId, _ := strconv.ParseInt(id, 10, 64)
-	video := vsi.QueryVideoById(videoId)
+	video, _ := vsi.QueryVideoById(videoId)
 
 	actionType := c.Query("action_type")
 	if actionType == "1" {
@@ -42,18 +40,20 @@ func CommentAction(c *gin.Context) {
 		text = util.Filter.Replace(text, '#') // 评论敏感词过滤
 		t := time.Now()
 		comment := dao.Comment{
-			UserId:      user.Id,
+			UserId:      userId,
 			VideoId:     videoId,
 			CommentText: text,
 			CreateDate:  t,
 		}
 		commentId, code, message := csi.PostComment(comment)
 		if code != 0 {
-			c.JSON(http.StatusOK, CommentActionResponse{
-				Response: Response{StatusCode: code, StatusMsg: message},
+			c.JSON(http.StatusOK, Response{
+				StatusCode: code,
+				StatusMsg:  message,
 			})
+			return
 		}
-		userInfo, _ := usi.QueryUserRespById(user.Id)
+		userInfo, _ := usi.QueryUserRespById(userId)
 		c.JSON(http.StatusOK, CommentActionResponse{
 			Response: Response{StatusCode: code, StatusMsg: message},
 			CommentInfo: CommentInfo{
@@ -72,11 +72,13 @@ func CommentAction(c *gin.Context) {
 				CreateDate:  t,
 			},
 		})
+		return
 	} else {
 		cId := c.Query("comment_id")
 		commentId, _ := strconv.ParseInt(cId, 10, 64)
 		code, message := csi.DeleteComment(commentId)
 		c.JSON(http.StatusOK, likeResponse{StatusCode: code, StatusMsg: message})
+		return
 	}
 }
 
@@ -88,10 +90,10 @@ func CommentList(c *gin.Context) {
 
 	id := c.Query("video_id")
 	videoId, _ := strconv.ParseInt(id, 10, 64)
-	video := vsi.QueryVideoById(videoId)
-
-	if video == (dao.Video{}) {
+	video, err := vsi.QueryVideoById(videoId)
+	if err != nil {
 		c.JSON(http.StatusOK, likeResponse{StatusCode: 1, StatusMsg: "Video doesn't exist"})
+		return
 	}
 	comments := csi.QueryCommentsByVideoId(videoId)
 	var commonList []CommentInfo
@@ -120,4 +122,5 @@ func CommentList(c *gin.Context) {
 		Response:    Response{StatusCode: 0, StatusMsg: "success"},
 		CommentList: commonList,
 	})
+	return
 }

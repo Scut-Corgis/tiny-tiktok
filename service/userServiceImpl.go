@@ -65,6 +65,7 @@ func (UserServiceImpl) QueryUserRespById(id int64) (dao.UserResp, error) {
 		log.Println(err.Error())
 		return userInfo, err
 	}
+	log.Println(user)
 	userInfo.FollowerCount = rsi.CountFollowers(id) // 统计粉丝数量
 	userInfo.FollowCount = rsi.CountFollowings(id)  // 统计关注博主的数量
 	userInfo.Id = user.Id

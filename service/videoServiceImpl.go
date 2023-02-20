@@ -14,15 +14,15 @@ type VideoServiceImpl struct {
 	CommentService
 }
 
-func (VideoServiceImpl) QueryVideoById(id int64) dao.Video {
+func (VideoServiceImpl) QueryVideoById(id int64) (dao.Video, error) {
 	video, err := dao.QueryVideoById(id)
 	if err != nil {
 		log.Println("error:", err.Error())
 		log.Println("Video not found!")
-		return video
+		return video, err
 	}
 	log.Println("Query video successfully!")
-	return video
+	return video, nil
 }
 
 func (VideoServiceImpl) QueryVideoDetailByVideoId(videoId int64, queryUserId int64) (dao.VideoDetail, time.Time) {
@@ -60,6 +60,8 @@ func (VideoServiceImpl) GetMost30videosIdList(latestTime time.Time) []int64 {
 }
 
 func (VideoServiceImpl) InsertVideosTable(video *dao.Video) bool {
+	// 添加到过滤器
+	redis.CuckooFilterVideoId.Add([]byte(strconv.FormatInt(video.Id, 10)))
 	err := dao.InsertVideosTable(video)
 	return err == nil
 }
