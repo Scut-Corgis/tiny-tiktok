@@ -16,7 +16,7 @@ type likeResponse struct {
 type GetLikeListResponse struct {
 	StatusCode string  `json:"status_code"` // 状态码，0-成功，其他值-失败
 	StatusMsg  *string `json:"status_msg"`  // 返回状态描述
-	VideoList  []Video `json:"video_list"`  // 用户点赞视频列表
+	VideoList  []Video `json:"video_list"`  // 用户点赞视频列表   把dao.VideoDetail改为Video点赞列表就有封面了
 }
 
 // FavoriteAction POST /douyin/favorite/action/ 赞操作
@@ -63,7 +63,7 @@ func FavoriteList(c *gin.Context) {
 	}
 
 	ReturnVideos, err := favoriteService.GetLikeLists(UserId)
-	var videoList = make([]Video, 0, len(ReturnVideos))
+	var videoList = make([]Video, 0, len(ReturnVideos)) //再添加了这个点赞列表就有封面了
 	for _, videoDetail := range ReturnVideos {
 		video := Video{
 			Id:            videoDetail.Id,
