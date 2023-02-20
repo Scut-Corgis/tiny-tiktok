@@ -6,7 +6,6 @@ import (
 
 	"github.com/Scut-Corgis/tiny-tiktok/middleware/redis"
 
-	"github.com/Scut-Corgis/tiny-tiktok/dao"
 	"github.com/Scut-Corgis/tiny-tiktok/service"
 	"github.com/gin-gonic/gin"
 )
@@ -16,9 +15,9 @@ type likeResponse struct {
 	StatusMsg  string `json:"status_msg,omitempty"`
 }
 type GetLikeListResponse struct {
-	StatusCode string            `json:"status_code"` // 状态码，0-成功，其他值-失败
-	StatusMsg  *string           `json:"status_msg"`  // 返回状态描述
-	VideoList  []dao.VideoDetail `json:"video_list"`  // 用户点赞视频列表
+	StatusCode string  `json:"status_code"` // 状态码，0-成功，其他值-失败
+	StatusMsg  *string `json:"status_msg"`  // 返回状态描述
+	VideoList  []Video `json:"video_list"`  // 用户点赞视频列表
 }
 
 // FavoriteAction POST /douyin/favorite/action/ 赞操作
@@ -74,6 +73,20 @@ func FavoriteList(c *gin.Context) {
 	}
 
 	ReturnVideos, err := favoriteService.GetLikeLists(UserId)
+	var videoList = make([]Video, 0, len(ReturnVideos))
+	for _, videoDetail := range ReturnVideos {
+		video := Video{
+			Id:            videoDetail.Id,
+			Author:        User(videoDetail.Author),
+			PlayUrl:       videoDetail.PlayUrl,
+			CoverUrl:      videoDetail.CoverUrl,
+			FavoriteCount: videoDetail.FavoriteCount,
+			CommentCount:  videoDetail.CommentCount,
+			IsFavorite:    videoDetail.IsFavorite,
+			Title:         videoDetail.Title,
+		}
+		videoList = append(videoList, video)
+	}
 	if err != nil {
 		c.JSON(http.StatusOK, GetLikeListResponse{
 			StatusCode: "1",
@@ -84,6 +97,6 @@ func FavoriteList(c *gin.Context) {
 	c.JSON(http.StatusOK, GetLikeListResponse{
 		StatusCode: "0",
 		StatusMsg:  &strsuccess,
-		VideoList:  ReturnVideos,
+		VideoList:  videoList,
 	})
 }
