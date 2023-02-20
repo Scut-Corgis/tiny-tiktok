@@ -27,7 +27,7 @@ type VideoListResponse struct {
 	VideoList []Video `json:"video_list"`
 }
 
-// Feed GET/douyin/feed/ 视频流接口
+// Feed GET /douyin/feed/ 视频流接口
 func Feed(c *gin.Context) {
 	vsi := service.VideoServiceImpl{}
 	queryUserId := c.GetInt64("id")
@@ -140,7 +140,7 @@ func Publish(c *gin.Context) {
 	})
 }
 
-// PublishList GET/douyin/publish/list/ 发布列表
+// PublishList GET /douyin/publish/list/ 发布列表
 func PublishList(c *gin.Context) {
 	vsi := service.VideoServiceImpl{}
 	queryUserId := c.GetInt64("id")

@@ -57,6 +57,8 @@ func (UserServiceImpl) QueryUserById(id int64) dao.User {
 // QueryUserRespById 根据id获取UserResp对象
 func (UserServiceImpl) QueryUserRespById(id int64) (dao.UserResp, error) {
 	rsi := RelationServiceImpl{}
+	lsi := LikeServiceImpl{}
+	vsi := VideoServiceImpl{}
 	userInfo := dao.UserResp{}
 	user, err := dao.QueryUserById(id)
 	if err != nil {
@@ -67,6 +69,9 @@ func (UserServiceImpl) QueryUserRespById(id int64) (dao.UserResp, error) {
 	userInfo.FollowCount = rsi.CountFollowings(id)  // 统计关注博主的数量
 	userInfo.Id = user.Id
 	userInfo.Name = user.Name
+	userInfo.TotalFavorited = lsi.TotalLiked(id)
+	userInfo.FavoriteCount, _ = lsi.LikeVideoCount(id)
+	userInfo.WorkCount = vsi.CountWorks(id)
 	return userInfo, err
 }
 

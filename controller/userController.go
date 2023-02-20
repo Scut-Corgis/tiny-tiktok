@@ -63,7 +63,6 @@ func Login(c *gin.Context) {
 
 // UserInfo GET /douyin/user/ 用户信息
 func UserInfo(c *gin.Context) {
-	vsi := service.VideoServiceImpl{}
 	user_id := c.Query("user_id")
 	id, _ := strconv.ParseInt(user_id, 10, 64)
 	usi := service.UserServiceImpl{}
@@ -72,8 +71,7 @@ func UserInfo(c *gin.Context) {
 			Response: Response{StatusCode: 1, StatusMsg: "User doesn't exist"},
 		})
 	} else {
-		currentUserName := c.GetString("username")
-		user := usi.QueryUserByName(currentUserName)
+		currentUserId := c.GetInt64("id")
 		c.JSON(http.StatusOK, UserResponse{
 			Response: Response{StatusCode: 0},
 			User: User{
@@ -81,10 +79,10 @@ func UserInfo(c *gin.Context) {
 				userResp.Name,
 				userResp.FollowCount,
 				userResp.FollowerCount,
-				usi.JudgeIsFollowById(user.Id, id),
-				vsi.CountWorks(userResp.Id),
-				0,
-				0,
+				usi.JudgeIsFollowById(currentUserId, userResp.Id),
+				userResp.TotalFavorited,
+				userResp.WorkCount,
+				userResp.FavoriteCount,
 			},
 		})
 	}

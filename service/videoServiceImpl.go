@@ -29,13 +29,13 @@ func (VideoServiceImpl) QueryVideoDetailByVideoId(videoId int64, queryUserId int
 	usi := UserServiceImpl{}
 	csi := CommentServiceImpl{}
 	videoDetail := dao.VideoDetail{}
-	video, err := dao.QueryVideoById(videoId)
-	if err != nil {
+	video, err1 := dao.QueryVideoById(videoId)
+	if err1 != nil {
 		log.Println("Video not found!")
 		return videoDetail, time.Time{}
 	}
-	userResp, err := usi.QueryUserRespById(video.AuthorId)
-	if err != nil {
+	userResp, err2 := usi.QueryUserRespById(video.AuthorId)
+	if err2 != nil {
 		log.Println("QueryUser not found!")
 		return videoDetail, time.Time{}
 	}
