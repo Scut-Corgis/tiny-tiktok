@@ -500,3 +500,82 @@ func (like LikeServiceImpl) LikeCount(videoId int64) (int64, error) {
 		return result, nil
 	}
 }
+func (like LikeServiceImpl) addVideoLikeCount(videoId int64, sum *int64, wg *sync.WaitGroup) {
+	defer wg.Done()
+
+	count, err := like.LikeCount(videoId)
+	if err != nil {
+		//如果有错误，输出错误信息，并不加入该视频点赞数
+		log.Println("video query likes failed")
+		return
+	}
+	*sum += count
+}
+
+/*获取用户userId的获取的点赞总数*/
+func (like LikeServiceImpl) TotalLiked(userId int64) int64 {
+	//获取用户userId发布视频的videoId列表
+	videoIdList := VideoServiceImpl{}.GetVideoIdListByUserId(userId)
+	listlLen := len(videoIdList)
+	//videoLikecountList := make([]int64,listlLen)
+	var result int64 = 0
+
+	var wg sync.WaitGroup
+	wg.Add(listlLen)
+	for i := 0; i < listlLen; i++ {
+		go like.addVideoLikeCount(videoIdList[i], &result, &wg)
+	}
+	wg.Wait()
+
+	return result
+}
+
+/*获取用户userId喜欢的视频数量*/
+func (like LikeServiceImpl) LikeVideoCount(userId int64) (int64, error) {
+	key_userId := util.Like_User_Key + strconv.FormatInt(userId, 10)
+	//先判断key_userId键值是否在缓存中
+	if n, err := redis.RedisDb.Exists(redis.Ctx, key_userId).Result(); n > 0 { //key_userId键值在缓存中
+		if err != nil {
+			log.Println("redis Query failed")
+			return 0, err
+		} else { //查询成功
+			result, err := redis.RedisDb.SCard(redis.Ctx, key_userId).Result() //获取key_userId键值有几个val
+			if err != nil {
+				log.Println("redis Query failed")
+				return 0, err
+			}
+			//减去添加的默认值
+			return result - 1, nil
+		}
+	} else { //key_userId键值不在缓存中，需要把MySQL中的数据添加到缓存中
+		if _, err := redis.RedisDb.SAdd(redis.Ctx, key_userId, util.MyDefault).Result(); err != nil {
+			log.Println("Failed to add cache")
+			redis.RedisDb.Del(redis.Ctx, key_userId)
+			return 0, err
+		}
+		//设置有效期
+		if _, err := redis.RedisDb.Expire(redis.Ctx, key_userId, util.Day).Result(); err != nil {
+			log.Println("Failed to set cache expiration time")
+			redis.RedisDb.Del(redis.Ctx, key_userId)
+			return 0, err
+		}
+		//把数据库中的当前用户点赞的videoId全部添加到缓存中
+		likevideoIdList, err1 := dao.GetLikeVideoIdList(userId)
+		if err1 != nil {
+			log.Println("Failed to get the likes video id list")
+			redis.RedisDb.Del(redis.Ctx, key_userId)
+			return 0, err1
+		}
+		for _, videoId := range likevideoIdList {
+			strvideoId := strconv.FormatInt(videoId, 10)
+			//如果出现一次不对的就把这个键值删除
+			if _, err := redis.RedisDb.SAdd(redis.Ctx, key_userId, strvideoId).Result(); err != nil {
+				log.Println("Failed to add cache for videoId")
+				redis.RedisDb.Del(redis.Ctx, key_userId)
+				return 0, err
+			}
+		}
+
+		return int64(len(likevideoIdList)), nil
+	}
+}

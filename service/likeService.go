@@ -11,9 +11,13 @@ import (
 type LikeService interface {
 	/*其他模块使用*/
 	//判断用户userId是否点赞视频videoId
-	IsFavourite(videoId int64, userId int64) (bool, error)
+	IsLike(videoId int64, userId int64) (bool, error)
 	//获取视频videoId的点赞数
-	FavouriteCount(videoId int64) (int64, error)
+	LikeCount(videoId int64) (int64, error)
+	//获取用户userId发布视频的总被赞数
+	TotalLiked(userId int64) int64
+	//获取用户userId喜欢的视频数量
+	LikeVideoCount(userId int64) (int64, error)
 
 	/*点赞模块使用*/
 	// 功能：点赞--在likes表中插入数据
