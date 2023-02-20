@@ -126,7 +126,7 @@ func (c *RelationMQ) consumerFollowAdd(messages <-chan amqp.Delivery) {
 		params := strings.Split(string(message.Body), " ")
 		userId, _ := strconv.ParseInt(params[0], 10, 64)
 		followId, _ := strconv.ParseInt(params[1], 10, 64)
-
+		log.Println("this is consumerFollowAdd:", userId, followId)
 		if err := dao.InsertFollow(userId, followId); nil != err {
 			log.Println(err.Error())
 		}

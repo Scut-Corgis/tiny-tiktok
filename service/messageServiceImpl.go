@@ -4,25 +4,17 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"strconv"
-	"strings"
 	"time"
 
 	"github.com/Scut-Corgis/tiny-tiktok/dao"
-	"github.com/Scut-Corgis/tiny-tiktok/middleware/rabbitmq"
 	"github.com/Scut-Corgis/tiny-tiktok/middleware/redis"
 	"github.com/Scut-Corgis/tiny-tiktok/util"
 )
 
 type MessageServiceImpl struct{}
 
-// type RedisMessage struct {
-// 	Id         int64  `json:"id"`
-// 	Content    string `json:"content"`
-// 	CreateTime string `json:"createTime"`
-// }
-
 type LatestMessage struct {
+	Id         int64  `json:"id"`
 	Content    string `json:"content"`
 	CreateTime string `json:"createTime"`
 	MsgType    int64  `json:"msgType"` // 1为发送方，0为接收方
@@ -48,41 +40,27 @@ func (MessageServiceImpl) SendMessage(userId int64, toUserId int64, content stri
 	if redis.RedisDb.Set(redis.Ctx, redisLatestMsgKey, dataFrom, util.Message_LatestMsg_TTL).Err() != nil {
 		log.Println(err)
 	}
-	sb := strings.Builder{}
-	sb.WriteString(strconv.FormatInt(userId, 10))
-	sb.WriteString(" ")
-	sb.WriteString(strconv.FormatInt(toUserId, 10))
-	sb.WriteString(" ")
-	sb.WriteString(content)
-	sb.WriteString(" ")
-	sb.WriteString(createTime)
-	rabbitmq.RabbitMQMessageAdd.Producer(sb.String())
-	// msgId, err := dao.InsertMessage(userId, toUserId, content, createTime)
-	// if err != nil || msgId < 0 {
-	// 	log.Println(err)
-	// 	return false, err
-	// }
-	// redisMessageIdKey := util.Message_MessageId_Key + genMsgKey(userId, toUserId)
-	// redis.RedisDb.SAdd(redis.Ctx, redisMessageIdKey, msgId)
-	// redis.RedisDb.Expire(redis.Ctx, redisMessageIdKey, util.Message_MessageId_TTL)
-	return true, nil
-	// 全部消息不缓存，redis使用的内存空间，防止恶意缓存注入，撑爆内存
-	// //redis缓存 全部消息
-	// redisMsg := RedisMessage{
-	// 	Content:    content,
-	// 	CreateTime: createTime,
-	// }
-	// // 消息以hash类型保存
-	// data, err := json.Marshal(redisMsg)
-	// if err != nil {
-	// 	log.Println(err)
-	// }
-	// redisMsgListKey := util.Message_MsgList_Key + msgKey
-	// if redis.RedisDb.SAdd(redis.Ctx, redisMsgListKey, data).Err() != nil {
-	// 	log.Println(err)
-	// }
-	// redis.RedisDb.Expire(redis.Ctx, redisMsgListKey, util.Message_MsgList_TTL)
+	// #优化：启用消息队列后，聊天记录只能访问到最新的记录，无法返回所有聊天记录
+	// sb := strings.Builder{}
+	// sb.WriteString(strconv.FormatInt(userId, 10))
+	// sb.WriteString("#%#")
+	// sb.WriteString(strconv.FormatInt(toUserId, 10))
+	// sb.WriteString("#%#")
+	// sb.WriteString(content)
+	// sb.WriteString("#%#")
+	// sb.WriteString(createTime)
+	// rabbitmq.RabbitMQMessageAdd.Producer(sb.String())
 
+	msgId, err := dao.InsertMessage(userId, toUserId, content, createTime)
+	if err != nil || msgId < 0 {
+		log.Println(err)
+		return false, err
+	}
+	redisMessageIdKey := util.Message_MessageId_Key + genMsgKey(userId, toUserId)
+	redis.RedisDb.SAdd(redis.Ctx, redisMessageIdKey, msgId)
+	redis.RedisDb.Expire(redis.Ctx, redisMessageIdKey, util.Message_MessageId_TTL)
+
+	return true, nil
 }
 
 /*
@@ -112,6 +90,12 @@ func (MessageServiceImpl) GetChatRecord(userId int64, toUserId int64) ([]dao.Mes
 		redis.RedisDb.SAdd(redis.Ctx, redisMessageIdKey, message.Id)
 		redis.RedisDb.Expire(redis.Ctx, redisMessageIdKey, util.Message_MessageId_TTL)
 		msgList = append(msgList, msgResp)
+	}
+	// 再去重
+	msi := MessageServiceImpl{}
+	latestMsg, err := msi.GetLatestMessage(userId, toUserId)
+	if err == nil && len(msgList) > 0 && latestMsg.Id == msgList[len(msgList)-1].Id {
+		return make([]dao.MessageResp, 0), nil
 	}
 	return msgList, nil
 }
@@ -150,9 +134,11 @@ func (MessageServiceImpl) GetLatestMessage(userId int64, toUserId int64) (Latest
 		} else {
 			return sendLatestMsg, nil
 		}
-	} else if err1 == nil {
+	}
+	if err1 == nil {
 		return sendLatestMsg, nil
-	} else if err2 == nil {
+	}
+	if err2 == nil {
 		return recvLatestMsg, nil
 	}
 	// 缓存没数据，则去数据库查
@@ -162,6 +148,7 @@ func (MessageServiceImpl) GetLatestMessage(userId int64, toUserId int64) (Latest
 		log.Println(err)
 		return latestMsg, err
 	}
+	latestMsg.Id = message.Id
 	latestMsg.Content = message.Content
 	latestMsg.CreateTime = message.CreateTime
 	if message.FromUserId == userId {

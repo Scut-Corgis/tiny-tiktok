@@ -22,24 +22,16 @@ type FriendListResponse struct {
 
 // RelationAction POST /douyin/relation/action/ 关注操作
 func RelationAction(c *gin.Context) {
-	//#优化：若token含userid，获取用户可以省去查数据库操作，或使用redis减少对数据库的访问
-	// Step1. 判断token解析是否有误
-	username := c.GetString("username")
+	// Step1. 取出用户id
 	userId := c.GetInt64("id")
 	usi := service.UserServiceImpl{}
-	user := usi.QueryUserByName(username)
-	if username != user.Name || userId != user.Id {
-		c.JSON(http.StatusOK, Response{StatusCode: -1, StatusMsg: "token错误"})
-		return
-	}
-
 	// Step2. 判断to_user_id解析是否有误
 	followId, err := strconv.ParseInt(c.Query("to_user_id"), 10, 64)
-	followUser := usi.QueryUserById(followId)
 	if nil != err {
 		c.JSON(http.StatusOK, Response{StatusCode: -1, StatusMsg: "关注用户id错误"})
 		return
 	}
+	followUser := usi.QueryUserById(followId)
 	if followUser.Name == "" {
 		c.JSON(http.StatusOK, Response{StatusCode: -1, StatusMsg: "该用户不存在"})
 		return
@@ -94,15 +86,8 @@ func RelationAction(c *gin.Context) {
 
 // FollowList GET /douyin/relation/follow/list/ 关注列表
 func FollowList(c *gin.Context) {
-	// Step1. 判断token、user_id解析是否有误
-	username := c.GetString("username")
-	usi := service.UserServiceImpl{}
-	user := usi.QueryUserByName(username)
-	if username != user.Name {
-		c.JSON(http.StatusOK, Response{StatusCode: -1, StatusMsg: "token错误"})
-		return
-	}
-	realUserId := user.Id
+	// Step1. 判断user_id解析是否有误
+	realUserId := c.GetInt64("id")
 	userId, err := strconv.ParseInt(c.Query("user_id"), 10, 64)
 	if err != nil || realUserId != userId {
 		c.JSON(http.StatusOK, UserListResponse{
@@ -141,18 +126,8 @@ func FollowList(c *gin.Context) {
 处理获取当前用户的粉丝列表
 */
 func FollowerList(c *gin.Context) {
-	// Step1. 判断token、user_id解析是否有误
-	username := c.GetString("username")
-	usi := service.UserServiceImpl{}
-	user := usi.QueryUserByName(username)
-	if username != user.Name {
-		c.JSON(http.StatusOK, Response{
-			StatusCode: -1,
-			StatusMsg:  "token错误",
-		})
-		return
-	}
-	realUserId := user.Id
+	// Step1. 判断user_id解析是否有误
+	realUserId := c.GetInt64("id")
 	userId, err := strconv.ParseInt(c.Query("user_id"), 10, 64)
 	if err != nil || realUserId != userId {
 		c.JSON(http.StatusOK, UserListResponse{
@@ -190,18 +165,8 @@ func FollowerList(c *gin.Context) {
 处理获取好友/互关列表接口
 */
 func FriendList(c *gin.Context) {
-	// Step1. 判断token、user_id解析是否有误
-	username := c.GetString("username")
-	usi := service.UserServiceImpl{}
-	user := usi.QueryUserByName(username)
-	if username != user.Name {
-		c.JSON(http.StatusOK, Response{
-			StatusCode: -1,
-			StatusMsg:  "token错误",
-		})
-		return
-	}
-	realUserId := user.Id
+	// Step1. 判断user_id解析是否有误
+	realUserId := c.GetInt64("id")
 	userId, err := strconv.ParseInt(c.Query("user_id"), 10, 64)
 	if err != nil || realUserId != userId {
 		c.JSON(http.StatusOK, FriendListResponse{

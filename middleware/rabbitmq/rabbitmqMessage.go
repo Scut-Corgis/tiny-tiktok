@@ -33,7 +33,6 @@ func NewMessageRabbitMQ(queueName string) *MessageMQ {
 	return messageMQ
 }
 func InitMessageRabbitMQ() {
-
 	RabbitMQMessageAdd = NewMessageRabbitMQ("Relation Add")
 	go RabbitMQMessageAdd.Consumer()
 	log.Println("RabbitMQMessageAdd init successfully!")
@@ -114,10 +113,12 @@ func (c *MessageMQ) Consumer() {
 func (c *MessageMQ) consumerMessageAdd(messages <-chan amqp.Delivery) {
 	for message := range messages {
 		// 参数解析
-		params := strings.Split(string(message.Body), " ")
+		params := strings.Split(string(message.Body), "#%#")
+		log.Println(string(message.Body))
 		userId, _ := strconv.ParseInt(params[0], 10, 64)
 		toUserId, _ := strconv.ParseInt(params[1], 10, 64)
 		content := params[2]
+
 		createTime := params[3]
 		msgId, err := dao.InsertMessage(userId, toUserId, content, createTime)
 		if err != nil || msgId < 0 {

@@ -6,23 +6,64 @@
 ![GitHub forks](https://img.shields.io/github/forks/Scut-Corgis/tiny-tiktok)
 ![GitHub contributors](https://img.shields.io/github/contributors/Scut-Corgis/tiny-tiktok)
 
-
+## 目录
+- [使用说明](#使用说明)
+    - [开发配置要求](#开发配置要求)
+    - [安装步骤](#安装步骤)
+    - [演示视频](#演示视频)
+- [文件目录说明](#文件目录说明)
+- [项目整体设计](#项目整体设计)
+   - [整体架构图](#整体架构图)
+   - [数据库设计](#数据库设计)
+   - [Redis架构设计](#Redis架构设计)
+   - [RabbitMQ架构设计](#RabbitMQ架构设计)
+   - [业务模块设计](#业务模块设计)
+     - [用户模块的设计](#用户模块的设计)
+     - [视频模块的设计](#视频模块的设计)
+     - [点赞模块的设计](#点赞模块的设计)
+     - [评论模块的设计](#评论模块的设计)
+     - [关注模块的设计](#关注模块的设计)
+     - [消息模块的设计](#消息模块的设计)
+- [性能测试](#性能测试)
+- [项目部署](#项目部署)
+- [涉及技术](#涉及技术)
+- [项目version 1.0](#项目version1.0)
+- [项目version 2.0](#项目version2.0)
+- [未来展望](#未来展望)
+  - [分布式服务](#分布式服务)
+  - [推荐视频展望](#推荐视频展望)
+- [如何参与开源项目](#如何参与开源项目)
+- [版本控制](#版本控制)
+- [贡献者](#贡献者)
+- [鸣谢](#鸣谢)
 <!-- PROJECT LOGO -->
-## version 1.0
+### 使用说明
 
-无任何优化
+#### 开发配置要求
 
-### 项目架构：
-config为配置文件目录, 表结构在里面
+1. go 1.18.1
+2. MySQL(数据库sql文件在config包中)
+3. Redis、RabbitMQ
+4. 配置静态资源服务器：安装Nginx、vsftpd、ffmpeg（相关配置文件在config包中）
+5. [最新版抖音客户端软件](https://pan.baidu.com/s/1kXjvYWH12uhvFBARRMBCGg?pwd=6cos)
 
-controller ：控制器层，只写客户端调用接口回调函数的基本逻辑，核心逻辑实现都在service实现
+#### 安装步骤
+1. 下载源码
+2. 配置SSH、FTP、Redis、静态服务器地址等相关参数
+3. 启动服务
+4. 在客户端配置相关地址服务端地址即可
 
-dao： 为数据库操作的封装，与数据库的底层操作的封装都在里面实现
+#### 演示视频
 
-service层 ：业务核心逻辑
-### 数据库：
+   > 链接：
 
-#### 数据库简介
+#### 文件目录说明
+
+#### 项目整体设计
+
+##### 整体架构图
+
+##### 数据库设计
 
 * 目前表结构只有一级索引，无字段索引
 * 自增初始值都为1000，随便取的
@@ -39,7 +80,43 @@ service层 ：业务核心逻辑
 
 CRUD接口说明 : https://gorm.cn/zh_CN/docs/connecting_to_the_database.html
 
-#### 虚拟数据生成
+##### Redis架构设计
+
+##### RabbitMQ架构设计
+
+##### 业务模块设计
+
+###### 用户模块的设计
+
+###### 视频模块的设计
+
+###### 点赞模块的设计
+
+###### 评论模块的设计
+
+###### 关注模块的设计
+
+###### 消息模块的设计
+
+
+#### 性能测试
+
+#### 项目部署
+
+#### 涉及技术
+
+#### 项目version1.0
+实现tiny-tiktok的后端部分，从而用户能够投稿视频、刷视频、点赞与评论视频、互相关注等操作。另外，为了便于测试，编写了自动生成测试例的程序
+##### 项目架构：
+config为配置文件目录, 表结构在里面
+
+controller ：控制器层，只写客户端调用接口回调函数的基本逻辑，核心逻辑实现都在service实现
+
+dao： 为数据库操作的封装，与数据库的底层操作的封装都在里面实现
+
+service层 ：业务核心逻辑
+
+##### 虚拟数据生成
 
 ```txt
 └─ fakeDataGenerator.go
@@ -57,11 +134,9 @@ CRUD接口说明 : https://gorm.cn/zh_CN/docs/connecting_to_the_database.html
 // 需要修改一下代码里的 tableStruct.sql 路径
 cmd := exec.Command("sh", "绝对路径")
 ```
-
-### jwt-auth:
+##### jwt-auth:
 
 > 位于`middleware/jwt`路径下
-
 token生成和确认， 目前token中只放置了username
 
 鉴权已注射于gin路由中，会最先执行，若通过鉴权，则会将解析出的username放于 gin.context的键值对中，可通过调用`username := context.GetString("username")`提取；若没通过鉴权，则不会运行controller代码
@@ -84,7 +159,6 @@ token生成和确认， 目前token中只放置了username
 3. Nginx对外提供获取视频和封面的服务 (均为静态资源)
 
 **核心逻辑：**
-
 
 用户调动`publish` -> service服务器读取data数据 -> 将视频文件发往nginx -> 通过ssh调用ffmpeg服务得到视频起始帧图片并存于nginx服务器 -> 图片存于本地
 

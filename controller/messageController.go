@@ -17,15 +17,8 @@ type ChatResponse struct {
 
 // MessageAction POST /douyin/message/action/ 发送信息
 func MessageAction(c *gin.Context) {
-	username := c.GetString("username")
 	userId := c.GetInt64("id")
 	usi := service.UserServiceImpl{}
-	user := usi.QueryUserByName(username)
-	if username != user.Name || userId != user.Id {
-		c.JSON(http.StatusOK, Response{StatusCode: -1, StatusMsg: "token错误"})
-		return
-	}
-
 	toUserId, err := strconv.ParseInt(c.Query("to_user_id"), 10, 64)
 	toUser := usi.QueryUserById(toUserId)
 	if nil != err {
@@ -67,15 +60,9 @@ func MessageAction(c *gin.Context) {
 
 // ChatRecord GET /douyin/message/chat/ 聊天记录
 func ChatRecord(c *gin.Context) {
-	username := c.GetString("username")
-	usi := service.UserServiceImpl{}
-	user := usi.QueryUserByName(username)
-	if username != user.Name {
-		c.JSON(http.StatusOK, Response{StatusCode: -1, StatusMsg: "token错误"})
-		return
-	}
-	userId := user.Id
+	userId := c.GetInt64("id")
 	toUserId, err := strconv.ParseInt(c.Query("to_user_id"), 10, 64)
+	usi := service.UserServiceImpl{}
 	toUser := usi.QueryUserById(toUserId)
 	if nil != err || toUserId == userId {
 		c.JSON(http.StatusOK, Response{StatusCode: -1, StatusMsg: "接收消息用户id错误"})
@@ -99,5 +86,4 @@ func ChatRecord(c *gin.Context) {
 		},
 		MessageList: chatRecords,
 	})
-
 }

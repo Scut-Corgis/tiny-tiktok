@@ -1,9 +1,10 @@
 package controller
 
 import (
-	"github.com/Scut-Corgis/tiny-tiktok/middleware/jwt"
 	"strings"
 	"testing"
+
+	"github.com/Scut-Corgis/tiny-tiktok/middleware/jwt"
 )
 
 func TestRelationAction(t *testing.T) {

@@ -78,19 +78,18 @@ func RandomTime() time.Duration {
 	return time.Duration(rand.Int63n(25))*time.Hour + util.Day // 设置1-2天的随机过期时间
 }
 
+// 匹配指定前缀删除redis缓存
 func DelRedisCatchBatch(keys ...string) {
 	for _, redisKey := range keys {
 		keysMatch, err := RedisDb.Do(Ctx, "keys", redisKey+"*").Result()
 		if err != nil {
 			log.Println(err)
 		}
-		// 查看匹配到的 所有key是不是slice进行返回的
 		if reflect.TypeOf(keysMatch).Kind() == reflect.Slice {
 			val := reflect.ValueOf(keysMatch)
 			if val.Len() == 0 {
 				continue
 			}
-			// 一个个删除这些key
 			for i := 0; i < val.Len(); i++ {
 				RedisDb.Del(Ctx, val.Index(i).Interface().(string))
 				fmt.Printf("删除了rediskey::%s \n", val.Index(i).Interface().(string))
