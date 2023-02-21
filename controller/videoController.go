@@ -113,7 +113,7 @@ func Publish(c *gin.Context) {
 		return
 	}
 	//插入数据库
-	video := &dao.Video{
+	video := dao.Video{
 		AuthorId:    id,
 		PlayUrl:     "http://" + config.Url_addr + config.Url_Play_prefix + videoName + ".mp4",
 		CoverUrl:    "http://" + config.Url_addr + config.Url_Image_prefix + imageName + ".jpg",

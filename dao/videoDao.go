@@ -51,12 +51,12 @@ func QueryVideoById(id int64) (Video, error) {
 }
 
 // InsertVideosTable 将video插入videos表内
-func InsertVideosTable(video *Video) error {
+func InsertVideosTable(video Video) (Video, error) {
 	if err := Db.Create(&video).Error; err != nil {
 		log.Println(err.Error())
-		return err
+		return Video{}, err
 	}
-	return nil
+	return video, nil
 }
 
 func GetMost30videosIdList(latestTime time.Time) []int64 {

@@ -59,10 +59,10 @@ func (VideoServiceImpl) GetMost30videosIdList(latestTime time.Time) []int64 {
 	return dao.GetMost30videosIdList(latestTime)
 }
 
-func (VideoServiceImpl) InsertVideosTable(video *dao.Video) bool {
+func (VideoServiceImpl) InsertVideosTable(video dao.Video) bool {
+	videoNew, err := dao.InsertVideosTable(video)
 	// 添加到过滤器
-	redis.CuckooFilterVideoId.Add([]byte(strconv.FormatInt(video.Id, 10)))
-	err := dao.InsertVideosTable(video)
+	redis.CuckooFilterVideoId.Add([]byte(strconv.FormatInt(videoNew.Id, 10)))
 	return err == nil
 }
 

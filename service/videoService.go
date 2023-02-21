@@ -19,7 +19,7 @@ type VideoService interface {
 	GetMost30videosIdList(latestTime time.Time) []int64
 
 	// InsertVideosTable 将video插入videos表内
-	InsertVideosTable(video *dao.Video) bool
+	InsertVideosTable(video dao.Video) bool
 
 	// CountWorks 统计用户id的作品数
 	CountWorks(id int64) int
