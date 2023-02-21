@@ -2,9 +2,10 @@ package service
 
 import (
 	"fmt"
+	"testing"
+
 	"github.com/Scut-Corgis/tiny-tiktok/dao"
 	"github.com/Scut-Corgis/tiny-tiktok/middleware/redis"
-	"testing"
 )
 
 func RelationServiceInit() {
