@@ -69,7 +69,7 @@ func CommentAction(c *gin.Context) {
 					FavoriteCount:  userInfo.FavoriteCount,
 				},
 				CommentText: text,
-				CreateDate:  t,
+				CreateDate:  util.TimeToTimeStr(t),
 			},
 		})
 		return
@@ -115,7 +115,7 @@ func CommentList(c *gin.Context) {
 				FavoriteCount:  user.FavoriteCount,
 			},
 			comment.CommentText,
-			comment.CreateDate,
+			util.TimeToTimeStr(comment.CreateDate),
 		})
 	}
 	c.JSON(http.StatusOK, CommentListResponse{
