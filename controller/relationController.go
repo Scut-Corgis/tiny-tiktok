@@ -122,9 +122,7 @@ func FollowList(c *gin.Context) {
 	})
 }
 
-/*
-处理获取当前用户的粉丝列表
-*/
+// FollowerList GET /douyin/relation/follower/list/ 粉丝列表
 func FollowerList(c *gin.Context) {
 	// Step1. 判断user_id解析是否有误
 	realUserId := c.GetInt64("id")
@@ -161,9 +159,7 @@ func FollowerList(c *gin.Context) {
 	})
 }
 
-/*
-处理获取好友/互关列表接口
-*/
+// FriendList GET /douyin/relation/friend/list/ 好友列表
 func FriendList(c *gin.Context) {
 	// Step1. 判断user_id解析是否有误
 	realUserId := c.GetInt64("id")

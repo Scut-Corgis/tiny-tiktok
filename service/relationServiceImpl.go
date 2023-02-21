@@ -170,7 +170,8 @@ func (RelationServiceImpl) GetFriendList(userId int64) ([]dao.FriendResp, error)
 			friendResp.FollowCount = tmpFriendInfo.FollowCount
 			friendResp.FollowerCount = tmpFriendInfo.FollowerCount
 			friendResp.IsFollow = true
-			friendResp.Avatar = config.Ftp_image_path + "female.png"
+
+			friendResp.Avatar = "http://" + config.Url_addr + config.Ftp_image_path + "male.png"
 			friendResp.FavoriteCount = tmpFriendInfo.FavoriteCount
 			friendResp.WorkCount = tmpFriendInfo.WorkCount
 			friendResp.TotalFavorited = tmpFriendInfo.TotalFavorited
