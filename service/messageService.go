@@ -12,5 +12,5 @@ type MessageService interface {
 	GetChatRecord(userId int64, toUserId int64) ([]dao.MessageResp, error)
 
 	// GetLatestMessage 获取最新的聊天记录
-	GetLatestMessage(userId1 int64, userId2 int64) (LatestMessage, error)
+	GetLatestMessage(userId1 int64, userId2 int64) (dao.LatestMessage, error)
 }

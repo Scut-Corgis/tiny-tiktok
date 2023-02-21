@@ -1,9 +1,10 @@
 package service
 
 import (
-	"github.com/Scut-Corgis/tiny-tiktok/middleware/rabbitmq"
 	"log"
 	"strconv"
+
+	"github.com/Scut-Corgis/tiny-tiktok/middleware/rabbitmq"
 
 	"github.com/Scut-Corgis/tiny-tiktok/dao"
 	"github.com/Scut-Corgis/tiny-tiktok/middleware/redis"

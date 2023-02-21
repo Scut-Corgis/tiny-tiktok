@@ -8,7 +8,7 @@ import (
 
 func TestInsertMessage(t *testing.T) {
 	Init()
-	id, err := InsertMessage(1000, 1001, "你好", time.Now().String())
+	id, err := InsertMessage(1000, 1001, "你好", time.Now())
 	fmt.Println(id)
 	fmt.Println(err)
 }

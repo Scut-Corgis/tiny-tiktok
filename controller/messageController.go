@@ -40,7 +40,7 @@ func MessageAction(c *gin.Context) {
 	}
 	content := c.Query("content")
 	// 评论敏感词过滤
-	content = util.Filter.Replace(content, '#')
+	content = util.Filter.Replace(content, '*')
 
 	msi := service.MessageServiceImpl{}
 	if actionType == 1 {

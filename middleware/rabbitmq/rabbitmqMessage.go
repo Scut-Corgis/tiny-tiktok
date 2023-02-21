@@ -1,6 +1,7 @@
 package rabbitmq
 
 import (
+	"encoding/json"
 	"log"
 	"strconv"
 	"strings"
@@ -21,7 +22,7 @@ type MessageMQ struct {
 
 var RabbitMQMessageAdd *MessageMQ
 
-// NewFollowRabbitMQ 获取relationMQ的对应队列。
+// NewMessageRabbitMQ 获取messageMQ的对应队列。
 func NewMessageRabbitMQ(queueName string) *MessageMQ {
 	messageMQ := &MessageMQ{
 		RabbitMQ:  *MyRabbitMQ,
@@ -29,11 +30,11 @@ func NewMessageRabbitMQ(queueName string) *MessageMQ {
 	}
 	var err error
 	messageMQ.Channel, err = messageMQ.Conn.Channel()
-	MyRabbitMQ.failOnErr(err, "获取通道失败")
+	MyRabbitMQ.failOnErr(err, "Failed to get channel!")
 	return messageMQ
 }
 func InitMessageRabbitMQ() {
-	RabbitMQMessageAdd = NewMessageRabbitMQ("Relation Add")
+	RabbitMQMessageAdd = NewMessageRabbitMQ("Message Add")
 	go RabbitMQMessageAdd.Consumer()
 	log.Println("RabbitMQMessageAdd init successfully!")
 }
@@ -120,7 +121,7 @@ func (c *MessageMQ) consumerMessageAdd(messages <-chan amqp.Delivery) {
 		content := params[2]
 
 		createTime := params[3]
-		msgId, err := dao.InsertMessage(userId, toUserId, content, createTime)
+		msgId, err := dao.InsertMessage(userId, toUserId, content, util.TimeStrToTime(createTime))
 		if err != nil || msgId < 0 {
 			log.Println(err.Error())
 		}
@@ -128,6 +129,21 @@ func (c *MessageMQ) consumerMessageAdd(messages <-chan amqp.Delivery) {
 		redisMessageIdKey := util.Message_MessageId_Key + params[0] + "_" + params[1]
 		redis.RedisDb.SAdd(redis.Ctx, redisMessageIdKey, msgId)
 		redis.RedisDb.Expire(redis.Ctx, redisMessageIdKey, util.Message_MessageId_TTL)
+
+		// redis缓存 最新消息
+		redisLatestMessage := dao.LatestMessage{}
+		redisLatestMessage.Content = content
+		redisLatestMessage.CreateTime = createTime
+		redisLatestMessage.MsgType = 1
+		dataFrom, err := json.Marshal(redisLatestMessage)
+		if err != nil {
+			log.Println(err)
+		}
+		msgKey := util.GenMsgKey(userId, toUserId)
+		redisLatestMsgKey := util.Message_LatestMsg_Key + msgKey
+		if redis.RedisDb.Set(redis.Ctx, redisLatestMsgKey, dataFrom, util.Message_LatestMsg_TTL).Err() != nil {
+			log.Println(err)
+		}
 
 	}
 }
