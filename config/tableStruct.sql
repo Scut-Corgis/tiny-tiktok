@@ -42,6 +42,8 @@ CREATE TABLE `follows`
     `user_id`     bigint(20) NOT NULL COMMENT '用户id',
     `follower_id` bigint(20) NOT NULL COMMENT '关注的用户',
     PRIMARY KEY (`id`)
+    INDEX (`user_id`),
+    INDEX (`follower_id`)
 ) ENGINE = InnoDB
   AUTO_INCREMENT = 1000
   DEFAULT CHARSET = utf8 COMMENT ='关注表';
@@ -90,7 +92,9 @@ CREATE TABLE `messages`
     `from_user_id` bigint(20)   NOT NULL COMMENT '发送用户id',
     `content`      varchar(255) NOT NULL COMMENT '消息内容',
     `create_time`  varchar(255) NOT NULL COMMENT '消息发送时间',
-    PRIMARY KEY (`id`)
+    PRIMARY KEY (`id`),
+    INDEX (`to_user_id`),
+    INDEX (`from_user_id`)
 ) ENGINE = InnoDB
   AUTO_INCREMENT = 1000
   DEFAULT CHARSET = utf8 COMMENT ='消息表';
