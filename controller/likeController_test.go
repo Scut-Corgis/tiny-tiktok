@@ -8,15 +8,26 @@ import (
 )
 
 func TestFavoriteAction(t *testing.T) {
-	token := "token=" + jwt.GenerateToken("Corgis", 1000)
-	url := "http://127.0.0.1:8080/douyin/favorite/action/?video_id=1000&action_type=1"
+	//点赞1
+	token := "token=" + jwt.GenerateToken("weipengyan2", 1107)
+	url := "http://47.108.112.214:8080/douyin/favorite/action/?video_id=1069&action_type=1"
 	method := "POST"
+	SendRequest(method, url, strings.NewReader(token))
+	//点赞2
+	token = "token=" + jwt.GenerateToken("weipengyan2", 1107)
+	url = "http://47.108.112.214:8080/douyin/favorite/action/?video_id=1070&action_type=1"
+	method = "POST"
+	SendRequest(method, url, strings.NewReader(token))
+	//取消点赞
+	token = "token=" + jwt.GenerateToken("weipengyan2", 1107)
+	url = "http://47.108.112.214:8080/douyin/favorite/action/?video_id=1069&action_type=2"
+	method = "POST"
 	SendRequest(method, url, strings.NewReader(token))
 }
 
 func TestFavoriteList(t *testing.T) {
-	token := jwt.GenerateToken("qly", 1000)
-	url := "http://127.0.0.1:8080/douyin/favorite/list/?user_id=1000&token=" + token
+	token := jwt.GenerateToken("weipengyan2", 1107)
+	url := "http://47.108.112.214:8080/douyin/favorite/list/?user_id=1107&token=" + token
 	method := "GET"
 	SendRequest(method, url, nil)
 }

@@ -30,7 +30,7 @@ func DeleteLike(userId int64, videoId int64) error {
 	return nil
 }
 
-// GetLikeVideoIdList 根据userId查询其点赞全部videoId ==>> 得到每个userId用户的所有点赞视频videoId
+// GetLikeVideoIdList 根据userId查询其点赞全部videoId
 func GetLikeVideoIdList(userId int64) ([]int64, error) {
 	var likeVideoIdList []int64
 	err := Db.Model(&Like{}).Where(map[string]interface{}{"user_id": userId}).Pluck("video_id", &likeVideoIdList).Error
@@ -63,16 +63,16 @@ func GetLikeUserIdList(videoId int64) ([]int64, error) {
 	}
 }
 
-// GetLikeCountByVideoId 根据video_id获取该视频的点赞数
-func GetLikeCountByVideoId(videoId int64) (int64, error) {
-	var result int64
-	err := Db.Model(Like{}).Where(map[string]interface{}{"video_id": videoId}).Count(&result).Error
-	if err != nil {
-		log.Println(err.Error())
-		return result, errors.New("get likeCount failed")
-	}
-	return result, nil
-}
+// // 根据video_id获取该视频的点赞数
+// func GetLikeCountByVideoId(videoId int64) (int64, error) {
+// 	var result int64
+// 	err := Db.Model(Like{}).Where(map[string]interface{}{"video_id": videoId}).Count(&result).Error
+// 	if err != nil {
+// 		log.Println(err.Error())
+// 		return result, errors.New("get likeCount failed")
+// 	}
+// 	return result, nil
+// }
 
 //// GetLikInfo 获取点赞信息
 //func GetLikInfo(userId int64, videoId int64) (Like, error) {

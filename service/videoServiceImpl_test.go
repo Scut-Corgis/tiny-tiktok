@@ -2,12 +2,13 @@ package service
 
 import (
 	"fmt"
+	"testing"
+	"time"
+
 	"github.com/Scut-Corgis/tiny-tiktok/dao"
 	"github.com/Scut-Corgis/tiny-tiktok/middleware/rabbitmq"
 	"github.com/Scut-Corgis/tiny-tiktok/middleware/redis"
 	"github.com/Scut-Corgis/tiny-tiktok/util"
-	"testing"
-	"time"
 )
 
 func VideoServiceImplInit() {
@@ -22,7 +23,7 @@ func VideoServiceImplInit() {
 func TestVideoServiceImpl_QueryVideoById(t *testing.T) {
 	VideoServiceImplInit()
 	vsi := VideoServiceImpl{}
-	video := vsi.QueryVideoById(1000)
+	video, _ := vsi.QueryVideoById(1000)
 	fmt.Println(video)
 }
 

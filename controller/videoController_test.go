@@ -16,13 +16,13 @@ import (
 )
 
 func TestPublish(t *testing.T) {
-	token := jwt.GenerateToken("qly", 1000)
-	url := "http://127.0.0.1:8080/douyin/publish/action/"
+	token := jwt.GenerateToken("weipengyan", 1105)
+	url := "http://47.108.112.214:8080/douyin/publish/action/"
 	method := "POST"
 
 	payload := &bytes.Buffer{}
 	writer := multipart.NewWriter(payload)
-	videoPath := "/Users/zaizai/Projects/GolandProjects/tiny-tiktok/data/bear.mp4"
+	videoPath := "/home/admin/tiny-tiktok/data/bear.mp4"
 	file, errFile1 := os.Open(videoPath)
 	defer file.Close()
 	part1, errFile1 := writer.CreateFormFile("data", filepath.Base(videoPath))
@@ -62,14 +62,14 @@ func TestPublish(t *testing.T) {
 }
 
 func TestFeed(t *testing.T) {
-	url := "http://127.0.0.1:8080/douyin/feed/"
+	url := "http://47.108.112.214:8080/douyin/feed/"
 	method := "GET"
 	SendRequest(method, url, nil)
 }
 
 func TestPublishList(t *testing.T) {
-	token := jwt.GenerateToken("qly", 1000)
-	url := "http://127.0.0.1:8080/douyin/publish/list/?user_id=1000&token=" + token
+	token := jwt.GenerateToken("weipengyan", 1105)
+	url := "http://47.108.112.214:8080/douyin/publish/list/?user_id=1105&token=" + token
 	method := "GET"
 	SendRequest(method, url, strings.NewReader(token))
 }
