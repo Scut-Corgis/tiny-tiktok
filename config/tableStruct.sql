@@ -41,7 +41,7 @@ CREATE TABLE `follows`
     `id`          bigint(20) NOT NULL AUTO_INCREMENT COMMENT '自增主键',
     `user_id`     bigint(20) NOT NULL COMMENT '用户id',
     `follower_id` bigint(20) NOT NULL COMMENT '关注的用户',
-    PRIMARY KEY (`id`)
+    PRIMARY KEY (`id`),
     INDEX (`user_id`),
     INDEX (`follower_id`)
 ) ENGINE = InnoDB
@@ -57,7 +57,7 @@ CREATE TABLE `likes`
     `id`       bigint(20) NOT NULL AUTO_INCREMENT COMMENT '自增主键',
     `user_id`  bigint(20) NOT NULL COMMENT '点赞用户id',
     `video_id` bigint(20) NOT NULL COMMENT '被点赞的视频id',
-    PRIMARY KEY (`id`)
+    PRIMARY KEY (`id`),
     UNIQUE KEY `userIdtoVideoIdIdx` (`user_id`,`video_id`) USING BTREE,
     KEY `userIdIdx` (`user_id`) USING BTREE,
     KEY `videoIdx` (`video_id`) USING BTREE
@@ -95,7 +95,7 @@ CREATE TABLE `messages`
     `from_user_id` bigint(20)   NOT NULL COMMENT '发送用户id',
     `content`      varchar(255) NOT NULL COMMENT '消息内容',
     `create_time`  datetime NOT NULL COMMENT '消息发送时间',
-    PRIMARY KEY (`id`)
+    PRIMARY KEY (`id`),
     INDEX (`to_user_id`),
     INDEX (`from_user_id`)
 ) ENGINE = InnoDB

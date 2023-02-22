@@ -22,7 +22,7 @@ func TestInsertVideosTable(t *testing.T) {
 		PublishTime: time.Now(),
 		Title:       "test",
 	}
-	err := InsertVideosTable(&video)
+	_, err := InsertVideosTable(video)
 	fmt.Println(err)
 }
 

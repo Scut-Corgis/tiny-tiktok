@@ -59,6 +59,6 @@ func TestVideoServiceImpl_InsertVideosTable(t *testing.T) {
 		PublishTime: time.Now(),
 		Title:       "test",
 	}
-	flag := vsi.InsertVideosTable(&video)
+	flag := vsi.InsertVideosTable(video)
 	fmt.Println(flag)
 }
