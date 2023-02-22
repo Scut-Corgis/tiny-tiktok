@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/gin-contrib/pprof"
 	"log"
 
 	"github.com/Scut-Corgis/tiny-tiktok/util"
@@ -17,6 +18,7 @@ func main() {
 	gin.SetMode("release") //关闭gin debug日志信息，没什么用
 	r := gin.Default()
 
+	pprof.Register(r) // 性能分析工具
 	//	go service.RunMessageServer() 消息聊天处理协程
 
 	initRouter(r)
