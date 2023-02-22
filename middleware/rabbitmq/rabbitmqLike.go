@@ -33,7 +33,7 @@ func NewLikeRabbitMQ(queueName string) *RabbitMQLike {
 	}
 	var err error
 	rbq.Channel, err = rbq.Conn.Channel()
-	MyRabbitMQ.failOnErr(err, "获取通道失败")
+	MyRabbitMQ.failOnErr(err, "Failed to get channel")
 	return rbq
 }
 
@@ -106,7 +106,7 @@ func (likemq *RabbitMQLike) Consumer() {
 		go consumerLikeDel(messages)
 
 	}
-	//log.Printf("[*] waiting for messages, to exit process CTRL+C")
+	log.Printf("[*] waiting for messages, to exit process CTRL+C")
 	<-forever
 }
 
@@ -114,13 +114,12 @@ func consumerLikeAdd(messages <-chan amqp.Delivery) {
 	for message := range messages {
 		//解析数据
 		data := strings.Split(string(message.Body), ":")
-		log.Println(data)
 		userId, _ := strconv.ParseInt(data[0], 10, 64)
 		videoId, _ := strconv.ParseInt(data[1], 10, 64)
 
 		likeData := dao.Like{UserId: userId, VideoId: videoId}
 		if err := dao.InsertLike(&likeData); err != nil {
-			log.Println("插入点赞失败")
+			log.Println("Failed to insert likes")
 		}
 	}
 }
@@ -133,7 +132,7 @@ func consumerLikeDel(messages <-chan amqp.Delivery) {
 		videoId, _ := strconv.ParseInt(data[1], 10, 64)
 
 		if err := dao.DeleteLike(userId, videoId); err != nil {
-			log.Println("删除点赞失败")
+			log.Println("Failed to delete likes")
 		}
 	}
 }
