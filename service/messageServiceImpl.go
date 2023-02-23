@@ -20,6 +20,12 @@ type MessageServiceImpl struct{}
 */
 func (MessageServiceImpl) SendMessage(userId int64, toUserId int64, content string) (bool, error) {
 	createTime := time.Now()
+
+	msgId, err := dao.InsertMessage(userId, toUserId, content, createTime)
+	if err != nil || msgId < 0 {
+		log.Println(err.Error())
+	}
+
 	createTimeStr := createTime.Format("2006-01-02 15:04:05")
 	// 启用消息队列
 	sb := strings.Builder{}
@@ -27,10 +33,23 @@ func (MessageServiceImpl) SendMessage(userId int64, toUserId int64, content stri
 	sb.WriteString("#%#")
 	sb.WriteString(strconv.FormatInt(toUserId, 10))
 	sb.WriteString("#%#")
-	sb.WriteString(content)
-	sb.WriteString("#%#")
-	sb.WriteString(createTimeStr)
+	sb.WriteString(strconv.FormatInt(msgId, 10))
 	rabbitmq.RabbitMQMessageAdd.Producer(sb.String())
+
+	// redis缓存 最新消息
+	redisLatestMessage := dao.LatestMessage{}
+	redisLatestMessage.Content = content
+	redisLatestMessage.CreateTime = createTimeStr
+	redisLatestMessage.MsgType = 1
+	dataFrom, err := json.Marshal(redisLatestMessage)
+	if err != nil {
+		log.Println(err)
+	}
+	msgKey := util.GenMsgKey(userId, toUserId)
+	redisLatestMsgKey := util.Message_LatestMsg_Key + msgKey
+	if redis.RedisDb.Set(redis.Ctx, redisLatestMsgKey, dataFrom, util.Message_LatestMsg_TTL).Err() != nil {
+		log.Println(err)
+	}
 	return true, nil
 }
 

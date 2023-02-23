@@ -1,12 +1,10 @@
 package rabbitmq
 
 import (
-	"encoding/json"
 	"log"
 	"strconv"
 	"strings"
 
-	"github.com/Scut-Corgis/tiny-tiktok/dao"
 	"github.com/Scut-Corgis/tiny-tiktok/middleware/redis"
 	"github.com/Scut-Corgis/tiny-tiktok/util"
 	"github.com/streadway/amqp"
@@ -110,40 +108,17 @@ func (c *MessageMQ) Consumer() {
 
 }
 
-// 关系添加的消费方式。
+// 添加聊天记录 消息队列
 func (c *MessageMQ) consumerMessageAdd(messages <-chan amqp.Delivery) {
 	for message := range messages {
 		// 参数解析
 		params := strings.Split(string(message.Body), "#%#")
-		log.Println(string(message.Body))
-		userId, _ := strconv.ParseInt(params[0], 10, 64)
-		toUserId, _ := strconv.ParseInt(params[1], 10, 64)
-		content := params[2]
+		msgId, _ := strconv.ParseInt(params[2], 10, 64)
 
-		createTime := params[3]
-		msgId, err := dao.InsertMessage(userId, toUserId, content, util.TimeStrToTime(createTime))
-		if err != nil || msgId < 0 {
-			log.Println(err.Error())
-		}
-		// 数据库插入后，再更新缓存，保证数据一致性
+		// 更新聊天记录缓存
 		redisMessageIdKey := util.Message_MessageId_Key + params[0] + "_" + params[1]
 		redis.RedisDb.SAdd(redis.Ctx, redisMessageIdKey, msgId)
 		redis.RedisDb.Expire(redis.Ctx, redisMessageIdKey, util.Message_MessageId_TTL)
-
-		// redis缓存 最新消息
-		redisLatestMessage := dao.LatestMessage{}
-		redisLatestMessage.Content = content
-		redisLatestMessage.CreateTime = createTime
-		redisLatestMessage.MsgType = 1
-		dataFrom, err := json.Marshal(redisLatestMessage)
-		if err != nil {
-			log.Println(err)
-		}
-		msgKey := util.GenMsgKey(userId, toUserId)
-		redisLatestMsgKey := util.Message_LatestMsg_Key + msgKey
-		if redis.RedisDb.Set(redis.Ctx, redisLatestMsgKey, dataFrom, util.Message_LatestMsg_TTL).Err() != nil {
-			log.Println(err)
-		}
 
 	}
 }
