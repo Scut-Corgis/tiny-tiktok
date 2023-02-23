@@ -41,9 +41,9 @@ func (UserServiceImpl) QueryUserById(id int64) dao.User {
 		if err2 != nil {
 			log.Println("error:", err2.Error())
 			log.Println("User not found!")
-			user.Password = "" // 屏蔽密码
 			return user
 		}
+		user.Password = "" // 屏蔽密码
 		log.Println("Query user successfully!")
 		return user
 	}

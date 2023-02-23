@@ -65,7 +65,7 @@ func FakeVideos(num int) {
 		video.CoverUrl = gofakeit.URL()
 		video.PublishTime = gofakeit.Date()
 		video.Title = gofakeit.Noun()
-		err := InsertVideosTable(&video)
+		video, err := InsertVideosTable(video)
 		if err != nil {
 			return
 		}

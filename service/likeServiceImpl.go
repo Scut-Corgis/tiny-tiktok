@@ -50,7 +50,7 @@ func (like LikeServiceImpl) Like(userId int64, videoId int64) error {
 			return err
 		}
 		//设置过期时间
-		if _, err := redis.RedisDb.Expire(redis.Ctx, key_userId, util.Day).Result(); err != nil {
+		if _, err := redis.RedisDb.Expire(redis.Ctx, key_userId, redis.RandomTime()).Result(); err != nil {
 			log.Println("Failed to set cache expiration time")
 			redis.RedisDb.Del(redis.Ctx, key_userId)
 			return err
@@ -99,7 +99,7 @@ func (like LikeServiceImpl) Like(userId int64, videoId int64) error {
 			return err
 		}
 		//设置过期时间
-		if _, err := redis.RedisDb.Expire(redis.Ctx, key_videoId, util.Day).Result(); err != nil {
+		if _, err := redis.RedisDb.Expire(redis.Ctx, key_videoId, redis.RandomTime()).Result(); err != nil {
 			log.Println("Failed to set cache expiration time")
 			redis.RedisDb.Del(redis.Ctx, key_videoId)
 			return err
@@ -160,7 +160,7 @@ func (like LikeServiceImpl) Unlike(userId int64, videoId int64) error {
 			return err
 		}
 		//设置过期时间
-		if _, err := redis.RedisDb.Expire(redis.Ctx, key_userId, util.Day).Result(); err != nil {
+		if _, err := redis.RedisDb.Expire(redis.Ctx, key_userId, redis.RandomTime()).Result(); err != nil {
 			log.Println("Failed to set cache expiration time")
 			redis.RedisDb.Del(redis.Ctx, key_userId)
 			return err
@@ -208,7 +208,7 @@ func (like LikeServiceImpl) Unlike(userId int64, videoId int64) error {
 			return err
 		}
 		//设置过期时间
-		if _, err := redis.RedisDb.Expire(redis.Ctx, key_videoId, util.Day).Result(); err != nil {
+		if _, err := redis.RedisDb.Expire(redis.Ctx, key_videoId, redis.RandomTime()).Result(); err != nil {
 			log.Println("Failed to set cache expiration time")
 			redis.RedisDb.Del(redis.Ctx, key_videoId)
 			return err
@@ -300,7 +300,7 @@ func (like LikeServiceImpl) GetLikeLists(userId int64) ([]dao.VideoDetail, error
 			return nil, err
 		}
 		//设置有效期
-		if _, err := redis.RedisDb.Expire(redis.Ctx, key_userId, util.Day).Result(); err != nil {
+		if _, err := redis.RedisDb.Expire(redis.Ctx, key_userId, redis.RandomTime()).Result(); err != nil {
 			log.Println("Failed to set cache expiration time")
 			redis.RedisDb.Del(redis.Ctx, key_userId)
 			return nil, err
@@ -376,7 +376,7 @@ func (like LikeServiceImpl) IsLike(videoId int64, userId int64) (bool, error) {
 				return false, err
 			}
 			//设置有效期
-			if _, err := redis.RedisDb.Expire(redis.Ctx, key_userId, util.Day).Result(); err != nil {
+			if _, err := redis.RedisDb.Expire(redis.Ctx, key_userId, redis.RandomTime()).Result(); err != nil {
 				log.Println("Failed to set cache expiration time")
 				redis.RedisDb.Del(redis.Ctx, key_userId)
 				return false, err
@@ -434,7 +434,7 @@ func (like LikeServiceImpl) LikeCount(videoId int64) (int64, error) {
 			return -1, err
 		}
 		//设置有效期
-		if _, err := redis.RedisDb.Expire(redis.Ctx, key_videoId, util.Day).Result(); err != nil {
+		if _, err := redis.RedisDb.Expire(redis.Ctx, key_videoId, redis.RandomTime()).Result(); err != nil {
 			log.Println("Failed to set cache expiration time")
 			redis.RedisDb.Del(redis.Ctx, key_videoId)
 			return -1, err
@@ -515,7 +515,7 @@ func (like LikeServiceImpl) LikeVideoCount(userId int64) (int64, error) {
 			return 0, err
 		}
 		//设置有效期
-		if _, err := redis.RedisDb.Expire(redis.Ctx, key_userId, util.Day).Result(); err != nil {
+		if _, err := redis.RedisDb.Expire(redis.Ctx, key_userId, redis.RandomTime()).Result(); err != nil {
 			log.Println("Failed to set cache expiration time")
 			redis.RedisDb.Del(redis.Ctx, key_userId)
 			return 0, err

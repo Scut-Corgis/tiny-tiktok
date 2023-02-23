@@ -62,30 +62,3 @@ func GetLikeUserIdList(videoId int64) ([]int64, error) {
 		return likeUserIdList, nil
 	}
 }
-
-// // 根据video_id获取该视频的点赞数
-// func GetLikeCountByVideoId(videoId int64) (int64, error) {
-// 	var result int64
-// 	err := Db.Model(Like{}).Where(map[string]interface{}{"video_id": videoId}).Count(&result).Error
-// 	if err != nil {
-// 		log.Println(err.Error())
-// 		return result, errors.New("get likeCount failed")
-// 	}
-// 	return result, nil
-// }
-
-//// GetLikInfo 获取点赞信息
-//func GetLikInfo(userId int64, videoId int64) (Like, error) {
-//	var likeInfo Like
-//	err := Db.Model(Like{}).Where(map[string]interface{}{"user_id": userId, "video_id": videoId}).First(&likeInfo).Error
-//	if err != nil {
-//		if "record not found" == err.Error() {
-//			log.Println("can't find data")
-//			return Like{}, nil
-//		} else {
-//			log.Println(err.Error())
-//			return likeInfo, errors.New("get likeInfo failed")
-//		}
-//	}
-//	return likeInfo, nil
-//}
