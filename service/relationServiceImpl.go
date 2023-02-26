@@ -31,9 +31,41 @@ func (RelationServiceImpl) Follow(userId int64, followId int64) (bool, error) {
 	sb.WriteString(strconv.FormatInt(followId, 10))
 	rabbitmq.RabbitMQRelationAdd.Producer(sb.String())
 
+	// redis缓存操作
+	redisFollowerCntKey := util.Relation_FollowerCnt_Key + strconv.FormatInt(followId, 10)
+	redisFollowingCntKey := util.Relation_FollowingCnt_Key + strconv.FormatInt(userId, 10)
+	// 不加锁版：redis读写本身就很快，直接失效即可保证一致性。
 	// 保证数据一致性：主动使count缓存失效
-	rsi.ExpireFollowerCnt(followId)
-	rsi.ExpireFollowingCnt(userId)
+	redis.DelRedisCatchBatch(redisFollowerCntKey, redisFollowingCntKey)
+
+	// // 加锁版：加锁是否反而会影响性能
+	// rand.Seed(time.Now().UnixNano())
+	// value := strconv.Itoa(rand.Int())
+	// lockFollower := redis.Lock(redisFollowerCntKey, value)
+	// lockFollowing := redis.Lock(redisFollowingCntKey, value)
+	// if lockFollower && lockFollowing {
+	// 	_, err1 := redis.RedisDb.Incr(redis.Ctx, redisFollowerCntKey).Result()
+	// 	_, err2 := redis.RedisDb.Incr(redis.Ctx, redisFollowingCntKey).Result()
+	// 	if err1 != nil || err2 != nil {
+	// 		// 保证数据一致性：主动使count缓存失效
+	// 		redis.DelRedisCatchBatch(redisFollowerCntKey, redisFollowingCntKey)
+	// 	}
+	// } else {
+	// 	// 保证数据一致性：主动使count缓存失效
+	// 	redis.DelRedisCatchBatch(redisFollowerCntKey, redisFollowingCntKey)
+	// }
+	// if lockFollower {
+	// 	unlock := redis.Unlock(redisFollowerCntKey)
+	// 	if !unlock {
+	// 		return false, nil
+	// 	}
+	// }
+	// if lockFollowing {
+	// 	unlock := redis.Unlock(redisFollowerCntKey)
+	// 	if !unlock {
+	// 		return false, nil
+	// 	}
+	// }
 	return true, nil
 }
 
@@ -56,8 +88,9 @@ func (RelationServiceImpl) UnFollow(userId int64, followId int64) (bool, error) 
 	rabbitmq.RabbitMQRelationDel.Producer(sb.String())
 
 	// 保证数据一致性：主动使count缓存失效
-	rsi.ExpireFollowerCnt(followId)
-	rsi.ExpireFollowingCnt(userId)
+	redisFollowerCntKey := util.Relation_FollowerCnt_Key + strconv.FormatInt(followId, 10)
+	redisFollowingCntKey := util.Relation_FollowingCnt_Key + strconv.FormatInt(userId, 10)
+	redis.DelRedisCatchBatch(redisFollowerCntKey, redisFollowingCntKey)
 	return true, nil
 }
 
@@ -227,18 +260,4 @@ func (RelationServiceImpl) CountFollowings(id int64) int64 {
 
 	redis.RedisDb.Set(redis.Ctx, redisFollowingCntKey, cnt, util.Relation_FollowingCnt_TTL)
 	return cnt
-}
-
-// 主动使cnt的redis缓存失效
-func (RelationServiceImpl) ExpireFollowerCnt(id int64) {
-	// 由于关注或取关操作导致cnt缓存不一致
-	redisFollowerCntKey := util.Relation_FollowerCnt_Key + strconv.FormatInt(id, 10)
-	redis.RedisDb.Del(redis.Ctx, redisFollowerCntKey)
-}
-
-// 主动使cnt的redis缓存失效
-func (RelationServiceImpl) ExpireFollowingCnt(id int64) {
-	// 由于关注或取关操作导致cnt缓存不一致
-	redisFollowingCntKey := util.Relation_FollowingCnt_Key + strconv.FormatInt(id, 10)
-	redis.RedisDb.Del(redis.Ctx, redisFollowingCntKey)
 }

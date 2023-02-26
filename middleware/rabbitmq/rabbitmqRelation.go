@@ -129,15 +129,17 @@ func (c *RelationMQ) consumerFollowAdd(messages <-chan amqp.Delivery) {
 		userId, _ := strconv.ParseInt(params[0], 10, 64)
 		followId, _ := strconv.ParseInt(params[1], 10, 64)
 		log.Println("this is consumerFollowAdd:", userId, followId)
-		if err := dao.InsertFollow(userId, followId); nil != err {
+		err := dao.InsertFollow(userId, followId)
+		if nil == err {
+			// 更新Redis里的信息，防止脏数据，保证最终一致性。
+			// 将查询到的关注关系注入Redis
+			redisFollowKey := util.Relation_Follow_Key + strconv.FormatInt(userId, 10)
+			redis.RedisDb.SAdd(redis.Ctx, redisFollowKey, followId)
+			// 更新过期时间
+			redis.RedisDb.Expire(redis.Ctx, redisFollowKey, util.Relation_Follow_TTL)
+		} else {
 			log.Println(err.Error())
 		}
-		// 更新Redis里的信息，防止脏数据，保证最终一致性。
-		// 将查询到的关注关系注入Redis
-		redisFollowKey := util.Relation_Follow_Key + strconv.FormatInt(userId, 10)
-		redis.RedisDb.SAdd(redis.Ctx, redisFollowKey, followId)
-		// 更新过期时间
-		redis.RedisDb.Expire(redis.Ctx, redisFollowKey, util.Relation_Follow_TTL)
 	}
 }
 
@@ -148,16 +150,17 @@ func (c *RelationMQ) consumerFollowDel(messages <-chan amqp.Delivery) {
 		params := strings.Split(string(message.Body), " ")
 		userId, _ := strconv.ParseInt(params[0], 10, 64)
 		followId, _ := strconv.ParseInt(params[1], 10, 64)
-
-		if err := dao.DeleteFollow(userId, followId); nil != err {
+		err := dao.DeleteFollow(userId, followId)
+		if nil == err {
+			// 更新Redis里的信息，防止脏数据，保证最终一致性。
+			// 删除Redis中 redisFollowKey set集合中的followId元素
+			redisFollowKey := util.Relation_Follow_Key + strconv.FormatInt(userId, 10)
+			redis.RedisDb.SRem(redis.Ctx, redisFollowKey, followId)
+			// 更新过期时间
+			redis.RedisDb.Expire(redis.Ctx, redisFollowKey, util.Relation_Follow_TTL)
+		} else {
 			log.Println(err.Error())
 		}
-		// 更新Redis里的信息，防止脏数据，保证最终一致性。
-		// 删除Redis中 redisFollowKey set集合中的followId元素
-		redisFollowKey := util.Relation_Follow_Key + strconv.FormatInt(userId, 10)
-		redis.RedisDb.SRem(redis.Ctx, redisFollowKey, followId)
-		// 更新过期时间
-		redis.RedisDb.Expire(redis.Ctx, redisFollowKey, util.Relation_Follow_TTL)
 
 	}
 }
