@@ -29,28 +29,24 @@ const Comment_Video_Key = "comment:video:"     // key:video_id value:comment_id 
 // relation 模块
 const Relation_Follow_Key = "relation:follow:"
 
-var Relation_Follow_TTL = Day + Day*time.Duration(DayRandnum)
+var Relation_Follow_TTL = Day*7 + Day*time.Duration(DayRandnum)
 
 const Relation_FollowerCnt_Key = "relation:followersCount:"
 
-var Relation_FollowerCnt_TTL = Day + Day*time.Duration(DayRandnum)
+var Relation_FollowerCnt_TTL = Day*7 + Day*time.Duration(DayRandnum)
 
 const Relation_FollowingCnt_Key = "relation:followingsCount:"
 
-var Relation_FollowingCnt_TTL = Day + Day*time.Duration(DayRandnum)
+var Relation_FollowingCnt_TTL = Day*7 + Day*time.Duration(DayRandnum)
 
 // message 模块
 const Message_LatestMsg_Key = "message:latestMessage:"
 
 var Message_LatestMsg_TTL = Month + time.Hour*time.Duration(HourRandnum)
 
-const Message_MsgList_Key = "message:messageList:"
-
-var Message_MsgList_TTL = Month + time.Hour*time.Duration(HourRandnum)
-
 const Message_MessageId_Key = "message:messageId:"
 
-var Message_MessageId_TTL = Day + time.Hour*time.Duration(HourRandnum)
+var Message_MessageId_TTL = Month + time.Hour*time.Duration(HourRandnum)
 
 /*
 生成消息key

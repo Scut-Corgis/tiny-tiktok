@@ -58,12 +58,30 @@ func (MessageServiceImpl) SendMessage(userId int64, toUserId int64, content stri
 */
 func (MessageServiceImpl) GetChatRecord(userId int64, toUserId int64) ([]dao.MessageResp, error) {
 	msgList := make([]dao.MessageResp, 0)
-	messages, err := dao.QueryMessagesByMsgKey(userId, toUserId)
-	if err != nil {
-		return msgList, err
-	}
-	// redis 去重
+	messages := make([]dao.Message, 0)
+
+	// 判断redis中是否已请求过userId-toUserId连接的消息id
 	redisMessageIdKey := util.Message_MessageId_Key + util.GenMsgKey(userId, toUserId)
+	flag, err := redis.RedisDb.Exists(redis.Ctx, redisMessageIdKey).Result()
+	msi := MessageServiceImpl{}
+	if flag > 1 && err == nil {
+		latestMsg, err := msi.GetLatestMessage(userId, toUserId)
+		if err == nil {
+			// 有请求过的id，则只用查询最新消息时间以后的消息
+			messages, err = dao.QueryChartsAfterLatestMsg(userId, toUserId, util.TimeStrToTime(latestMsg.CreateTime))
+			if err != nil {
+				return msgList, err
+			}
+		} else {
+			return msgList, err
+		}
+	} else {
+		// 没有请求过的id，则需要查询所有聊天记录
+		messages, err = dao.QueryMessagesByMsgKey(userId, toUserId)
+		if err != nil {
+			return msgList, err
+		}
+	}
 	for _, message := range messages {
 		if flag, err := redis.RedisDb.SIsMember(redis.Ctx, redisMessageIdKey, message.Id).Result(); flag {
 			if err != nil {
@@ -80,12 +98,6 @@ func (MessageServiceImpl) GetChatRecord(userId int64, toUserId int64) ([]dao.Mes
 		redis.RedisDb.SAdd(redis.Ctx, redisMessageIdKey, message.Id)
 		redis.RedisDb.Expire(redis.Ctx, redisMessageIdKey, util.Message_MessageId_TTL)
 		msgList = append(msgList, msgResp)
-	}
-	// 再根据最新消息时间进行去重
-	msi := MessageServiceImpl{}
-	latestMsg, err := msi.GetLatestMessage(userId, toUserId)
-	if err == nil && len(msgList) > 0 && latestMsg.Id == msgList[len(msgList)-1].Id {
-		return make([]dao.MessageResp, 0), nil
 	}
 	return msgList, nil
 }
