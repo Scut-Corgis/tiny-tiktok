@@ -1,11 +1,13 @@
-# tiny-tiktok
+# Tiny-TikTok
 
 ![GitHub Repo stars](https://img.shields.io/github/stars/Scut-Corgis/tiny-tiktok)
 ![GitHub watchers](https://img.shields.io/github/watchers/Scut-Corgis/tiny-tiktok)
 ![GitHub forks](https://img.shields.io/github/forks/Scut-Corgis/tiny-tiktok)
 ![GitHub contributors](https://img.shields.io/github/contributors/Scut-Corgis/tiny-tiktok)
 
-<img src="images/logo.png" alt="logo" style="zoom:30%;" />
+<div align="center">
+<img src="images/logo.png" alt="logo" width="500" height="500"/>
+</div>
 
 ## 目录
 - [使用说明](#使用说明)
@@ -15,20 +17,9 @@
 - [项目整体设计](#项目整体设计)
    - [系统架构图](#系统架构图)
    - [数据库设计](#数据库设计)
-   - [Redis架构设计](#Redis架构设计)
-   - [RabbitMQ架构设计](#RabbitMQ架构设计)
+   - [Redis 架构设计](#Redis 架构设计)
+   - [RabbitMQ 架构设计](#RabbitMQ 架构设计)
 - [性能测试](#性能测试)
-- [项目部署](#项目部署)
-- [涉及技术](#涉及技术)
-- [项目version 1.0](#项目version1.0)
-- [项目version 2.0](#项目version2.0)
-- [未来展望](#未来展望)
-  - [分布式服务](#分布式服务)
-  - [推荐视频展望](#推荐视频展望)
-- [如何参与开源项目](#如何参与开源项目)
-- [版本控制](#版本控制)
-- [贡献者](#贡献者)
-- [鸣谢](#鸣谢)
 ## 使用说明
 
 ### 项目依赖
@@ -238,7 +229,7 @@ brew intsall rabbitmq-server
 rabbitmq-server
 ```
 
-### 文件目录说明
+## 文件目录说明
 ```
 tiktok 
 ├── /config/ 配置文件包
@@ -262,26 +253,26 @@ tiktok
 ```
 
 
-### 项目整体设计
+## 项目整体设计
 
-#### 系统架构图
+### 系统架构图
 
 <img src="images/系统架构图.png" alt="系统架构图" style="zoom:50%;" />
 
-#### 数据库设计
+### 数据库设计
 
 <img src="images/tiktokDBModel.png" alt="tiktokDBModel" style="zoom:50%;" />
 
-#### Redis 架构设计
+### Redis 架构设计
 
 <img src="images/redis缓存架构图.png" alt="redis缓存架构图" style="zoom:80%;" />
 
-#### RabbitMQ 架构设计
+### RabbitMQ 架构设计
 
 <img src="images/消息队列.png" alt="消息队列" style="zoom:80%;" />
 
 
-### 性能测试
+## 性能测试
 
 **安装 graphviz**
 
