@@ -6,7 +6,7 @@
 ![GitHub contributors](https://img.shields.io/github/contributors/Scut-Corgis/tiny-tiktok)
 
 <div align="center">
-<img src="images/logo.png" alt="logo" width="500" height="500"/>
+<img src="images/logo.png" alt="logo" width="400" height="400"/>
 </div>
 
 ## 目录
@@ -17,8 +17,8 @@
 - [项目整体设计](#项目整体设计)
    - [系统架构图](#系统架构图)
    - [数据库设计](#数据库设计)
-   - [Redis 架构设计](#Redis 架构设计)
-   - [RabbitMQ 架构设计](#RabbitMQ 架构设计)
+   - [Redis架构设计](#Redis架构设计)
+   - [RabbitMQ架构设计](#RabbitMQ架构设计)
 - [性能测试](#性能测试)
 ## 使用说明
 
@@ -263,11 +263,11 @@ tiktok
 
 <img src="images/tiktokDBModel.png" alt="tiktokDBModel" style="zoom:50%;" />
 
-### Redis 架构设计
+### Redis架构设计
 
 <img src="images/redis缓存架构图.png" alt="redis缓存架构图" style="zoom:80%;" />
 
-### RabbitMQ 架构设计
+### RabbitMQ架构设计
 
 <img src="images/消息队列.png" alt="消息队列" style="zoom:80%;" />
 
