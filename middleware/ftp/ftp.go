@@ -23,7 +23,6 @@ func Init() {
 			fmt.Println("1")
 			log.Fatal(err)
 		}
-
 		err = conn.Login(config.Ftp_username, config.Ftp_password)
 		if err != nil {
 			fmt.Println("2")

@@ -1,29 +1,22 @@
 # tiny-tiktok
-<!-- PROJECT SHIELDS -->
 
 ![GitHub Repo stars](https://img.shields.io/github/stars/Scut-Corgis/tiny-tiktok)
 ![GitHub watchers](https://img.shields.io/github/watchers/Scut-Corgis/tiny-tiktok)
 ![GitHub forks](https://img.shields.io/github/forks/Scut-Corgis/tiny-tiktok)
 ![GitHub contributors](https://img.shields.io/github/contributors/Scut-Corgis/tiny-tiktok)
 
+<img src="images/logo.png" alt="logo" style="zoom:30%;" />
+
 ## 目录
 - [使用说明](#使用说明)
-    - [开发配置要求](#开发配置要求)
-    - [安装步骤](#安装步骤)
-    - [演示视频](#演示视频)
+    - [项目依赖](#项目依赖)
+    - [项目配置](#项目配置)
 - [文件目录说明](#文件目录说明)
 - [项目整体设计](#项目整体设计)
-   - [整体架构图](#整体架构图)
+   - [系统架构图](#系统架构图)
    - [数据库设计](#数据库设计)
    - [Redis架构设计](#Redis架构设计)
    - [RabbitMQ架构设计](#RabbitMQ架构设计)
-   - [业务模块设计](#业务模块设计)
-     - [用户模块的设计](#用户模块的设计)
-     - [视频模块的设计](#视频模块的设计)
-     - [点赞模块的设计](#点赞模块的设计)
-     - [评论模块的设计](#评论模块的设计)
-     - [关注模块的设计](#关注模块的设计)
-     - [消息模块的设计](#消息模块的设计)
 - [性能测试](#性能测试)
 - [项目部署](#项目部署)
 - [涉及技术](#涉及技术)
@@ -36,30 +29,218 @@
 - [版本控制](#版本控制)
 - [贡献者](#贡献者)
 - [鸣谢](#鸣谢)
-<!-- PROJECT LOGO -->
-### 使用说明
+## 使用说明
 
-#### 开发配置要求
+### 项目依赖
 
-1. go 1.18.1
-2. MySQL(数据库sql文件在config包中)
-3. Redis、RabbitMQ
-4. 配置静态资源服务器：安装Nginx、vsftpd、ffmpeg（相关配置文件在config包中）
-5. [最新版抖音客户端软件](https://pan.baidu.com/s/1kXjvYWH12uhvFBARRMBCGg?pwd=6cos)
+tiny-tiktok 的项目依赖如下：
 
-#### 安装步骤
-1. 下载源码
-2. 配置SSH、FTP、Redis、静态服务器地址等相关参数
-3. 启动服务
-4. 在客户端配置相关地址服务端地址即可
+```
+require (
+	github.com/brianvoe/gofakeit/v6 v6.20.1  // 虚拟数据生成
+	github.com/gin-contrib/pprof v1.4.0  // 性能测试
+	github.com/gin-gonic/gin v1.8.2  // 后端框架
+	github.com/golang-jwt/jwt/v4 v4.4.3  // jwt鉴权
+	github.com/importcjj/sensitive v0.0.0-20200106142752-42d1c505be7b  // 敏感词过滤
+	github.com/jlaffaye/ftp v0.1.0  // ftp传输
+	github.com/linvon/cuckoo-filter v0.4.0  // 布谷鸟过滤器
+	github.com/streadway/amqp v1.0.0  // 消息队列
+	golang.org/x/crypto v0.0.0-20220214200702-86341886e292  // 密码加密
+	gorm.io/driver/mysql v1.4.5  // 数据库
+	gorm.io/gorm v1.24.3  // ORM库
+)
+```
 
-#### 演示视频
+使用如下命令安装：
 
-   > 链接：
+```bash
+go mod download
+```
 
-#### 文件目录说明
+项目运行：
+
+```bash
+go run main.go router.go
+```
+
+### 项目配置
+
+#### 配置文件说明
+
+本项目的所有配置都放在 config.go 中，出于安全考虑并未上传到项目中，该文件包含内容如下：
+
+```go
+package config
+
+// SSH配置
+var Ssh_addr_port = "" // 服务器IP + SSH端口号(22)
+var Ssh_username = "" // 用户名
+var Ssh_password = "" // 密码
+var Ssh_max_taskCnt = 100 // 最大连接数
+
+// FTP
+var Ftp_addr_port = "" // 服务器IP + FTP端口号(21)
+var Ftp_video_path = "" // 服务器上的视频存储路径
+var Ftp_image_path = "" // 服务器上的图片存储路径
+var Ftp_username = "" // 用户名
+var Ftp_password = "" // 密码
+const Ftp_max_concurrent_cnt = 20 //Ftp并发处理的文件上限
+
+// 服务器
+var Url_addr = "" // 服务器IP
+// 访问重定向
+var Url_Play_prefix = "/videos/" // 视频存放地址
+var Url_Image_prefix = "" // 图片存放地址
+
+// MySQL
+var MySQL_username = "" // 用户名
+var MySQL_password = "" // 密码
+var MySQL_IP = "" // 本机IP｜服务器IP
+var MySQL_host = "" // MySQL端口号
+var MySQL_database = "" // 数据库
+
+// Redis
+var Redis_addr_port = "" // 本机IP｜服务器IP + Redis端口号
+var Redis_password = "" // 密码
+
+// RabbitMQ
+var RabbitMQ_username = "" // 用户名
+var RabbitMQ_passsword = "" // 密码
+var RabbitMQ_IP = "" // 本机IP｜服务器IP
+var RabbitMQ_host = "5672" // RabbitMQ端口号
+```
+
+#### FTP
+
+**安装**
+
+```bash
+# Mac
+yum install vsftpd
+# Linux
+## Ubuntu
+apt-get install vsftpd 
+## CentOS
+yum install vsftpd
+```
+
+**配置**
+
+```bash
+vim vsftpd.conf  # 配置文件路径自行查看 
+
+# 修改配置如下
+listen=YES
+listen_port=21
+listen_ipv6=NO
+local_root=""  # 指定访问路径
+write_enable=YES  # 写权限必须打开
+idle_session_timeout=0  # 不会杀死空闲连接
+```
+
+**启动**
+
+```bash
+service vsftpd restart
+```
+
+**测试**
+
+在服务器上安装配置重启后，本地使用如下指令测试连接：
+
+```bash
+ftp 服务器IP地址
+```
+
+或者进入到 `/tiny-tiktok/middleware/ftp/` 目录下运行测试文件：
+
+```bash
+go test ftp_test.go
+```
+
+#### FFmpeg
+
+**安装**
+
+```bash
+# Linux
+## Ubuntu
+apt-get install ffmpeg
+## CentOS 需进入官网下载上传编译 https://ffmpeg.org/download.html
+```
+
+**测试**
+
+1. 修改 config.go 文件下变量 Ssh_addr_port、Ssh_username、Ssh_password 为自己服务器对应的参数
+2. 创建 config.go 文件下变量 Ftp_video_path、Ftp_image_path 对应的路径（可自定义）
+3. 将 data 目录下的 bear.mp4 文件放在 config.go 文件的 Ftp_video_path 对应的路径下
+4. cd 到 ffmpeg 文件夹下 `go test ffmpeg_test.go `
+5. Ftp_image_path 路径下出现 bear.jpg 和 bear2.jpg 文件则配置成功
+
+#### Nginx
+
+**安装**
+
+略
+
+**配置**
+
+```sh
+vim nginx.conf
+
+# 增加如下字段后保存
+# 访问重定向
+location ^~ /videos/ {
+    root Ftp_video_path;
+}
+location ^~ /images/ {
+    root Ftp_image_path;
+}
+
+# 切换到nginx可执行文件目录
+/usr/local/nginx/sbin
+
+# 重新加载配置
+./nginx -s reload
+```
+
+#### MySQL
+
+MySQL 的安装配置过于经典，此处略过⏭
+
+#### Redis
+
+**安装**
+
+官网下载安装包解压即可
+
+**启动/测试**
+
+```bash
+redis-server
+ping # 返回 PONG
+```
+
+#### RabbitMQ
+
+**安装**
+
+```bash
+# Linux
+apt-get install rabbitmq-server
+# Mac
+brew intsall rabbitmq-server
+```
+
+**启动**
+
+```bash
+rabbitmq-server
+```
+
+### 文件目录说明
+```
 tiktok 
-├── /.idea/
 ├── /config/ 配置文件包
 ├── /controller/ 控制器包
 ├── /dao/ 数据库访问
@@ -78,353 +259,40 @@ tiktok
 ├── main.go
 ├── README.md
 └── router.go
-#### 项目整体设计
-
-##### 整体架构图
-
-##### 数据库设计
-
-* 目前表结构只有一级索引，无字段索引
-* 自增初始值都为1000，随便取的
-
-> users表上用户名上建立了索引， 因为这个用户名查询操作很频繁，但注意不是唯一索引，所以注册用户时记得检查用户名唯一性
-
-> 实现自己模块过程中如果发现频繁需要某字段作为索引以提升性能，可以修改表结构，并在文档中说明原因
-
-数据库名请取为`tiktok`，正如`dao/initDb.go`规定的那样，请修改对应的用户名和密码为自己的
-
-`dsn := "root:123456@tcp(127.0.0.1:3306)/tiktok?charset=utf8mb4&parseTime=True&loc=Local"`
-
-如以上用户名为 root, 密码为123456, 数据库名为tiktok
-
-CRUD接口说明 : https://gorm.cn/zh_CN/docs/connecting_to_the_database.html
-
-##### Redis架构设计
-
-##### RabbitMQ架构设计
-
-##### 业务模块设计
-
-###### 用户模块的设计
-
-###### 视频模块的设计
-
-###### 点赞模块的设计
-
-###### 评论模块的设计
-
-###### 关注模块的设计
-
-###### 消息模块的设计
-
-
-#### 性能测试
-
-#### 项目部署
-
-#### 涉及技术
-
-#### 项目version1.0
-实现tiny-tiktok的后端部分，从而用户能够投稿视频、刷视频、点赞与评论视频、互相关注等操作。另外，为了便于测试，编写了自动生成测试例的程序
-##### 项目架构：
-config为配置文件目录, 表结构在里面
-
-controller ：控制器层，只写客户端调用接口回调函数的基本逻辑，核心逻辑实现都在service实现
-
-dao： 为数据库操作的封装，与数据库的底层操作的封装都在里面实现
-
-service层 ：业务核心逻辑
-
-##### 虚拟数据生成
-
-```txt
-└─ fakeDataGenerator.go
-    ├─ RebuildTable  // 重建数据库
-    ├─ FakeUsers  // 生成 user 数据
-    ├─ FakeFollows  // 生成 follow 数据
-    ├─ FakeVideos  // 生成 video 数据
-    ├─ FakeComments  // 生成 comment 数据
-————————————————
-```
-
-可以在 initDao 里调用 `RebuildTable` 函数重建数据库
-
-```go
-// 需要修改一下代码里的 tableStruct.sql 路径
-cmd := exec.Command("sh", "绝对路径")
-```
-##### jwt-auth:
-
-> 位于`middleware/jwt`路径下
-token生成和确认， 目前token中只放置了username
-
-鉴权已注射于gin路由中，会最先执行，若通过鉴权，则会将解析出的username放于 gin.context的键值对中，可通过调用`username := context.GetString("username")`提取；若没通过鉴权，则不会运行controller代码
-
-未测试，需等待用户注册接口完成，用户注册产生token清调用`token.go - GenerateToken(name string)` 
-
-**其他** 
-
-* 没有采用 `jti`, 因此有重放攻击危险，不打算考虑此问题
-
-* jwt可选字段中，只使用了过期时间为24h，其他如发行方、接收方字段均未使用 
-
-### videoController
-
-#### pubish - 发布视频
-
-文件服务器 ： 
-1. 配置ftp服务器，用于service服务器发送视频文件
-2. 安装ffmpeg命令 并通过 ssh 连接
-3. Nginx对外提供获取视频和封面的服务 (均为静态资源)
-
-**核心逻辑：**
-
-用户调动`publish` -> service服务器读取data数据 -> 将视频文件发往nginx -> 通过ssh调用ffmpeg服务得到视频起始帧图片并存于nginx服务器 -> 图片存于本地
-
-
-> ffmpeg命令于文件服务器中执行，因此nginx ftp ffmpeg均在一台服务器上
-
-#### ssh服务器
-
-搭建：
-https://www.bilibili.com/video/BV1rz4y1R7DA/?spm_id_from=333.337.search-card.all.click&vd_source=1e3090bc7a88f02cda5247bc11cd548d
-
-ffmpeg : `sudo snap install ffmpeg`
-
-wpy云服务器上：`sudo apt-get install ffmpeg`
-
-> ssh和ffmpeg 配置好之后检查是否成功
->
-> 搭建环境是否成功测试 : 
->
-> 1.修改config.go文件下变量Ssh_addr_port、Ssh_username、Ssh_password为自己服务器对应的参数
->
-> 2.创建config.go文件下变量Ftp_video_path、Ftp_image_path对应的路径（可自己定义）
->
-> 3.将data目录下的bear.mp4文件存放在config.go文件的Ftp_video_path变量记录的路径下
->
-> 4.cd到ffmpeg文件夹下 `go test`
->
-> 5.Ftp_image_path路径下出现bear.jpg和bear2.jpg文件 则配置成功
-
-openssl采用口令方式登陆，服务器提供公钥给客户端，客户端用公钥加密自己的密码后发回，服务器用私钥解密验证
-
-openssl默认60s断开连接，因此需要加入应用层客户端心跳。
-
-当前实现客户端方未验证服务器公钥是否正确，若实际生产环境需得到服务器公钥到配置文件中，防止中间人截获并伪装服务器
-
-
-#### ftp服务器
-
-搭建：
-
-``` sh
-sudo apt install vsftpd
-
-systemctl enable vsftpd.service 
-
-systemctl start vsftpd.service
-
-systemctl status vsftpd.service
-
-vim /etc/vsftpd/vsftpd.conf
-```
-
-增加或修改以下配置项
-
-``` sh
-# Example config file /etc/vsftpd.conf
-
-listen=YES
-listen_port=21
-#
-listen_ipv6=NO
-# ftp登陆目录  -    改成自己的，取config.Ftp_video_path中去掉/video的路径
-local_root=/home/hjg/ftpdata 
-# 必须打开写权限
-write_enable=YES
-# 永不杀死空闲连接
-idle_session_timeout=0
-```
-
-重启服务
-
-`systemctl restart vsftpd.services`
-
-用户添加[Ubuntu 16.04下vsftpd 安装配置实例（ftp服务器搭建）](https://blog.csdn.net/hanyuyang19940104/article/details/80421632?spm=1001.2101.3001.6650.1&utm_medium=distribute.pc_relevant.none-task-blog-2~default~CTRLIST~Rate-1-80421632-blog-79304076.pc_relevant_multi_platform_whitelistv3&depth_1-utm_source=distribute.pc_relevant.none-task-blog-2~default~CTRLIST~Rate-1-80421632-blog-79304076.pc_relevant_multi_platform_whitelistv3&utm_relevant_index=2)
-
-```sh
-//添加用户
-sudo useradd -d /home/admin/ftpdata -s /bin/bash wpy
-//配置密码
-sudo passwd wpy
-
-//记得给ftpdata下的所有文件夹都符权限 不然会出现553 Could not create file.错误
-
-```
-ftp使用外网：[阿里云服务器使用FTP传输文件](https://blog.csdn.net/qq_38113006/article/details/105520125?spm=1001.2101.3001.6650.2&utm_medium=distribute.pc_relevant.none-task-blog-2~default~CTRLIST~Rate-2-105520125-blog-105364079.pc_relevant_3mothn_strategy_and_data_recovery&depth_1-utm_source=distribute.pc_relevant.none-task-blog-2~default~CTRLIST~Rate-2-105520125-blog-105364079.pc_relevant_3mothn_strategy_and_data_recovery&utm_relevant_index=3)
-> 搭建环境是否成功测试 : cd到ftp文件夹下 `go test`
-
-#### Nginx - http服务
-
-Nginx安装 : ` https://b23.tv/vbrNbjn`
-
-```sh
-//云服务器需要打开80端口
-sudo ufw allow 80
-```
-
-修改配置
-
-``` sh
-sudo vim /usr/local/nginx/conf/nginx.conf
-
-// 增加如下字段后保存
-        // 表示访问 localhost:80/videos/ 则从 /home/hjg/ftpdata/videos/ 下面找
-        location ^~ /videos/ {
-            root /home/hjg/ftpdata;
-        }
-
-        location ^~ /images/ {
-            root /home/hjg/ftpdata;
-        }
-
-// 切换到nginx可执行文件目录
-/usr/local/nginx/sbin
-
-// 重新加载配置
-./nginx -s reload
-
-```
-权限问题：需要给根目录读写和可执行文件的命令
-解法一：在nginx的nginx.conf 文件的顶部加上user root;指定操作的用户是root。
-解法二： chmod -R 777 html/test给路径设置权限
-
-./config 出错的时候：[Ubuntu16下PCRE库的安装与验证](https://blog.csdn.net/qq_40965507/article/details/117620466)
-
-命令行安装查找nginx可执行文件看这个：[ubuntu安装nginx](https://blog.csdn.net/qq_41985134/article/details/117991218)
-
-### APP连接云服务器
-
-1. APP端口
-2. 打开8080端口 sudo ufw allow 8080
-
-数据库优化
-```
-gorm
-添加数据库 索引
-users表 name 主键索引
-comments表 user_id
 ```
 
 
+### 项目整体设计
 
----
-## Version 2.0
+#### 系统架构图
 
-项目结构和软件性能优化：
-1. ...
-2. redis缓存
-3. ...
+<img src="images/系统架构图.png" alt="系统架构图" style="zoom:50%;" />
 
-### 项目架构
+#### 数据库设计
 
-...
+<img src="images/tiktokDBModel.png" alt="tiktokDBModel" style="zoom:50%;" />
 
-### Redis
-#### redis本地安装配置
-1. 安装：\
-   https://blog.csdn.net/X_lsod/article/details/123263429
-   按照上述教程安装，并**启动**。
-2. 配置：\
-   在redis.conf文件内:
-   搜索"bind",找到redis的ip地址，端口号默认为6379。将config.go内的"Redis_addr_port"替换。
-   搜索"requirepass"(未配置密码可忽略),找到redis设置的密码。将config.go内的"Redis_password"替换。
-3. 测试：\
-   命令行可查看，也可使用redis可视化工具。\
-   redis可视化工具下载:https://github.com/lework/RedisDesktopManager-Windows/releases
+#### Redis 架构设计
 
-4. 说明: \
-   目前只使用了一个redis库，其余设置均为默认设置。
+<img src="images/redis缓存架构图.png" alt="redis缓存架构图" style="zoom:80%;" />
+
+#### RabbitMQ 架构设计
+
+<img src="images/消息队列.png" alt="消息队列" style="zoom:80%;" />
 
 
-#### redis开发规范
-1. util/redisConstants.go \
-   该文件是对redis填入的key和TTL进行书写格式的规范\
-   以key为例:采用类似`const 模块_表名_key = "模块:表名:"`的分级结构，字符间的":"即为分级目录。\
-   例如：`const Relation_Follow_Key = "relation:follow:"`，在该文件内进行统一设置，使用时再加上对应的id或唯一性标识的字段。\
-   TTL类似。
+### 性能测试
 
-#### redis 安全性
+**安装 graphviz**
 
-##### 缓存击穿 — 分布式锁
-
-```go
-func Lock(key string, value string) bool {
-	mutex.Lock() // 保证程序不存在并发冲突问题
-	defer mutex.Unlock()
-	ret, err := RedisDb.SetNX(Ctx, key, value, time.Second*5).Result()
-	if err != nil {
-		log.Println("Lock error:", err.Error())
-		return ret
-	}
-	return ret
-}
-
-func Unlock(key string) bool {
-	err := RedisDb.Del(Ctx, key).Err()
-	if err != nil {
-		log.Println("Unlock error:", err.Error())
-		return false
-	}
-	return true
-}
-
-/*
-使用方法:
-Lock()
-service业务
-...
-Unlock()
-*/
+```bash
+apt-get install graphviz
 ```
 
-##### 缓存穿透 — 布谷鸟过滤器
+**生成火焰图**
 
-```go
-// 新建一个过滤器，第一个参数为桶大小，第二个为指纹大小，第三个为过滤器容量
-cf := cuckoo.NewFilter(4, 9, 3900, cuckoo.TableTypePacked)
-fmt.Println(cf.Info())
-fmt.Println(cf.FalsePositiveRate())
-
-a := []byte("A")
-cf.Add(a) // 向过滤器添加一个数据
-fmt.Println(cf.Contain(a)) // 判断过滤器是否包含该数据
-fmt.Println(cf.Size())
-
-b := cf.Encode() // 编码过滤器
-ncf, _ := cuckoo.Decode(b) // 解码过滤器
-fmt.Println(ncf.Contain(a))
-
-cf.Delete(a) // 删除元素
-fmt.Println(cf.Size())
+```bash
+# 执行命令后,会在浏览器打开一个窗口
+go tool pprof -http=:1234 http://localhost:8080/debug/pprof/goroutine
 ```
 
-#### rabbitmq
-
-下载安装：
-https://blog.csdn.net/qq_22638399/article/details/81704372
-如果 /etc/rabbitmq中没有rabbitmq.conf可以自己创建一个，然后添加 [{rabbit, [{loopback_users, []}]}]. 就可以远程登录http://ip:15672
-云服务器远程访问需要开放端口：
-https://blog.csdn.net/Escorts/article/details/102698760
-
-添加用户：
-https://blog.csdn.net/chenshourui/article/details/81203770?spm=1001.2101.3001.6650.2&utm_medium=distribute.pc_relevant.none-task-blog-2%7Edefault%7ECTRLIST%7ERate-2-81203770-blog-79469773.pc_relevant_recovery_v2&depth_1-utm_source=distribute.pc_relevant.none-task-blog-2%7Edefault%7ECTRLIST%7ERate-2-81203770-blog-79469773.pc_relevant_recovery_v2&utm_relevant_index=5
-
-我是用户名:tiktok 密码：123456 都设置成这个吧，就不用下载后在该用户密码了
-
-使用：
-基本上就是使用简单模式，
-1 先初始化自己的实例 New__RabbitMQ tcp连接已经在MyRabbitMQ中了，所以就设置一下通道
-2 生产者：
-3 消费者：都差不多
